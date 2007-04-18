@@ -1,0 +1,623 @@
+<html><head><title>Help for Workshift Managers</title></head><body>
+
+<ul>
+
+<li><h3>Tasks you can do, and the order you should do them in</h3> 
+
+The <b>first thing</b> you have to do is make sure you can view <a
+href='index.html'>your front page</a>, using whatever username and
+password were specified by your administrator (the default is
+(three-letter-house-code)laborczar for both the username and password,
+like stblaborczar for Stebbins).  Your front page has links to
+everything mentioned here.  Make sure you can log in to it.  (If you
+can't, contact the administrator.)
+
+<ul>
+
+  <li><a name='basic_consts'><h4>Set basic constants</h4> Go to <a
+  href='basic_consts.php'>basic_consts.php</a> to set some basic
+  parameters, like when the semester started and when preferences
+  forms are due.
+
+<ul><li>
+  Since this page can change a lot of things, it backs up your system
+  before it does anything, so that the old system can be completely
+  restored if necessary.  If you want to give a name to this backup,
+  enter it in the box -- otherwise, it will just use the current date
+  and time so that if you need to restore a backup, you know exactly
+  when it is from.
+
+  <li>The "start of the semester" section is for cleaning up previous
+  semesters' data.  The first box deletes members' preference forms.
+  Some members may have preferences that haven't changed much, but if
+  you don't delete them, you may be misled about their availability,
+  so it's probably a good idea to delete them.  The next box deletes
+  the assigned shifts, so that when you're assigning shifts, you're
+  starting from a blank slate.  Definitely don't check it until the
+  previous semester ends, because otherwise the shift assignments will
+  be lost.  The third and final box should only be checked when the
+  next semester has started, and everything from the previous semester
+  has finished, i.e., all workshift entries have finished, fines have
+  been calculated, etc.  The old semester is still available for
+  viewing through various <a href='view_backup'>archive methods</a> or
+  restoring, if it turns out that it didn't actually end.
+
+  <li>The preference forms are set up here, because you need to get
+  them ready right away for your house.
+
+  <ul><li>The preference forms can either let users choose shifts that
+  they want and shifts that they don't want, or it can let users
+  rate/rank categories of shifts.  Choose which you prefer here.  Note
+  that if you want the rating/ranking system, you are going to have to
+  <a href='assign_shifts.php'>enter a category for each shift</a> or
+  your members will have to rate every single one of your shifts,
+  since each will be in its own category.  Note that if you put a
+  single * in the category, the system will treat this as a special
+  shift, and will not put it on the preference form.  If you put **,
+  the system will also not put it in signoff sheets or weekly sheets.
+  
+  <li>If you don't enter the preferences due date and shifts start
+  date, <a href='../preferences.php'>preferences.php</a> will look
+  silly.  You can also change the text that appears on the preferences
+  page.  The first textbox contains the text which goes at the top of
+  the form.  The second contains the text right before where the
+  members will enter their shift preferences.  There are a few options
+  you can choose about these.  If you would like this text to be
+  rendered as html (so things like &lt;strong&gt; make things strong,
+  and you can put links in, etc.), then check the box, and otherwise
+  uncheck it.  Remember that if it's html, to make a line break, you
+  have to put in &lt;br&gt; or &lt;p&gt;, not just press the "enter"
+  key.  The second thing you can do is put in 
+  <a href='#escape_sequences'>escape sequences</a>.  If you're using
+  the wanted/unwanted style for shift preferences, there are no escape
+  sequences for that text, but otherwise, read the instructions.
+  </ul>
+
+  <li>The houselist question is so that the system can deal with the
+  houselists that CO sends you, that you can <a
+  href='update_house.php'>upload</a> to set the house list.<br>
+
+</ul>
+<li><a name='update_house'><h4>Enter house list</h4> You need to have a house list entered.
+  You can do that at <a href='update_house.php'>update_house.php</a>.
+  Make sure every member's name you enter is unique.  Try to enter
+  them in a consistent format, like Lastname, Firstname (what Stebbins
+  does), LastNameFirstname, or whatever.  Just keep it consistent.
+  Since there is auto-completion on most of the pages, don't worry too
+  much about length of names -- you won't have to type the whole thing
+  in every time.  The best way to do this is to email <a
+  href='mailto:housing@usca.org'>housing@usca.org</a> and have them
+  email you a houselist.  If your house is co-ed, and it's the
+  academic year, you will need to upload both lists, for men and
+  women, at the same time.  Over the summer, or if your house is
+  single-sex, you should get only one such list.  When you upload, you
+  will be able to confirm all the deletions and additions that will be
+  done.  Make sure you look through them to see that someone isn't
+  being deleted just because their name is spelled differently or
+  something similar.  Note that if you upload using the CO house
+  lists, then your house members' application numbers are stored, so
+  that, even if you rename them later, the system can tell that
+  they're the same person.  That way, the following semester, you can
+  upload the new CO house list, and the system will be able to keep
+  track of who is returning just from their application number.
+
+  <li><a name='master_shifts'>
+  <h4>Enter workshifts</h4> You need to enter the workshifts your
+  house has into the system, along with the days that each shifts is
+  done, floors it's done on, etc.  This is a one-time hassle, since
+  your shifts probably don't change too much year to year.  You can
+  enter them on the usual page, <a
+  href='assign_shifts.php'>assign_shifts.php</a>, by clicking on Add
+  Row to add a shift, or you can skip the sidebar by using
+  <a href='master_shifts.php'>master_shifts.php</a>.  Here are a few
+  tips for entering shifts:
+  <ul>
+  <li>If you have multiple copies of a shift (3 people on dinner crew,
+  for example), name the shift the same thing for all of them -- that
+  way, that shift will show up once on preference forms, which is what
+  you want.  Don't name them Dinner Crew 1, Dinner Crew 2, Dinner Crew
+  3.  If there really are different jobs, but they're all basically
+  the same shift (done at the same time, for the same hours you can
+  put the difference ("pots","dishes","tables") in the "floor" column
+  -- sorry the name doesn't make sense.
+
+  <li>Shifts that are not supposed to be assigned (if a bathroom
+    isn't cleaned on Saturdays, that shift should remain blank) have
+    an XXXXX (or whatever string you set above) in them, and are
+    grayed out.  If you do want to assign that shift, just erase the
+    XXXXX.
+
+    <li>"Weeklong" means that a shift doesn't have a specific day to
+    be done.  If a shift is Weeklong, then almost certainly the other
+    columns (for each day) should have an "XXXXX" in them, and vice
+    versa, so a shift that has a specific day or days to be done (like
+    cooking) should have "XXXXX" in the Weeklong column.  If you put
+    something in the Weeklong field, any blank fields will be
+    automatically grayed-out.  Likewise, if you put something in a
+    non-Weeklong field, if the Weeklong field is blank it will be
+    automatically grayed-out.
+
+    <li>The start time and end time give the earliest time this shift
+    can be started and the latest time this shift can be ended,
+    respectively.  The system uses this to warn you if you try to
+    assign someone a shift with a time conflict.
+
+    <li>The category column groups the shifts.  If you're using the
+    rating/ranking system of preference forms, members can rank whole
+    categories without bothering to rank shifts individually.  As
+    well, if a category name starts with a '*', it won't be displayed
+    on the preference form, and if it starts with a '**' it won't be
+    displayed on the weekly sheets or signoff sheets.
+
+    <li>Don't have any blank rows!  That's a shift with no name, for no
+    hours, and just looks silly on preference forms and the like
+</ul>
+
+  <li><a name='set_shift_descriptions'><a name='upload_workshift_doc'>
+  <h4>Set shift descriptions and workshift docs</h4>You can enter
+  shift descriptions and upload a workshift document that people can
+  get to from the preference form, at <a
+  href='set_shift_descriptions.php'>set_shift_descriptions.php</a> and
+  <a href='upload_workshift_doc.php'>upload_workshift_doc.php</a>,
+  respectively.  The workshift document will be downloaded directly by
+  your members, so make sure it's in a format that they can open.
+
+  <li><h4>Do temp weeks</h4> You probably have a few temp weeks, where
+  there aren't permanently assigned shifts.  Go to <a
+  href='week.php'>week.php</a> and enter data into the temp week (make
+  sure you start at 0) that you're in.  Here are <a
+  href='#week'>instructions on doing this</a>.  Once you've created a
+  temp week, you can use the button at the top to erase all the names,
+  if you don't want them there.
+  
+  <li><h4>Wait for preference forms</h4> Now sit back, relax, and let
+  people submit their workshift preference forms to you.  Remind them
+  that they can always go through their <a
+  href='../person.php'>personal pages</a> to re-enter information.  If
+  they forget what their password is (it's not set until they submit a
+  preference form), you can <a href='reset_user_password.php'>reset it</a>
+  for them.
+  
+  <li><h4>Assign workshifts</h4></a> Actually, don't relax too much,
+  because it's time to <a href='assign_shifts.php'>assign shifts</a>.
+  All submitted data is available to you as it comes, so you can just
+  start assigning as it comes (although note that if someone submits
+  information while you're assigning shifts, that won't be reflected
+  on your page; you'll have to reload it to see the latest info.  Just
+  remember to submit your information before you reload!  Also, as the
+  pages all say, press control-f5 to get a true reload.  (Macs, sorry,
+  I'm not sure what button to press.  Try command-R.)  Your shift
+  assignment interface has some <a href='#assign_shifts_features'>cool
+  features</a>.
+  
+  <li><a name='signoff'>After you're done assigning shifts, you may
+  want to <a href="master_shifts_print.php">print out the master table
+  of workshifts</a>, or <a href="../shifts_by_name.php">print out
+  shifts by name</a> (see <a href='#table_print_features'>printing
+  tables</a> if you have questions about that).  <li>You can also <a
+  href="../public_utils/signoff.php">print out signoff sheets</a> in
+  either of two ways, with a weekly grid format, or by day.  If you'd
+  like the shifts to be pre-filled-in with the assigned people, make
+  sure that box is checked.  If you want a space for the verifier,
+  make sure that box is checked.  You can also add extra columns, if
+  for some reason you need that, or put a message on the page.</ul>
+
+  <li><a name='week'><h4>Enter weekly data</h4></a> Entering workshift
+  data is done through <a href='week.php'>week.php</a>.  Its
+  functionality is described in the general <a
+  href='#table_edit_features'>table editing features</a>.  Note that
+  any changes you make are instantly available to workshifters through
+  their personal pages.  If they have questions about whether a shift
+  was counted, they should be able to see what shifts you have them as
+  doing in their personal pages without bothering you at all.  If you
+  are editing a week for the first time, the page will prompt you to
+  create the week.  The week will be created from the <a
+  href='assign_shifts.php'>currently assigned shifts</a>.<br>  
+  At the top of the page, one of two messages may appear.  If you've
+  created, but not yet edited, this week, and you've made some changes
+  to the shift assignments, you have the option of re-creating this
+  sheet from the current assignments.  You might want to do this if,
+  for instance, you assign shifts, look at week 3, and then have to
+  re-assign a shift because of some change.  If you've already
+  modified the sheet, you'll be offered the option of abandoning your
+  changes and re-creating the sheet.  If you've already started
+  entering data, but you've made a lot of changes, that may be what
+  you want to do, but remember: <emph>all</emph> your entered data on
+  this sheet will be lost!<p>
+
+  To add a special workshift, add a row for it.  You shouldn't ever
+  need to delete rows.  If someone signs out of a shift (in time) and
+  no one signs into it, just put a 0 for the hours -- that way,
+  they'll have an indication that they signed out of that shift.  If
+  someone blows off a shift, make their hours negative (or whatever
+  penalty your house uses).  If you'd like to make any notes for that
+  shift, enter them here and the member will be able to see them in
+  his/her personal page.
+  <li>Online signoffs can be enabled at <a
+  href='online_signoff_setup.php'>online_signoff_setup.php</a> and
+  used at <a href='../online_signoff.php'>online_signoff.php</a>.  You
+  can read <a href='#online_signoff_setup'>instructions on setting
+  up</a> or <a href='../help.html#online_signoff'>help with signing
+  off</a> for more information.  At week.php, if online signoffs are
+  available, the following happen.
+  <ul><li>Every shift can initially be signed off of online, so the
+  online_signoff column will be checked.  To disable online signoff
+  for that shift for this week, uncheck the box.
+  <li>Once someone signs off of a shift online, the following things
+  will happen: the online_signoff field will change to the day and
+  time they signed off online.  The system should prevent people from
+  signing off of shifts that ended too long ago, but you can check
+  that here.  The verifier field will be the person who verified the
+  shift.  Finally, the notes field will say ONLINE and any other
+  details that are important -- if the online signoff was for a
+  different number of hours than usual, the notes field will have the
+  original number of hours the shift was worth, and if the shift is
+  normally done by a different person, the notes field will say who
+  the original person was.
+  <li>If you want to change the fields for someone who signed off
+  online, go ahead and do that -- they're just the same as normal
+  shift entries now.
+  </ul>
+
+  <li><a name='weekly_totals_print'>
+  <a name='weekly_totals_update'>
+<h4>Weekly totals</h4> Finally, there are pages for <a
+  href='weekly_totals_update.php'>updating the weekly totals</a>, <a
+  href='weekly_totals_print.php'>printing the weekly totals</a>, <a
+  href='house_fines.php'>printing and downloading the fines</a>, and <a
+  href='weekly_totals_consts.php'>setting constants associated with
+  the weekly totals</a>.
+
+<ul><li>By default, when updating and printing the weekly totals, just
+    the last two week's total hours done and hours owed are displayed,
+    but you can check and uncheck the columns to make it look the way
+    you want.  As well, if any fining periods have occurred, the fines
+    for those fining periods are displayed, along with any other
+    fines, to make the total fines.  If your house has weekly fines,
+    those are included in Other Fines.
+    <li>When updating, you can change the number of hours owed for any
+    given person on any given day.  The totals update automatically,
+    but you still need to submit your data.  All the <a
+    href='#table_edit_features'>table editing features</a> are
+    available here.
+
+<p>If someone in your house owes
+    a different number of hours every week (for instance, they're a
+    boarder), choose their name at the top, enter the number of hours
+    they owe every week, and press the button to change their owed
+    hours.  Their owed hours will be changed for the whole semester.
+    However, the system assumes that if, for some week, that person
+    didn't owe the default number of hours owed (usually 5), then
+    maybe you had some reason for setting it that way (maybe it was
+    move-in week, and everyone owed only 1 hour), so it won't change
+    those weeks, unless you check the checkbox to make it.<br>
+
+    Similarly, if there's a week where the default number of hours
+    owed is different (spring break, move-in, etc.), enter the
+    starting and ending weeks for the different hours owed at the top
+    of the page, and click the button (by default the ending week is
+    the starting week).
+
+    <li>You can check out <a href='#table_print_features'>table
+    printing features</a> for the printing.
+
+    <li><a name='house_fines'>The house fines page gives a
+    week-by-week breakdown of the fines for every week and fining
+    period for all your members.  At the top of the page is a link to
+    download this page to Excel, and also an option to view the fines
+    for a past semester (if there's a dispute and you need to view old
+    fines).
+
+    <li><a name='weekly_totals_consts'>Setting your house's fining
+    parameters can be confusing.  Please <a
+    href='mailto:janak@berkeley.edu'>email me</a> if something isn't
+    clear or if you think an option is missing.
+
+    <ul><li>Setting the fining period info and other miscellaneous
+    features is something that you should only have to do at the
+    beginning of the semester, or if you change a fining period.
+
+    <li>You can set the current week, which will make the system
+    ignore what it thinks the current week is, and use your week.
+    Remember to delete this once the reason for tricking the system is
+    finished (i.e., once you've caught up).  Note that if you haven't
+    yet <a href='week.php'>edited the sheet</a> for some week, the
+    system will assume that that week hasn't happened yet.  This means
+    that if you've fallen behind, the system automatically won't
+    advance in the weeks it displays until you've caught up, so you
+    shouldn't actually ever need to set the current week.
+
+    <li>Your house may have the possibility of fining members every
+    week, even during weeks that don't end fining periods.  If so, you
+    should check the weekly fining box.
+
+    <ul>Here is a list of the various parameters you can set inside
+    each week or fining period.  After this list are the explanations
+    of the other features.
+
+    <li>The fining rate is set by CO.  If, for some reason, you want a
+    particular fining period to have a different fining rate from the
+    standard one (this should never happen), you can set it
+    individually in that fining period.
+
+    <li>The fining floor is the baseline for fines: if it is 3, then
+    someone who is down 4 hours is fined 1 hour, because they are 1
+    hour below the floor.
+
+    <li>The buffer is the amount people can be below the floor before
+    fines kick in.  If the buffer is 2 and the floor is still 3, then
+    someone down 5 hours is not fined, because they are 2 hours below,
+    and since the buffer is 2, they have to be more than 2 hours below
+    to be fined.  However, if someone is down 6 hours, they are fined
+    for 3 hours, because the buffer does not protect them, and they
+    are 3 hours below the floor.  In Stebbins, on fining weeks the
+    floor is 0 and the buffer is 2 (you're fined for all your
+    negative hours, unless you're less than 2 hours below 0).  By CO
+    policy, the buffer at the end of the semester must be 0.  In
+    Stebbins, on non-fining weeks people who are more than 10 hours
+    below 0 are fined for each of those hours.  For those weeks, the
+    floor is 10 (you must be 10 below 0 to be fined), and the buffer
+    is 0 (you're fined for every hour below 10).
+
+    <li>The double-fining floor is the level below which a member's
+    hours are double-fined.  For example, if the floor is 0, the
+    buffer is 0, and the double-fining floor is 3, then if a member is
+    down 7 hours, they will be fined for 3 + 4*2=11 hours, because
+    they are fined one hour's worth for each hour below the fining
+    floor, and then again for each hour below the double-fining floor.
+
+    <li>Many houses say that if a member has paid a fine for down
+    hours, the member no longer has to make up those hours.  If that
+    is your house's policy, check that box for every time it applies
+    (in the unlikely event that you zero hours every week, check the
+    box there, and otherwise, check it for the fining periods at which
+    hours are zeroed).  If your house only partially zeroes hours,
+    then <a href='#zero_partial'>see below</a>.
+    </ul>
+
+    <li>Many houses say that a member cannot be up more than some
+    number of hours (in Stebbins, it's 10).  If your house has that
+    policy, enter that number for the maximum number of hours a member
+    can be up.  Note that if your house doesn't have a max, make sure
+    this field is blank.
+
+    <li>For some houses, there is a different number of hours that a
+    member can be up at the end of a fining period.  CZ, for example,
+    put people with up hours back down to 0, so the maximum would be 0
+    here.  Hoyt might have 5 here and nothing elsewhere.  As with
+    above, make sure this field is blank (not zero) if this doesn't
+    apply to you.
+
+    <li><a name='cash_hours_auto'>Stebbins</a>, and possibly some
+    other houses, allow members to pay off workshift fines with up
+    hours.  If someone has been fined 3 workshift hours over the
+    course of the semester, and they end the semester up 3 hours, then
+    they can apply those up hours towards the fine, so they don't have
+    pay it.  As well, if there is a maximum number of hours that
+    someone can be up, if they ever go over that amount, those extra
+    hours will be applied towards fines, if any, that the member has
+    already incurred.  <!-- You can also <a href='fining_data.php'>manually
+    cash-in hours</a>, but this will take care of things
+    automatically. -->
+
+    <li>Hoyt may be the only house like this: if people can pay off
+    down hours with fines, but their down hours are still kept track
+    of, then you should check the box to keep a tally of hours without
+    zeroing.
+
+    <li>Wilde has a policy where not all of the down hours are fined
+    -- only some percentage.  If someone is down 5 hours, but they are
+    only fined for 3 of them, then this number should be 60, that is
+    60% of 5.
+
+    <li><a name='zero_partial'>Wilde has a policy where not all of the
+    down hours are zeroed after a fining period.  If someone who is
+    down 8 hours at the end of a fining period is still down 6 hours
+    after "zeroing," then this number should be 75, that is 75% of
+    their original down hours are still there.
+
+    </ul>
+    </ul> 
+    </ul> 
+    <li><h3>Features of tables in the
+    system</h3> <ul>
+
+  <li><a name='table_edit_features'><h4>Table editing features</h4></a>
+  The table editing interface is meant to be as spreadsheet-like
+  as possible, for ease of entry.  Here are some of the features:
+  <ul>
+
+    <li>down- and up-arrows move to the next and previous rows, and
+    page-up and page-down, move 15 rows up and down.  Enter moves to
+    the first element of the next row, while Tab moves to the next
+    element.  Shift-Enter and Shift-Tab do the appropriate reversals.
+    Control-Home and Control-End go to the top and bottom of the page.
+
+    <li>When entering a member name, there is auto-completion.  You
+    should be able to enter just the first few letters, and the name
+    will be completed.  If the correct name is not being suggested,
+    keep typing until it is.
+
+    <li>If you enter a name not in the database, the page will warn
+    you, although you will be permitted to make the entry.
+
+    <li>Edited cells are shown in red.  If you delete a row, it
+    is shown in blue.
+
+    <li>If you wish to see only rows with a specific person, you can
+    either choose their name from the drop-down box at the top of the
+    page, or press control-e while you are editing an input box with
+    their name in it.  Either way, press control-e to undo and see
+    everyone again.
+
+
+    <li>In some tables, you can sort the table by the values of a
+    column.  Currently, you must save the table first before sorting
+    it.  If you wish to sort by multiple columns, first sort by the
+    less important column, then by the more important.  Clicking on a
+    column name twice will sort it in the opposite direction.
+
+    <li>If you want to see only certain columns, uncheck the columns
+    you wish to hide at the top of the page.  You can also click on
+    Show none or Show all and then choose (or unchoose) a few columns,
+    if that is easier.  When you unclick Show none or Show all, you'll
+    be back to the original page.
+  
+    <li>To add a new row, press Add Row at the bottom of the page.  To
+    delete a row, check the Delete box.
+
+    <li>You must save your data when you are done.  When you are first
+    using this system, I recommend frequent saves to avoid losing data
+    in case there's a problem.  To save, press the left-hand button at
+    the top of the page, or press Control-s.  The status message at
+    the top of the page should change to say Table updated!  If it
+    does not, or if the cells remain red/blue, or if an error message
+    box comes back, you may have a problem.  Remain calm.  One thing
+    you should do is print this page out (saving it to your hard disk
+    may not do much good).  Try submitting it again, using the
+    left-hand button.  If things still aren't working, <a
+    href='mailto:janak@berkeley.edu'>contact me</a>.  Finally, you can
+    click on the button Update database without Javascript.  It's
+    actually quite safe, but if for some reason it doesn't work, then
+    your data may not be there when you press the back button on your
+    browser.  </ul>
+
+  <li><a name='assign_shifts_features'><h4>Assigning shifts features</h4></a>
+  <ul>
+  
+    <li>Remember to look above at the <a href='#master_shifts'>format
+    for entering shifts</a>.
+
+    <li>The spreadsheet part of the page has the same features as all
+    of the <a href='#table_edit_features'>table editing features</a>.
+
+    <li>The left-hand pane shows the house list, with the number of
+    hours each person currently has assigned.  If you double-click on
+    a person's name, a separate window comes up with their preference
+    form.  If the window that comes up is too big, resize it and leave
+    it alone -- all future clicks will open in the same window, which
+    will be the right size now.
+
+    <li>When you click into a text box to enter a person for a shift,
+    in the left-hand pane people who can't do that shift, either
+    because they have too many hours, they have a time conflict, or
+    they requested not to have that shift, are displayed in grey, with
+    a small font, and their names crossed out.  In blue is the person
+    currently assigned to the shift, in bold are the people who have
+    requested that shift.  If your house has a rating system, the
+    greener and larger someone's name is, the higher the rating they
+    gave to the shift.
+
+    <li>The left-hand pane can be sorted according to various
+    criteria.  The arrow can be used to reverse the current sort.  In
+    the case of a tie, the previous sort that you chose is used, so if
+    you choose name, and then you choose hours, it will sort by how
+    many hours are assigned, and among people with the same number of
+    hours assigned, it will sort by name.  The default is name.  The
+    others are points, date submitted, wanted, and hours.  Points is
+    only meaningful if you uploaded the house list given to you by CO.
+    If for some reason your house gives priority in shift assignment
+    to people with lots of points, this can be useful to you.  Date
+    submitted sorts by the date/time people submitted their preference
+    forms.  The last submission by a member overrides earlier
+    submission dates by that member.  Wanted sorts members by their
+    desire to do the shift you're currently focused on in the other
+    pane.  You also see this with the above feature of bolding, etc.,
+    but this may be useful too.  Finally, hours sorts by the number of
+    hours assigned to the person.
+
+    <li>If you assign a person to a shift they can't do, for whatever
+    reason, the page will warn you, although you can still assign it.
+    If it's due to a time conflict with an unwanted time, the system
+    will tell you that, and if it's because of a busy time, the system
+    will tell you that.  It will not warn you if you assign to a time
+    the member has put a question mark next to.  <a
+    href='mailto:janak@berkeley.edu'>Let me</a> know if you would like
+    that.
+  </ul>
+
+  <li><a name='table_print_features'><h4>Table printing features</h4>
+  Printing tables is much like <a href='#table_edit_features'>editing
+  them</a>.  Check and uncheck the columns until the page looks the
+  way you want.  Then click on the print button to remove extraneous
+  options and bring up a print dialog.  You can cancel the dialog if
+  you wish, and print later.  However, to get back the cute features
+  at the top of the page, you'll need to reload the page.  There may
+  be bugs with how columns are displayed.  Try hiding the browser
+  window and then bringing it up again, or resizing the window, if
+  that happens.
+
+  <li><a name='#escape_sequences'>Some parts of the site will allow
+  you to enter some text that users will see.  Often that text may
+  have parts which are not fixed -- the user's name, for instance, or
+  the current week.  When that happens, there should be a line that
+  says something like "(You can use the following escape codes to
+  insert data into this text: %current_week will insert the Current
+  week)".  When you see this, you know that if, in your text, you put
+  "This week is week %current_week," then the user will see "This week
+  is week 7," in the 7th week.  Remember to put the escape code in
+  exactly as it's written.
+
+</ul>
+<h3>Miscellaneous Tasks</h3>
+
+<ul><li><a name='#person.admin'>If a member comes to you with a
+question about their shifts, you can <a href='person.admin.php'>view
+their personal page</a>, with all their data.  Each week has a line
+giving exactly what happened that week with hours, fines, etc.  The
+current week, which hasn't finished yet, is shown at the bottom, but
+its totals are not included in the totals at the top of the page.
+
+<li><a name='fining_data'>If there is a fine coming from outside the
+system (for a blown bathroom clean, or the like), you can <a
+href='fining_data.php'>enter it</a> and it will be added to their
+fines.  Enter the date in m/d format (so June 22 is 6/22).
+
+<li><a name='#special_fining'>Sometimes a member will have a fining
+period end at a different week than the rest of the house.  This page
+allows you to set that up.  -1 indicates that the fining period takes
+place the same week as the rest of the house.  Leaving it blank means
+that this fining period is cancelled for this member.  Entering
+another week means that this fining period will take effect for this
+member at the end of that week.
+
+</ul>
+
+<a name='advanced_tasks'><h3>Advanced Tasks</h3>
+<ul>
+
+  <li><a href='backup_database.php'>Backup your database</a>
+  frequently.  This means that if you accidentally delete a week's
+  shifts, or do something else really stupid, you can <a
+  href='recover_database.php'>recover the database</a>.  Every so
+  often, you might want to <a href='delete_backup_database.php'>delete
+  an old backup if it's definitely not useful anymore</a>.
+
+  <li><a href='change_password.php'>Change your password</a>.  If you
+  need to change your password (maybe you're a new workshift manager
+  and you don't want the old workshift manager to have access to the
+  files), you can change your password.  This mainly affects the
+  prompt you get when you first go to the workshift admin pages.  Make
+  sure that you are <b>not editing any tables</b> when you change your
+  password -- you won't be able to save them!
+
+  <li><a name='view_backup'>You can <a
+  href='../public_utils/weekly_totals_print.php?getarchive'>print out
+  the weekly totals of a backed-up database</a>, or even <a
+  href='weekly_totals_update.php?getarchive'>edit the hours owed or
+  notes for a backed-up database</a>.  <a href='house_fines.php'>House
+  fines</a> are also available.  Very useful if you need to see what
+  someone's fines were at the end of a previous semester.  If
+  necessary, you can also <a
+  href='recover_backup_database.php'>recover a back up</a> if you need
+  to.
+
+  <li><a href='table_edit.wrapper.wrapper.php'>View or edit a
+  table</a> if for some reason you need direct access to a table.  You
+  should never have to use this option -- please email <a
+  href='mailto:janak@berkeley.edu'>janak@berkeley.edu</a> if you do.
+
+</ul>
+
+<ul>
+</body></html>

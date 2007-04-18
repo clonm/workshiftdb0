@@ -1,0 +1,222 @@
+   function validate_number(id) {
+     var numexp = /^[0-9]*$/;
+     return (numexp.test(document.getElementById(id).value));
+   }
+ function change_runoff_num(ii) {
+   document.getElementById("runoff_" + ii + "_none").checked = document.getElementById("runoff_" + ii + "_instant").checked = false;
+   return true;
+ }
+ function init_yesno(ii) {
+   document.getElementById('candidates_' + ii).value="yes\nno";
+   document.getElementById('num_' + ii).value = 1;
+   document.getElementById('runoff_' + ii + '_none').checked = true;
+   document.getElementById('threshold_' + ii + '_num_percent').value = 50;
+   document.getElementById('threshold_' + ii + '_percent').checked = true;
+   document.getElementById('abstain_count_' + ii).checked = true;;
+   document.getElementById('def_val_' + ii).value = 'no';
+   return false;
+ }
+ function init_approved(ii) {
+   document.getElementById('candidates_' + ii).value="Approved\nNot Approved";
+   document.getElementById('num_' + ii).value = 1;
+   document.getElementById('runoff_' + ii + '_none').checked = true;
+   document.getElementById('threshold_' + ii + '_num_percent').value = 66.6;
+   document.getElementById('threshold_' + ii + '_percent').checked = true;
+   document.getElementById('abstain_count_' + ii).checked = true;;
+   document.getElementById('def_val_' + ii).value = 'Not Approved';
+   return false;
+ }
+
+function add_race() {
+  var par = document.createElement('p');
+  par.appendChild(document.createElement('hr'));
+  var elt = document.createElement('h4');
+  var num_races = document.getElementById('num_races').getAttribute('value');
+  num_races++;
+  elt.appendChild(document.createTextNode('Race ' + num_races));
+  par.appendChild(elt);
+  spanelt = document.createElement('span');
+  spanelt.setAttribute('class','yesno');
+  elt = document.createElement('input');
+  elt.setAttribute('type','submit');
+  elt.setAttribute('value','Make it Yes/No');
+  elt.setAttribute('onclick','event.preventDefault(); init_yesno(' + num_races + ');');
+  spanelt.appendChild(elt);
+  par.appendChild(spanelt);
+  elt = document.createElement('input');
+  elt.setAttribute('type','submit');
+  elt.setAttribute('value','Make it Approved/Not Approved');
+  elt.setAttribute('onclick','event.preventDefault(); init_approved(' + num_races + ');');
+  par.appendChild(elt);
+  par.appendChild(document.createElement('br'));
+  par.appendChild(document.createTextNode("Race name: "));
+  elt = document.createElement('input');
+  elt.setAttribute('name','display_name_' + num_races);
+  par.appendChild(elt);
+  par.appendChild(document.createElement('br'));
+
+  elt = document.createElement('textarea');
+  elt.setAttribute('name','race_descript_' + num_races);
+  elt.setAttribute('id','race_descript_' + num_races);
+  elt.setAttribute('rows',5);
+  elt.setAttribute('cols',60);
+  lab = document.createElement('label');
+  lab.appendChild(document.createTextNode("Description of race (if necessary): "));
+  par.appendChild(lab);
+  par.appendChild(elt);
+  par.appendChild(document.createElement('br'));
+  
+  elt = document.createElement('textarea');
+  elt.setAttribute('name','candidates_' + num_races);
+  elt.setAttribute('id','candidates_' + num_races);
+  elt.setAttribute('rows',5);
+  lab = document.createElement('label');
+  lab.appendChild(document.createTextNode("Candidates (one per line): "));
+  par.appendChild(lab);
+  par.appendChild(elt);
+  par.appendChild(document.createElement('br'));
+  
+  elt = document.createElement('input');
+  elt.setAttribute('name','num_' + num_races);
+  elt.setAttribute('id','num_' + num_races);
+  elt.setAttribute('size',3);
+  elt.setAttribute('value',1);
+  par.appendChild(document.createTextNode("Number of spots: "));
+  par.appendChild(elt);
+  par.appendChild(document.createElement('br'));
+
+  divelt = document.createElement('div');
+  divelt.setAttribute('class','options');
+  divelt.appendChild(document.createTextNode("Options:"));
+  divelt.appendChild(document.createElement('br'));
+
+  par.appendChild(document.createTextNode("Is this just a feedback race (i.e., a VOC)?"));
+  elt = document.createElement('input');
+  elt.setAttribute('name','feedback_' + num_races);
+  elt.setAttribute('id','feedback_' + num_races + '_none');
+  elt.setAttribute('value','1');
+  elt.setAttribute('type','checkbox');
+  par.appendChild(elt);
+  par.appendChild(document.createElement('br'));
+
+  labelt = document.createElement('label');
+  labelt.setAttribute('for','runoff_' + num_races + '_none');
+  elt = document.createElement('input');
+  elt.setAttribute('name','runoff_' + num_races);
+  elt.setAttribute('id','runoff_' + num_races + '_none');
+  elt.setAttribute('type','radio');
+  elt.setAttribute('value','0');
+  elt.setAttribute('checked','true');
+  labelt.appendChild(elt);
+  labelt.appendChild(document.createTextNode('Nothing special'));
+  divelt.appendChild(labelt);
+  divelt.appendChild(document.createElement('br'));
+  labelt = document.createElement('label');
+  labelt.setAttribute('for','runoff_' + num_races + '_instant');
+  elt = document.createElement('input');
+  elt.setAttribute('name','runoff_' + num_races);
+  elt.setAttribute('id','runoff_' + num_races + '_instant');
+  elt.setAttribute('type','radio');
+  elt.setAttribute('value','1');
+  labelt.appendChild(elt);
+  labelt.appendChild(document.createTextNode('Instant runoff'));
+  divelt.appendChild(labelt);
+  divelt.appendChild(document.createElement('br'));
+  elt = document.createElement('input');
+  elt.setAttribute('name','runoff_' + num_races);
+  elt.setAttribute('id','runoff_' + num_races + '_multiple');
+  elt.setAttribute('type','radio');
+  elt.setAttribute('value','2');
+  divelt.appendChild(elt);
+  divelt.appendChild(document.createTextNode("Unranked preferences allowed?  Enter the maximum number of preferences here: "));
+  elt = document.createElement('input');
+  elt.setAttribute('name','runoff_' + num_races + '_num');
+  elt.setAttribute('id','runoff_' + num_races + '_num');
+  elt.setAttribute('size',3);
+  divelt.appendChild(elt);
+  divelt.appendChild(document.createElement('br'));
+  par.appendChild(divelt);
+
+  divelt = document.createElement('div');
+  divelt.setAttribute('class','threshold');
+  divelt.appendChild(document.createTextNode("Threshold:"));
+  divelt.appendChild(document.createElement('br'));
+  labelt = document.createElement('label');
+  labelt.setAttribute('for','threshold_' + num_races + '_none');
+  elt = document.createElement('input');
+  elt.setAttribute('name','threshold_' + num_races);
+  elt.setAttribute('id','threshold_' + num_races + '_none');
+  elt.setAttribute('type','radio');
+  elt.setAttribute('checked','true');
+  elt.setAttribute('value','0');
+  labelt.appendChild(elt);
+  labelt.appendChild(document.createTextNode('None'));
+  divelt.appendChild(labelt);
+  divelt.appendChild(document.createElement('br'));
+  elt = document.createElement('input');
+  elt.setAttribute('name','threshold_' + num_races);
+  elt.setAttribute('id','threshold_' + num_races + '_percent');
+  elt.setAttribute('type','radio');
+  elt.setAttribute('value','1');
+  divelt.appendChild(elt);
+  divelt.appendChild(document.createTextNode("More than "));
+  elt = document.createElement('input');
+  elt.setAttribute('name','threshold_' + num_races + '_num');
+  elt.setAttribute('id','threshold_' + num_races + '_num_percent');
+  elt.setAttribute('size',3);
+  elt.setAttribute('onclick','document.getElementById("threshold_' + num_races + '_percent").click()');
+  divelt.appendChild(elt);
+  divelt.appendChild(document.createTextNode("% of the vote is required"));
+  divelt.appendChild(document.createElement('br'));
+  elt = document.createElement('input');
+  elt.setAttribute('name','threshold_' + num_races);
+  elt.setAttribute('id','threshold_' + num_races + '_number');
+  elt.setAttribute('type','radio');
+  elt.setAttribute('value','2');
+  divelt.appendChild(elt);
+  elt = document.createElement('input');
+  elt.setAttribute('name','threshold_' + num_races + '_num');
+  elt.setAttribute('size',3);
+  elt.setAttribute('onclick','document.getElementById("threshold_' + num_races + '_number").click()');
+  divelt.appendChild(elt);
+  divelt.appendChild(document.createTextNode(" votes are required."));
+  divelt.appendChild(document.createElement('br'));
+  divelt.appendChild(document.createTextNode("Will abstentions count as votes for threshold purposes? "));
+  elt = document.createElement('input');
+  elt.setAttribute('name','abstain_count_' + num_races);
+  elt.setAttribute('id','abstain_count_' + num_races);
+  elt.setAttribute('type','checkbox');
+  elt.setAttribute('checked','true');
+  divelt.appendChild(elt);
+  divelt.appendChild(document.createElement('br'));
+  divelt.appendChild(document.createTextNode("Minimum number of votes cast for race to count "));
+  elt = document.createElement('input');
+  elt.setAttribute('name','num_voters_' + num_races);
+  elt.setAttribute('size',3);
+  divelt.appendChild(elt);
+  divelt.appendChild(document.createElement('br'));
+
+  divelt.appendChild(document.createTextNode("What is the default if nothing reaches the threshold? "));
+  elt = document.createElement('input');
+  elt.setAttribute('name','def_val_' + num_races);
+  elt.setAttribute('id','def_val_' + num_races);
+  elt.setAttribute('size',20);
+  divelt.appendChild(elt);
+
+  par.appendChild(divelt);
+
+  par.appendChild(document.createElement('br'));
+  par.appendChild(document.createTextNode("Can the voters add choices themselves?  (Used for things like party themes/naming lizards, etc.)"));
+  elt = document.createElement('input');
+  elt.setAttribute('name','member_add_' + num_races);
+  elt.setAttribute('type','checkbox');
+  par.appendChild(elt);
+  par.appendChild(document.createElement('br'));
+  par.appendChild(document.createTextNode("Can the voters make comments that other voters will see when they are voting?"));
+  elt = document.createElement('input');
+  elt.setAttribute('name','member_comments_' + num_races);
+  elt.setAttribute('type','checkbox');
+  par.appendChild(elt);
+  document.getElementById('num_races').setAttribute('value',num_races);
+  document.getElementById('div_races').appendChild(par);
+}

@@ -1,0 +1,22 @@
+/* as with table_edit.css, change parameters as you wish */
+TABLE {
+  font-family: Arial, Verdana, Geneva, Helvetica, sans-serif;
+  font-size: 12px;
+  color: Black;
+  border-right: solid .25px;
+  border-left: none;
+  border-top: none;
+  border-spacing: 0;
+}
+
+TD, TH { 
+border-left: solid .25px; 
+border-right: none;
+border-top: solid .25px;
+border-bottom: none;
+padding-left: 1px; 
+padding-right: 4px; 
+padding-top: 0;
+padding-bottom: 0;
+}
+

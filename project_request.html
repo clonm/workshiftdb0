@@ -1,0 +1,351 @@
+<html><head><title>Project Request</title>
+<style>
+tr.done {
+  text-decoration: line-through;
+}
+
+span.done {
+  text-decoration: line-through;
+}
+</style>
+</head>
+<body style='max-width: 700px'>
+<!-- <h2>Request and Conditions</h2>
+<p>I am asking for Cabinet to agree to hire me to complete my
+workshift database project.  (I will not be living in the USCA this
+summer, and will be in an apartment during fall, so I can no longer
+use workshift hours.  I may board at a house in the fall, in which
+case I would be happy to have my hours applied towards my boarding
+obligation.)  Below, I have a list of the <a
+href='#proposed_features'>features I would like to implement</a>, as
+well as a <a href='#completed_tasks'>list of the tasks I have already
+completed</a>, as well as my <a href='#time_log'>time log</a>.</p>
+
+<p>I would, as before, keep logs of the time I spend on each task, and
+would not bill for any time over what I spent -- these are, in other
+words, upper bounds for the time I would spend; it's possible I would
+finish some projects in less time.  I would be happy to undertake a
+select few of these, and have some kind of approval from the workshift
+managers to continue, or any other such system.  I would also be fine
+with this decision being put off until a Board meeting -- if any hours
+that I do between now and then are not approved, I will accept that.
+I do want this system to be used by the USCA for a long time, and so
+even if I'm not fully compensated, I would like to complete the job.
+However, if not compensated, my timeline for completion will be
+longer, since I can then only work on the system in my spare time, and
+I may not be able to add all the desired features.</p>
+
+If given these jobs, I can guarantee that they will all be completed
+before the start of the 2007 spring semester.  <a
+href='http://www.usca.org/images/costaff/vicki.jpg'>Vicki</a>
+mentioned that it is important that this site be self-sustaining, so
+that it lasts after I leave.  There are nine houses left to be brought
+into the system, and so I don't think I will be able to wash my hands
+of things before the majority of them have joined, especially Cloyne
+(CZ is planning to join this semester).  However, I hope to bring
+almost all of them in by this coming fall, and so the spring will be a
+good time to see how the site works without me.  I should also mention
+that I will almost certainly be at Berkeley for another two years, so
+that I will be available for consultation and training for that time.
+-->
+<a name='proposed_features'><h2>Proposed Features</h2>
+
+<p>Here is a list of features I would like to add/tasks I would like to
+complete and the hours associated with each.  I should note that every
+task up to the dynamically-generated weekly sheets one is something
+that several workshift managers have requested.</p>
+
+<table>
+<tr><th>Task</th><th>Maximum hours estimated</th></tr>
+<tr><td><a href='#enter_houses'>Enter house data for houses just now
+joining the system, and guide workshift managers through the
+process</a></td><td>2 per house</td>
+<tr class='done'><td><a href='#descript'>Add workshift descriptions to the
+site (clickable, etc.)</a></td><td>2</td></tr>
+<tr class='done'><td><a href='#signoff'>Add CZ-style signoff sheets</a></td><td>1.5</td></tr>
+<tr class='done'><td><a href='#houselist'>Add automatic houselist updating
+from CO terminals</td><td>3</td></tr>
+<tr><td><a href='#cashing'>Add cashing-in hours functionality, better
+fining entry interface</a></td><td>4</td></tr>
+<tr class='done'><td><a href='#fining'>Make fining period entry more user-friendly</a></td><td>.75</td></tr>
+<tr class='done'><td><a href='#kngpref'>Add Kingman-style preference forms</a></td><td>8</td></tr>
+<tr class='done'><td><a href='#timepref'>Add multi-availability to preference forms</a></td><td>3</td></tr>
+<tr><td><a href='#sorting'>Add multi-sortable sidebar in assign_shifts</a></td><td>3</td></tr>
+<tr class='done'><td><a href='#owed'>Add owed hours for whole semester to weekly_totals_update</a></td><td>1</td></tr>
+<tr><td><a href='#onlinesignoff'>Add ability for users to sign off of shifts online</a></td><td>6</td></tr>
+<tr class='done'><td><a href='#help'>Add context-sensitive help file to every page and have up-to-date help for every page</a></td><td>4</td></tr>
+<tr class='done'><td><a href='#weekly'>Add dynamically-generated weekly sheets</a></td><td>.75</td></tr>
+<tr><td><a href='#bugfix'>Bug fixing, bullet-proofing, full commenting</a></td><td>10</td></tr>
+<tr><td><a href='#elections'>Add administrative interface for running online elections</a></td><td>3</td></tr>
+<tr><td><a href='#autoassign'>Write auto-assigning program which makes an initial effort to assign shifts</a></td><td>15</td></tr>
+</table>
+<!-- The total number of hours I am requesting is 83.  However, as I said
+above, I would be fine with a lesser number of hours to start
+implementing these features.  In particular, the last 18 hours are for
+features that are not in general request yet, and some other features
+have work-arounds even if they're not yet implemented.  I think that,
+if there is reluctance to give the full number of hours, that 50 hours
+would allow me to implement the features that would enable every house
+to use the system, although, when those features are finished and
+being used, I will probably return so that I can finish the remaining
+ones, assuming that workshift managers still want them. -->
+<hr>
+Below are more detailed descriptions of each of the above:
+<ul>
+
+<li><a name='enter_houses'>New houses (of which there are nine), need
+to have their list of workshifts entered.  As well, workshift managers
+may have questions for me when they start to use the system.
+
+<li>
+<span class='done'><a name='descript'>Several workshift managers have requested having descriptions of the
+workshifts available online, which users could access.  Users would be
+able to look at these descriptions from the front page, when filling
+out their preference forms, or anyplace a shift is listed.  This job
+requires a form for the workshift managers to upload/modify
+descriptions, a change to the database table containing the
+workshifts, a page which displays the descriptions, and changes to
+preferences.php, index.php, and person.php, the places where a link to
+that page would be put.</span>
+
+<li><span class='done'><a name='signoff'>CZ and several other houses have a signoff sheet
+which has all the days across the top, not one sheet per day or two
+days.  Workshift managers would have the option of printing out
+signoff sheets in either the current format or the CZ format.  This
+job requires adding functionality in signoff.php to generate the page,
+and figuring out how best to duplicate the CZ design.</span>
+
+<li><span class='done'><a name='houselist'>Currently, the workshift managers must enter
+the houselist into the system every semester.  Until the CO systems
+are updated, the easiest way to get the houselists out is to email
+them.  I would like to set up an email address which CO can email the
+houselists to (upon request of the workshift manager).  When that
+address received the houselist, it would automatically update the
+database.  This job requires setting up an address to run a script
+when it receives messages, and figuring out how to parse the format
+outputted by the CO software into data that can be easily uploaded.</span>
+
+<li><a name='cashing'>Stebbins, and several other houses, allow
+members to cash in up hours to pay back fines.  Currently, the system
+allows the workshift manager to enter credits/debits, but will not
+alter the up/down hours.  Thus, if a member is up 4 hours, they can
+cash in those 4 hours to pay back 4*11.70 in fines, but the system
+won't say that they are up 0 hours now, it will still say up 4.  The
+workshift manager must manually add an entry in the weekly sheets
+saying, "cashed in hours: -4 hours".  With the change, workshift
+managers could, when entering the credit, check a box to say that this
+was the result of cashing in hours.  An entry would be automatically
+made, and kept synchronized.  As well, workshift managers could choose
+to have any up hours at the end of the semester automatically cashed
+in, up to the total fines along with any fines already paid.  This job
+requires modifying the fining_data table, adding an intermediate page
+when processing fining_data.php, modifying the fining pages: the
+weekly_totals pages and person.php.
+
+<li><span class='done'><a name='fining'>Currently, the fining period entry has default
+numbers, and those numbers must be changed for each fining period.
+With the change, users could click a button to make this fining period
+like the last one.  This job requires modifying
+weekly_totals_consts.php to add javascript.</span>
+
+<li><span class='done'><a name='kngpref'>Kingman, and several other houses, want members
+to rank every shift with a number/grade.  However, the shifts are
+often given generally, like "Dishes," "Sweeping," as opposed to the
+specific shift.  This change would let the workshift manager decide if
+they want people to use the current system, or if they want to break
+their shifts up into categories, all of which people would be required
+to rank.  This job requires modifying preferences.php,
+record_prefs.php, (the preferences entry pages), master_shifts.php,
+assign_shifts.php, (the shift assignation pages), and the database
+table with the workshifts.</span>
+
+<li><span class='done'><a name='timepref'>Many houses allow members to
+have multiple possibilities for a time -- preferred, available,
+unavailable, etc.  This change would allow members to enter such
+things in their preference forms, as opposed to just
+available/unavailable.  This job requires research into how best to
+render this in HTML, modifying preferences.php and record_prefs.php,
+modifying assign_shifts.php and show_prefs.php.</span>
+
+<li><a name='sorting'>When assigning shifts, various houses use
+different methods of priorities.  Some go by the date the form was
+submitted, while others use seniority, and others nothing at all.
+This change would sort the sidebar which is there when the workshift
+manager assigns shifts in one of four ways -- alphabetically, by date
+submitted, by seniority (sub-sorted by the previously used sort), or
+by interest in the shift (sub-sorted by the previously used sort).
+This job requires modifying assign_shifts.php to add javascript to
+accomplish the sorting, and restructuring the page to allow the
+sorting.
+
+<li><span class='done'><a name='owed'>Currently, the workshift manager can only modify
+the hours owed for any member up to the current week.  This change
+would add columns to weekly_totals_update.php for every week's owed
+hours, which would then allow the workshift manager to change the
+entire semester's hours for a person, or the default owed hours for a
+week that hasn't happened yet.  This job requires modifying
+weekly_totals_update.php and weekly_totals.inc.php to output the extra
+columns.</span>
+
+<li><a name='onlinesignoff'>Currently, users still sign off of shifts
+manually, and then workshift managers enter the signoffs into the
+database.  Some houses have expressed interest in letting the users
+sign themselves off online, entering the verifier.  This change would
+let workshift managers do that if they chose.  It would also email
+some percentage of the verifiers (choosable by the workshift manager)
+to check that the shift was actually done.
+
+<li><span class='done'><a name='help'>Currently, there is a fairly complete help file.
+However, there isn't a link to it on every page.  This change would
+add a link to it on every page, and the link would go specifically to
+help about that page.  As well, this would include documenting all the
+above changes.</span>
+
+<li><span class='done'><a name='weekly'>Currently, after the workshift manager has
+assigned shifts, they must then generate the weekly sheets for the
+weeks they wish that assignment to apply to.  If the manager then
+tries to view a week that doesn't exist yet, they get an error.  This
+change would ask the workshift manager if they wanted to generate the
+weekly sheet from the current shift assignments when they tried to
+view the non-existent sheet.  This job requires modifying week.php and
+possibly make_weeks.php since it will be called by week.php</span>
+
+<li><a name='bugfix'>This involves me reading through every line of
+code and commenting as much as I possibly can.  I did this before this
+semester, but parts have become out of date from changes I've made
+this semester, as well as from new techniques I've learned.  In
+addition, the bullet-proofing refers to changes I've already made in
+most of the site, but may not have done everywhere, which ensure that
+no user input can possibly hack the site or cause any data errors.
+
+<li><a name='elections'>I have written an online elections module,
+which Stebbins has used for the past year.  However, there isn't
+currently an administrative interface for setting up and administering
+elections -- I do it manually.  There used to be one, but it didn't
+survive the three migrations the system had to do last year.  I would
+like to add it back, so that every house can run online elections,
+with instant runoff voting, etc., even if the President doesn't have
+computer skills.
+
+<li><a name='autoassign'>This is a very speculative project, but it
+would help workshift managers in the hardest part of the job by
+assigning as many shifts as possible automatically, and letting the
+workshift manager resolve intractable conflicts.  I wrote an early
+version of this program, but the assignations were done in a silly
+way, and so the program was far too slow ever to complete.  I don't
+know whether a better method would work, but I think it might prove
+useful, even if it's only able to assign some of the shifts.
+</ul>
+<!--
+<a name='completed_tasks'></a><h2>Completed Tasks</h2>
+These are some of the features that I added this semester, in addition
+to bug-fixing, migrating servers, getting houses online and supporting
+them, as well as features, like elections and discovering security
+holes on usca.org, that weren't part of my mandate.
+
+<table>
+<tr><td>Enabling site to accept member
+names/workshift names with any characters in
+them</a></td><td>2</td></tr>
+<tr><td>Letting workshift manager email whole
+house</a></td><td>.5</td>
+<tr><td>Adding functionality to hide all or
+no columns in tables, useful when there are many columns</a><td>1</td>
+<tr><td>Added default column hiding for
+several pages so they were more readable</a><td>1</td>
+<tr><td>Made backup and restore scripts to ensure
+data protection, along with export to Excel</a></td><td>2</td></tr>
+<tr><td>Allowed workshift manager to view all
+shifts of any person at a glance</a></td><td>1</td>
+<tr><td>Made members' personal pages look nicer, and made a nice front
+page showing every users' data in a colorful way</td><td>2</td></tr>
+<tr><td>Added modified date-checking function, allowing system to run
+faster since it could avoid regenerating tables</td><td>3</td></tr>
+<tr><td>Improved fining capabilities, so that fining periods are
+stored in system, and fines are calculated
+automatically</td><td>15</td></tr>
+<tr><td>Made tables dynamically size to correct
+width</td><td>1</td></tr>
+<tr><td>Allowed workshift manager to change everyone's obligations for
+a given week, or change someone's obligations for every
+week</td><td>4</td></tr>
+<tr><td>Let workshift manager put any columns they want into signoff
+sheets, choose to have pre-filled-in names, and header text</td><td>5</td></tr>
+<tr><td>Let workshift manager make notes by every shift, viewable by
+member</td><td>1</td></tr></table>
+
+<a name='time_log'></a><h2>Time Log</h2>
+
+I have spent over 86 hours this semester on the system, which is over
+4.5 hours per week in an 18-week semester, although I was only given
+Central level hours for 16 of those weeks.  Counting work on the
+elections system, I did over 100 hours of work this semester on the
+system.  Below is my work log for the previous semester.
+
+<table>
+<tr><td>Date</td><td>Task</td><td>Hours</td></tr>
+<tr><td>10-Jan</td><td>started migrating</td><td>1</td></tr>
+<tr><td>11-Jan</td><td>migrating to new server</td><td>10</td></tr>
+<tr><td>12-Jan</td><td>presentation, discussion with terry</td><td>1</td></tr>
+<tr><td>13-Jan</td><td>setup CO machine, figured out speed issue on new site, fixed it, did change_password</td><td>8</td></tr>
+<tr><td>15-Jan</td><td>more change_password -- checking old one</td><td>2</td></tr>
+<tr><td>16-Jan</td><td>fixed up preferences.php, record_prefs.php was htmlencoded</td><td>6</td></tr>
+<tr><td>17-Jan</td><td>fixed Stebbins password issue, emailed all workshift managers</td><td>0.5</td></tr>
+<tr><td>18-Jan</td><td>fixed hip-house name, dealt with column widths in table_edit, htmlencoded table_edit</td><td>2</td></tr>
+<tr><td>19-Jan</td><td>more htmlencode -- preferences, record_prefs, master_shifts, table_edit</td><td>1.5</td></tr>
+<tr><td>20-Jan</td><td>fixed restore_dump.php and create_zip.php to work on new server</td><td>1</td></tr>
+<tr><td>21-Jan</td><td>presentation to cabinet</td><td>1</td><td>*</td></tr>
+<tr><td>21-Jan</td><td>create_zip.php, restore_dump.php, export_csv.php</td><td>2</td></tr>
+<tr><td>21-Jan</td><td>presentation to board</td><td>0.5</td><td>*</td></tr>
+<tr><td>22-Jan</td><td>discussion with kingman workshift manager about features</td><td>1</td></tr>
+<tr><td>22-Jan</td><td>permissions on cgi files for caching</td><td>1</td></tr>
+<tr><td>22-Jan</td><td>hip house workshift setup</td><td>1</td></tr>
+<tr><td>22-Jan</td><td>got rid of href=who, fixed owed_default, discovered union bug and rewrote make_weeks</td><td>1</td></tr>
+<tr><td>22-Jan</td><td>fixed space-name problem for castro, ltrim in update_house, wrote to hip, hoy</td><td>0.5</td></tr>
+<tr><td>23-Jan</td><td>fixed bug in make_weeks to check for numeric, added master_shifts bold/grey</td><td>1</td></tr>
+<tr><td>23-Jan</td><td>added checkboxes to hide all, no columns, added total_hours in person.php, added default column hiding in weekly_totals, weekly_totals_update, fixed bug in master_shifts</td><td>2</td></tr>
+<tr><td>29-Jan</td><td>responding to emails, fixing hoyt's system</td><td>1.5</td></tr>
+<tr><td>30-Jan</td><td>fixing stupid, stupid mistake</td><td>0.25</td></tr>
+<tr><td>31-Jan</td><td>replying to ridge manager, adding name option for signouts</td><td>0.75</td></tr>
+<tr><td>31-Jan</td><td>entered ridge's data, emailed manager</td><td>1</td></tr>
+<tr><td>1-Feb</td><td>replying to Hoyt manager</td><td>0.5</td></tr>
+<tr><td>3-Feb</td><td>replying to hip workshift manager</td><td>1</td></tr>
+<tr><td>3-Feb</td><td>researching security: suexec</td><td>2</td></tr>
+<tr><td>4-Feb</td><td>researching security: suexec</td><td>1</td></tr>
+<tr><td>4-Feb</td><td>security flaw</td><td>3</td></tr>
+<tr><td>7-Feb</td><td>election setup</td><td>1.5</td></tr>
+<tr><td>7-Feb</td><td>house_info fixing, show_emails</td><td>1</td></tr>
+<tr><td>8-Feb</td><td>weekly_totals_update</td><td>2</td></tr>
+<tr><td>9-Feb</td><td>weekly_totals_update</td><td>3</td></tr>
+<tr><td>9-Feb</td><td>responding to emails -- hoyt and hip</td><td>0.5</td></tr>
+<tr><td>10-Feb</td><td>fixing backslash form problem, emailing hip manager</td><td>3</td></tr>
+<tr><td>12-Feb</td><td>emailing hip, hoy, stb</td><td>0.5</td></tr>
+<tr><td>14-Feb</td><td>election administration</td><td>3</td></tr>
+<tr><td>15-Feb</td><td>person.php viewing by admin, notes col for weeks, nicer person.php</td><td>1.5</td></tr>
+<tr><td>16-Feb</td><td>added modified_dates, checking of that for weekly_totals aux table creation</td><td>1</td></tr>
+<tr><td>16-Feb</td><td>redid front page for users, emailed workshift managers</td><td>2</td></tr>
+<tr><td>19-Feb</td><td>added checking for modified dates</td><td>0.5</td></tr>
+<tr><td>20-Feb</td><td>responding to emails, aca</td><td>0.2</td></tr>
+<tr><td>21-Feb</td><td>fixing modified dates a bit</td><td>0.5</td></tr>
+<tr><td>6-Apr</td><td>rewrote election_results.php to use elections_options_options</td><td>4.5</td></tr>
+<tr><td>6-Apr</td><td>more with election_results, create_election</td><td>3</td></tr>
+<tr><td>8-Apr</td><td>voting.php</td><td>6</td></tr>
+<tr><td>9-Apr</td><td>more voting.php</td><td>3</td></tr>
+<tr><td>10-Apr</td><td>finished voting.php, put member_comments, got election_results.php working for social, added textarea to table_edit.php, let table_edit.wrapper.php work for anything with administrator</td><td>5</td></tr>
+<tr><td>12-Apr</td><td>showed vicki and monique workshift system</td><td>1</td></tr>
+<tr><td>24-Apr</td><td>started to work on fining periods -- did weekly_totals_conts.php</td><td>1</td></tr>
+<tr><td>1-May</td><td>fixed bug with week_ii_totals because mysql 4.0 doesn't have proper create tables</td><td>1</td></tr>
+<tr><td>2-May</td><td>started entering CZ data</td><td>0.5</td></tr>
+<tr><td>3-May</td><td>continuing entering CZ data</td><td>1</td></tr>
+<tr><td>4-May</td><td>finished entering CZ data, fixed bug with <enter> going to hidden field</td><td>1.5</td></tr>
+<tr><td>6-May</td><td>did work on fining periods -- started on weekly_totals.inc.php</td><td>2</td></tr>
+<tr><td>7-May</td><td>kept on with fining periods, almost finished weekly_totals.inc.php</td><td>2</td></tr>
+<tr><td>8-May</td><td>finished fining, as far as I know, except for admin interface prettiness</td><td>11</td></tr>
+<tr><td>9-May</td><td>fixed weekly_totals_update, did some correspondence</td><td>0.75</td></tr>
+<tr><td>17-May</td><td>presentation for workshift managers</td><td>0.5</td></tr>
+<tr><td>17-May</td><td>fixed weekly_totals_update again</td><td>0.3</td></tr>
+<tr><td>17-May</td><td>emailing workshift managers</td><td>0.5</td></tr>
+</table>
+-->
+</body>
+</html>

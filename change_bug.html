@@ -1,0 +1,54 @@
+<html><head><title>Change bug</title>
+
+<script type="text/javascript">
+
+window.onkeyup=process_keyup;
+window.onkeydown=process_keydown;
+
+function process_keyup(targ) {
+  if (targ.value == 'a') {
+    targ.value = 'apple';
+  }
+  return true;
+}
+
+function process_keydown(targ) {
+  if (targ.value == 'b') {
+    targ.value = 'bpple';
+  }
+  return true;
+}
+
+function process_mouseclick(elt) {
+  if (elt.value == 'm') {
+     elt.value = 'mpple';
+    }
+  return true;
+    }
+
+function change_handler(e) {
+alert("change handler fired");
+return true;
+}
+</script>
+</head><body>
+<h3>Demonstration of onchange bug in Firefox 2</h3>
+<ul>
+<li>Type the character 'c' (without quotes) into the text box, and then
+click out of the text box, and the change handler will fire.
+
+<li>Erase the 'c' and type 'a' and the key processor will change it to
+'apple', which for some reason prevents the change handler from firing
+when you leave the text box in Firefox 2.
+<li>Erase the contents, then type the character 'b' and then hit a
+"non-printing" key, like the delete key.  The text will change to
+'bpple' and the change handler will not fire when you leave the text
+box.
+<li>Erase the contents, then type the character 'm' and then click in
+the box with your mouse.  The text will change to 'mpple' and the
+change handler will not fire when you leave the text box.
+</ul>
+<form> <input id='unique_id' onchange='change_handler(this);'
+onclick='process_mouseclick(this)' onkeyup='process_keyup(this)'
+onkeydown='process_keydown(this)'>
+</form> </body> </html>

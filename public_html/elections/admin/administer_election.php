@@ -1,0 +1,169 @@
+<?php
+require_once('default.inc.php');
+?>
+<html><head><title>Administer election</title></head><body>
+
+<?php
+if (!authorized_user($member_name,'president')) {
+  exit("You are not authorized to use this page.");
+}
+
+if (!array_key_exists('election_name',$_REQUEST)) {
+  $elections = array();
+  $res = $db->Execute('SELECT ' . bracket('election_name') . ' FROM ' .
+                      bracket('elections_record'));
+  while ($row = $res->FetchRow()) {
+    $elections[] = $row['election_name'];
+  }
+  if (!count($elections)) {
+    exit("No elections to administer!  " .
+         "Go <a href='create_election.php'>create one</a>.");
+  }
+    ?>
+<form method='GET' action='<?=$_SERVER['REQUEST_URI']?>'>
+<select name='election_name'>
+   <?php foreach ($elections as $election) {
+     ?>
+     <option><?=escape_html($election)?>
+     <?php 
+   }
+  ?>
+</select>
+<input type='submit' value='Submit'>
+</form></body></html>
+    <?php exit; 
+}
+$election_name = $_REQUEST['election_name'];  
+
+if (array_key_exists('finalize_election',$_REQUEST)) {
+  $row = $db->GetRow("select count(*) as ct from `elections_record` " .
+                     "where `election_name` = ? and " .
+                     "`end_date` <= unix_timestamp() ",
+                     array($election_name));
+  if ($row['ct'] != 1) {
+    exit("This election cannot be finalized.");
+  }
+  $db->Execute("UPDATE elections_record SET anon_voting = 2+`anon_voting` WHERE " .
+               "election_name = ?",array($election_name));
+    ?>
+All done! <a href='../election_results.php?election_name=<?=
+escape_html(urlencode($_REQUEST['election_name']))?>'>election_results.php</a> has the results.
+<?php
+  exit;
+}
+if (array_key_exists('count_voter',$_REQUEST) &&
+    $_REQUEST['count_voter']) {
+  $row = $db->GetRow("select count(*) as ct from `voting_record` where " .
+                     "`member_name` = ? and `election_name` = ?",
+                     array($_REQUEST['voter_name'],
+                           $election_name));
+  if ($row['ct']) {
+    exit("Error!  This person is listed as already having voted</body></html>");
+  }
+  $db->debug = true;
+  $db->Execute("INSERT INTO voting_record VALUES (NULL,?,?,?)",
+               array($_REQUEST['voter_name'],
+                     $election_name,
+                     1)); 
+  exit("</body></html>");
+}
+if (array_key_exists('delete_election',$_REQUEST)) {
+  $witnesses = require_witnesses(2);
+  $db->Execute("lock tables `current_voting_lock` write");
+  $db->StartTrans();
+  foreach (array('votes','voting_record','elections_record','elections_attribs',
+                 'elections_log') as $table) {
+    $db->Execute("delete from `$table` where `election_name` = ?",
+                 array($election_name));
+  }
+  elections_log($election_name,null,'election_deleted',null,join("; ",$witnesses));
+  $db->CompleteTrans();
+  $db->Execute("unlock tables");
+  exit("Deleted!</body></html>");  
+}
+
+$db->debug = false;
+$res = $db->Execute("select `member_name`, `manual_entry` from voting_record " .
+                   "where election_name = ? order by `member_name`",array($election_name));
+echo "List of voters for $election_name:<p>";
+?>
+<table border=1>
+<tr><td>Member name</td><td>Manually entered?</td></tr>
+<?php
+$ii = 0;
+$houselist = array_flip(get_houselist());
+while ($row = $res->FetchRow()) {
+?>
+ <tr><td><?=$row['member_name']?></td><td><?=$row['manual_entry']?'yes':'no'?></td></tr>
+<?php
+    unset($houselist[$row['member_name'] ]);
+    $ii++;
+}
+?>
+</table>
+(<?=$ii?> voters so far)<p>
+Email addresses and room numbers of members who haven't voted:<br>
+<?php
+#';
+$res = $db->Execute("select `member_name`, `room`, `email` from `house_info` order by `member_name`");
+while ($row = $res->FetchRow()) {
+  if (array_key_exists($row['member_name'],$houselist)) {
+    $member_name = $row['member_name'];
+    $names = explode(', ',$member_name);
+    if (count($names) > 1) {
+      $member_name = $names[1] . ' ' . $names[0];
+      if (count($names) > 2) {
+        $member_name = join(', ',array_slice($names,2));
+      }
+    }
+    print escape_html($member_name) . " (" . escape_html($row['room']) . ") &lt;" .
+      escape_html($row['email']) . "&gt;,<br>\n";
+  }
+}
+?>
+ Enter a member who voted manually (so they can't vote online as well):
+<form action='<?=$_SERVER['REQUEST_URI']?>' method='post'>
+<select name='voter_name'>
+<option>
+<?php
+foreach (array_keys($houselist) as $person) {
+print "<option>" . escape_html($person) . "\n";
+}
+?>
+</select><br/>
+<input type=hidden name='count_voter' value=1><br>
+<input type=hidden name='election_name' value='<?=$_REQUEST['election_name']?>'>
+<input type=submit value='Record voter'>
+</form><p>
+<hr>
+<a href='create_election.php?modify_election&election_name=<?=
+                                    escape_html(urlencode($election_name))?>'>
+Modify election</a><p>
+<?php   $row = $db->GetRow("select `anon_voting` from elections_record " .
+                     "where election_name = ? and end_date <= unix_timestamp()",
+array($election_name));
+  if (is_empty($row)) {
+    exit("</body></html>");
+  }
+if ($row['anon_voting'] < 2) {
+?>
+<a href='../voting.php?enter-ballot&election_name=<?=escape_html(urlencode($_REQUEST['election_name']))?>'>Enter a paper ballot</a><p>
+If all votes have been input and you're ready to make the results
+public, <form action='<?=$_SERVER['REQUEST_URI']?>' method='post'>
+<input type=hidden name='election_name' value='<?=$_REQUEST['election_name']?>'>
+<input type=hidden name='finalize_election' value=1>
+<input type=submit value='Finalize the election'>
+</form>
+<?php
+                                    }
+else {
+?>
+<form action=<?=escape_html($_SERVER['REQUEST_URI'])?>' method='get'>
+<input type=hidden name='election_name' value='<?=escape_html($_REQUEST['election_name'])?>'>
+<input type=checkbox name='delete_election'>Delete election?<br>
+<input type=submit value='Delete election'></form>
+<?php
+}
+?>
+</body></html>
+

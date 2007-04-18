@@ -1,0 +1,16 @@
+php_value zlib.output_compression 1
+php_value zlib.output_compression_level 6
+php_value magic_quotes_gpc off
+php_value magic_quotes_sybase 0
+#this is incredibly important.  Without it, the user could inject whatever
+#variables they want into the script, and if some variable wasn't set
+#somewhere, it could be set by the user, and potentially lead to a security
+#hole.  No decent php setup should have this on, but apparently ours does.
+php_value register_globals off
+
+RewriteEngine on
+RewriteRule ^/workshift/(.*) http://workshift.usca.org/$1 [L,R]
+
+Options +ExecCGI
+AddHandler cgi-script cgi
+AddHandler cgi-script .sh
