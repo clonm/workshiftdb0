@@ -15,7 +15,6 @@
 // | Authors: Aidan Lister <aidan@php.net>                                |
 // +----------------------------------------------------------------------+
 //
-// $Id: stripos.php,v 1.2 2007/04/23 01:45:17 kanaj Exp $
 
 
 /**
@@ -25,7 +24,6 @@
  * @package     PHP_Compat
  * @link        http://php.net/function.stripos
  * @author      Aidan Lister <aidan@php.net>
- * @version     $Revision: 1.2 $
  * @since       PHP 5
  * @require     PHP 4.0.0 (user_error)
  */
