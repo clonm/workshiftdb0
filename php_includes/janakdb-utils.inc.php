@@ -810,7 +810,7 @@ function user_timestamp($sec,$min,$hr,$day,$mo,$yr) {
 
 //Puts a help link at top of each admin page, when called
 function print_help($section=null,$span=false) {
-  global $real_username,$bug_report_url,$feature_request_url;
+  global $real_username,$bug_report_url,$feature_request_url,$project_url;
   //public_utils has no help file, so we have to link back to admin
   $public_utils = split('/',$_SERVER['REQUEST_URI']);
   if (count($public_utils) > 2 &&
@@ -829,7 +829,7 @@ function print_help($section=null,$span=false) {
     escape_html($bug_report_url) .
     "'>Submit Bug</a>&nbsp;&nbsp;<a href='" .
     escape_html($feature_request_url) .
-    "'>Submit Feature Request</a></" .
+    "'>Submit Feature Request</a>&nbsp;&nbsp;<a href='" .
     escape_html($project_url) .
     "'>Sourceforge Project Page</a></" .
     ($span?'span':'div') . ">";
