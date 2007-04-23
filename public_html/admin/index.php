@@ -63,7 +63,6 @@ else {
 Submit Bug</a>&nbsp;&nbsp;
 <a href='http://sourceforge.net/tracker/?func=add&group_id=191164&atid=936275'>
 Submit Feature Request</a>&nbsp;&nbsp;
-
 <a href='http://sourceforge.net/projects/workshiftdb0/'>
 Sourceforge Project Page</a>
 <br/>
