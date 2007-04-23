@@ -9,7 +9,7 @@ else {
   $member_name = null;
 }
 ?>
-<form action='<?=escape_html($_SERVER['REQUEST_URI'])?>' method=POST>
+<form action='<?=this_url()?>' method=POST>
    Name: <select name='member_name'>
 <OPTION>
 <?php
