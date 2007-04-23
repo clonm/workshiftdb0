@@ -1,5 +1,5 @@
 <?php
-//this page is included when a login is needed, so require_once not hit often
+//page included when a login is needed, so require_once not hit that often
 require_once('default.inc.php');
 $houselist = get_houselist();
 if (array_key_exists('member_name',$_REQUEST)) {
