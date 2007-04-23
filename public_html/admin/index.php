@@ -62,7 +62,11 @@ else {
 <a href='http://sourceforge.net/tracker/?func=add&group_id=191164&atid=936272'>
 Submit Bug</a>&nbsp;&nbsp;
 <a href='http://sourceforge.net/tracker/?func=add&group_id=191164&atid=936275'>
-Submit Feature Request</a><br/>
+Submit Feature Request</a>&nbsp;&nbsp;
+
+<a href='http://sourceforge.net/projects/workshiftdb0/'>
+Sourceforge Project Page</a>
+<br/>
 <h4>Read the help for how to get started.</h4>
 
 This site will not work properly with Internet Explorer -- please use
