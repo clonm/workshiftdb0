@@ -18,6 +18,7 @@ $admin_email = 'janak@berkeley.edu';
 //this file.
 $bug_report_url = 'http://sourceforge.net/tracker/?func=add&group_id=191164&atid=936272';
 $feature_request_url = 'http://sourceforge.net/tracker/?func=add&group_id=191164&atid=936275';
+$project_url = 'http://sourceforge.net/projects/workshiftdb0/';
 
 ////////////  END OPTIONS THAT NEED TO BE CHANGED ON SITE CHANGES //////////
 

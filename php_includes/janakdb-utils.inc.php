@@ -830,6 +830,8 @@ function print_help($section=null,$span=false) {
     "'>Submit Bug</a>&nbsp;&nbsp;<a href='" .
     escape_html($feature_request_url) .
     "'>Submit Feature Request</a></" .
+    escape_html($project_url) .
+    "'>Sourceforge Project Page</a></" .
     ($span?'span':'div') . ">";
 }
 
