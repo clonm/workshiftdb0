@@ -26,7 +26,6 @@ function hours_of(elt) {
 
 //return all info about a workshift element -- shift name, day (as a number),
 //start time, end time, and hours it's worth
-var temptemp = 0;
 function workshift_of(elt) {
   var row = elt.parentNode.parentNode.childNodes;
   var elts = get_cell(elt);
@@ -125,7 +124,6 @@ function shift_string(workshift) {
   return workshift[0] + workshift[1] + workshift[2] + workshift[6];
 }
 
-var temptemp = 0;
 //assign a shift to a member, or remove a shift from a member, depending if
 //addshift is true or false.  silent says whether can_do() warns about problems.
 function assign_shift(member, workshift, addshift, silent) {
@@ -377,7 +375,6 @@ function hours_change(elt,workshift,prev_val) {
 //handler in table_edit.php.  Note that offer_options is a dummy unless this
 //is a frame in assign_shifts.php.  If this is a frame, the other frame should
 //only have names which can do this shift, and they should be formatted.
-var temptemp = 0;
 function focus_handler(elt) {
   if (!elt.style && elt.target) {
     elt = elt.target;
@@ -478,14 +475,12 @@ function change_handler(elt) {
               changed += dayslist[jj-3];
             }
           }
-          alert('Grayed-out ' + changed);
         }
         else {
           wklng_elt = get_elt_by_id('cell-' + coords[0] + '-' + 3);
           if (!get_value(wklng_elt)) {
             set_value(wklng_elt,dummy_string);
             change_handler(wklng_elt);
-            alert('Grayed-out Weeklong');
           }
         }
       }
@@ -507,7 +502,6 @@ function blur_handler(elt) {
 function initialize_master_shifts() {
   //go through the whole document, updating all the shifts
   //var num_rows = rows_array.length;
-  var temptemp = 0;
   for (var ii = 0; ii < num_rows; ii++) {
     var cur_row = rows_array[ii];
     var workshift;
@@ -581,7 +575,6 @@ function autoassign() {
       }
     }
   }
-  var temptemp = 0;
   //set up order for each person
   for (mem in master_shift_order) {
     var shift_copy = shift_copy_master.concat();
@@ -629,8 +622,8 @@ function autoassign() {
     }
   }
   shift_order = new Array();
-  for (temptemp in master_shift_order) {
-    shift_order[temptemp] = master_shift_order[temptemp].concat();
+  for (ii in master_shift_order) {
+    shift_order[ii] = master_shift_order[ii].concat();
   }
   cur_history = new Array();
   max_history = new Array();
