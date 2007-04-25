@@ -1,6 +1,8 @@
 <?php
 require_once('default.inc.php');
 
+create_special_fining();
+
 function create_master_shifts () {
   global $db;
   //static so we know if we've tested for existence before
@@ -610,7 +612,7 @@ CREATETABLE
 function create_special_fining() {
   global $db;
   static $done = false;
-  if (true) {
+  if (!$done) {
     if (!table_exists('special_fining')) {
       $done = $db->Execute(
 <<<CREATETABLE
