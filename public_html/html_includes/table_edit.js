@@ -598,7 +598,24 @@ function name_check(elt) {
   return true;
 }
 
-var temptemp = 0;
+
+//firefox_2_hack because of bug with programmatic changes stopping
+//onchange from firing.  https://bugzilla.mozilla.org/show_bug.cgi?id=355367
+var firefox_2_hack = false;
+var firefox_2_hack_is_firefox = navigator.userAgent.indexOf('Firefox');
+if (firefox_2_hack_is_firefox != -1) {
+  //7 is length of 'Firefox'
+  var firefox_2_hack_version = 
+    parseFloat(navigator.userAgent.substring(firefox_2_hack_is_firefox+7+1));
+  //bug is scheduled (as of 4/2007) for removal in Firefox 3
+  //if it isn't, this code will have to be changed.
+  if (firefox_2_hack_version >= 2 && firefox_2_hack_version < 3) {
+    firefox_2_hack = true;
+  }
+}
+var firefox_2_hack_value = null;
+var firefox_2_hack_already_changed = false;
+
 //if nothing else is registered, this is called on blurs
 function default_blur_handler(elt) {
   if (!elt.style && elt.target) {
@@ -614,11 +631,31 @@ function default_blur_handler(elt) {
     //make sure name is in the database
     name_check(elt);
   }
+  //hack to get around Firefox 2.+ bug with onchange and programmatic changes
+  if (firefox_2_hack && firefox_2_hack_value != get_value(elt)) {
+    //avoid calling again by accident
+    firefox_2_hack_value = get_value(elt);
+    change_handler(elt);
+    //use the bug to avoid calling change_handler twice, if this change_handler
+    //really would have been fired
+    set_value(elt,null);
+    //0 is not null, but I'm worried that both of these might somehow be bad
+    //values for this element value, and would thus cause some problem
+    set_value(elt,0);
+    //value is back to the changed value, but because we changed it in the
+    //script, Firefox 2.+ doesn't fire the change handler after this, if
+    //it was going to.
+    set_value(elt,firefox_2_hack_value);
+  }
   return true;
 }
 
 //if nothing else is registered, this is called on focuses
 function default_focus_handler(elt) {
+  //hack because of Firefox 2.+ bug with onchange and programmatic changes
+  if (firefox_2_hack) {
+    firefox_2_hack_value = get_value(elt);
+  }
 }
 
 //utility function, gives url-encoded value of any html element I need
