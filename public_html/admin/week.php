@@ -2,7 +2,7 @@
 if (!array_key_exists('week',$_REQUEST)) {
 ?>
   <html><head><title>Get week</title></head><body>
-<form method=post action='<?=$_SERVER['REQUEST_URI']?>'>
+<form method=get action='<?=$_SERVER['REQUEST_URI']?>'>
      <input type=submit value='Get week: '><input name='week' size=3>
 </form></body></html> 
      <?php exit;}
