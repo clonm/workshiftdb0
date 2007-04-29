@@ -15,7 +15,7 @@ if (($passwdcheck = check_passwd()) <= 0 &&
  <html><head><title>Set password</title></head>
     <body>
 <?php print_help() ?>
-    <form action="<?=$_SERVER['REQUEST_URI']?>" method=POST>
+    <form action="<?=this_url()?>" method=POST>
     Name: <select name='member_name'>
     <OPTION>
     <?php
@@ -36,12 +36,16 @@ if (($passwdcheck = check_passwd()) <= 0 &&
 	</form>
 	</body>
 	</html>
-<?php exit(); }
+<?php 
+        exit(); 
+}
 if (!set_passwd($_REQUEST['member_name'],$_REQUEST['newpasswd'],
                 $_REQUEST['passwd'])) {
-  trigger_error("Couldn't change password.",E_USER_ERROR);
+  janak_error("Couldn't change password.");
 }
-
+$_REQUEST['passwd'] = $_REQUEST['newpasswd'];
+$require_user = true;
+require_user();
 print("Success changing password");
 elections_log(null,'member change','password change',null,$_REQUEST['member_name']);
 if (isset($_REQUEST['previous_url'])) {
