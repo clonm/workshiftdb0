@@ -23,14 +23,12 @@ else {
 #exit;
 */
 $php_includes = '../php_includes/';
-$handle = fopen($php_includes . "user_privs","w");
-exit;
 require_once('../php_includes/janakdb.inc.php');
 $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
 		'kid','kng','lot','rid','she','stb','wil','wol','co');
 #$houses = array('rid','she','stb','wil','wol','co');
-$houses = array('hoy');
-janak_fatal_error_reporting(0);
+#$houses = array('hoy');
+#janak_fatal_error_reporting(0);
 #$db->SetFetchMode(ADODB_FETCH_NUM);
 #$houses = array('kng');
 #require_once('../public_html/admin/create_all_tables.php');
@@ -45,18 +43,18 @@ foreach ($houses as $house) {
   $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
   print "<h1>$house</h1>";
 #  $db->Execute("alter table `votes` modify `option_choice` longtext default null");
-  $res = $db->Execute("select `member_name`,`race_name`,`option_choice` from `elections_attribs`, `votes` where length(`option_choice`) > 98 and `elections_attribs`.`autoid`
-= `votes`.`option_name`");
-  $cur_member = null;
-  while ($row = $res->FetchRow()) {
-    if  ($row['member_name'] != $cur_member) {
-      $cur_member = $row['member_name'];
-      print "<br>";
-      print "Voter id " . escape_html($cur_member) . ": <br>";
-    }
-    print substr($row['race_name'],4) . ": " . $row['option_choice'] . "<br>";
-  }
-  exit;
+#  $res = $db->Execute("select `member_name`,`race_name`,`option_choice` from `elections_attribs`, `votes` where length(`option_choice`) > 98 and `elections_attribs`.`autoid`
+#= `votes`.`option_name`");
+#  $cur_member = null;
+#  while ($row = $res->FetchRow()) {
+#    if  ($row['member_name'] != $cur_member) {
+#      $cur_member = $row['member_name'];
+#      print "<br>";
+#      print "Voter id " . escape_html($cur_member) . ": <br>";
+#    }
+#    print substr($row['race_name'],4) . ": " . $row['option_choice'] . "<br>";
+#  }
+#  exit;
 #  $row = $db->GetRow("select substr(`attrib_value`,-667,1) as `txt` from `elections_attribs` where `attrib_name` = 'member_comments' and `election_name` = '2006_fall_lizard_name'");
 #  $html_ent_tables["\x92"] = 'hi there';
 #  print strtr($row['txt'],$html_ent_tables);
