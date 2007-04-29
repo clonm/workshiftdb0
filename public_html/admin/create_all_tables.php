@@ -1,7 +1,7 @@
 <?php
 require_once('default.inc.php');
 
-create_special_fining();
+create_static_text();
 
 function create_master_shifts () {
   global $db;
