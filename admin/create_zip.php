@@ -15,7 +15,7 @@ if (file_exists($backup_dir)) {
   while ($fname = readdir($dh)) {
     if($fname=='.' || $fname=='..') continue;
     unlink("$backup_dir/$fname") || 
-      trigger_error("Couldn't delete $fname from $backup_dir",E_USER_ERROR);
+      janak_error("Couldn't delete $fname from $backup_dir");
   }
 }
 else {
@@ -64,10 +64,14 @@ foreach ($houses as $house_name) {
         janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
       ($res = $db->Execute("select * from `$tbl`")) ||
         janak_error("Couldn't select from $tbl");
-      fwrite($handle,
-             "INSERT INTO `$tbl` VALUES " . 
-             join(',',array_map('parr',$res->GetRows())) . ";\n") ||
-        janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
+      //have to do line by line because there are issues with too-long lines
+      $tbl_rows = $res->GetRows();
+      foreach ($tbl_rows as $data_row) {
+        fwrite($handle,
+               "INSERT INTO `$tbl` VALUES (" . 
+               join(',',array_map('db_quote',$res->GetRows())) . ");\n") ||
+          janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
+      }
     }
     $db->Execute("commit");
     $db->Execute("set autocommit=1");
@@ -129,13 +133,17 @@ janak_error_reporting(0);
 janak_fatal_error_reporting(0);
 if ($dh = opendir($backup_dir)) {
   while ($fname = readdir($dh)) {
-    if($fname=='.' || $fname=='..') continue;
+    if ($fname=='.' || $fname=='..') continue;
     unlink("$backup_dir/$fname");
   }
 }
 
-function parr($arr) {
-  return '(' . join(',',$arr) . ')';
+function db_quote($str) {
+  global $db;
+  if ($str == null) {
+    return 'NULL';
+  }
+  return $db->quote($str);
 }
 
 ?>

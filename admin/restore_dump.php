@@ -61,20 +61,18 @@ else {
 
 set_error_handler('clean_up');
 
-($handle = fopen("$restore_dir/.lock","w")) ||
-trigger_error("Couldn't open lockfile $restore_dir/.lock for writing",E_USER_ERROR);
-fwrite($handle,time() . "\n") ||
-trigger_error("Couldn't write to lockfile with handle $handle",E_USER_ERROR);
+$handle = fopen("$restore_dir/.lock","w");
+fwrite($handle,time() . "\n");
 if (!strcasecmp(substr($filedata['name'],-4),'.zip')) {
   print("<pre>");
   system("unzip {$filedata['tmp_name']} -d $restore_dir 2>&1",$retval);
   print("</pre>");
 }
 else {
-  $retval = rename($filedata['tmp_name'],"$restore_dir/" . basename($filedata['tmp_name']));
+  $retval = rename($filedata['tmp_name'],"$restore_dir/" . basename($filedata['name']));
 }
 ($retval === 0 || $retval === TRUE) ||
-trigger_error("Couldn't rename/extract files",E_USER_ERROR);
+janak_error("Couldn't rename/extract files");
 //this flag allows multiple-statement queries, which come below
 $db->clientFlags += 65536;
 //close the connection since we'll need to open it with the proper properties in
@@ -82,14 +80,17 @@ $db->clientFlags += 65536;
 if ($db->_connectionID) {
   $db->Close();
 }
-($dh = opendir($restore_dir)) ||
-trigger_error("Couldn't open $restore_dir",E_USER_ERROR);
+$dh = opendir($restore_dir);
 while ($fname = readdir($dh)) {
-  if ($fname=='.' || $fname=='..' || $fname=='.lock') 
+  if ($fname=='.' || $fname=='..' || $fname=='.lock') {
     continue;
+  }
+  if (substr($fname,-4) == '.csv') {
+    continue;
+  }
   print("<h1>Restoring $fname</h1>");
   restore_db($restore_dir,$fname) ||
-    trigger_error("Couldn't restore $fname",E_USER_ERROR);
+    janak_error("Couldn't restore $fname");
 }
 clean_up(null,null,null,null,null);
 
@@ -131,9 +132,18 @@ function server_from_db($db) {
 }
 
 function restore_db($restore_dir,$fname) {
-  global $db,$sql_user,$sql_pwd, $php_includes, $USE_MYSQL_FEATURES, $MYSQL_VERSION;
+  global $db,$url_array, $php_includes, $USE_MYSQL_FEATURES;
   $server = server_from_db($fname);
-  $db->Connect($server,$fname,$sql_pwd,$fname);
+  $db->Connect($server,$fname,$url_array['pwd'],$fname);
+  $row = $db->GetRow("select version() as vs");
+  $temp = $row['vs'];
+  $temp = explode('.',$temp);
+  $MYSQL_VERSION = 10000*$temp[0];
+  $MYSQL_VERSION += 1000*$temp[1];
+  $temp = explode('-',$temp[2]);
+  $MYSQL_VERSION += $temp[0];
+  $MYSQL_VERSION = 0;
+  $db->debug = true;
 #  $db->clientFlags += 65536;
 #  $db->debug = true;
   // Return associative arrays
@@ -143,6 +153,7 @@ function restore_db($restore_dir,$fname) {
   $_REQUEST['backup_ext'] = '';
   print("<h3>Backing up old $fname</h3>");
   require("$php_includes/backup_database.internal.php");
+  $db->debug = true;
   if ($MYSQL_VERSION >= 41000) {
     //this command will screw up the mysql connection, but it's ok because
     //we're about to close and re-open it
@@ -150,7 +161,7 @@ function restore_db($restore_dir,$fname) {
   }
   else {
     $retval = system("mysql -u" .escapeshellarg($fname) . " -p" .
-                     escapeshellarg($sql_pwd) . " -h" . escapeshellarg($server) .
+                     escapeshellarg($url_array['pwd']) . " -h" . escapeshellarg($server) .
                      " " . escapeshellarg($fname) . 
                      " < " . escapeshellarg($restore_dir) . "/" . 
                      escapeshellarg($fname) . " 2>&1");
