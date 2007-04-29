@@ -23,20 +23,46 @@ else {
 }
 $cols = array();
 $db->SetFetchMode(ADODB_FETCH_NUM);
-$res = $db->Execute("show tables");
-while ($tbl = $res->FetchRow()) {
-  ($handle = fopen("$db_dir/" . $tbl[0] . ".csv","w")) ||
-    trigger_error("Couldn't open $db_dir/" . $tbl[0] . ".csv",E_USER_ERROR);
-  $db->SetFetchMode(ADODB_FETCH_ASSOC);
-  $tblres = $db->Execute("select * from " . bracket($tbl[0]));
-  if (is_empty($tblres)) {
+$mysql_file = "$db_dir/" . $url_array['db'];
+$sqlhandle = fopen($mysql_file,"w");
+fwrite($sqlhandle,"set autocommit=0;\nbegin;\n");
+$db->Execute("set autocommit=0");
+$db->Execute("begin");
+
+$showres = $db->Execute("show tables");
+$db->SetFetchMode(ADODB_FETCH_ASSOC);
+while ($tbl = $showres->FetchRow()) {
+  $tbl = $tbl[0];
+  if (substr($tbl,0,2) === 'zz') {
     continue;
   }
-  fputcsv($handle,array_keys($tblres->fields));
-  while ($row = $tblres->FetchRow()) {
-    fputcsv($handle,$row);
+  fwrite($sqlhandle,"\nDROP TABLE IF EXISTS " . bracket($tbl) . ";\n") ||
+    janak_error("Couldn't write to $mysql_file");
+  ($res = $db->Execute("show create table " . bracket($tbl))) ||
+    janak_error("Couldn't get table definition for $tbl");
+  fwrite($sqlhandle,$res->fields['Create Table'] . ";\n") ||
+    janak_error("Couldn't write to $mysql_file");
+  ($res = $db->Execute("select * from " . bracket($tbl))) ||
+    janak_error("Couldn't select from $tbl");
+  $tbl_rows = $res->GetRows();
+  ($csvhandle = fopen("$db_dir/" . $tbl . ".csv","w")) ||
+    janak_error("Couldn't open $db_dir/" . $tbl . ".csv");
+  if (!count($tbl_rows)) {
+    continue;
+  }
+  fputcsv($csvhandle,array_keys($tbl_rows[0]));
+  foreach ($tbl_rows as $row) {
+    fputcsv($csvhandle,$row);
+    fwrite($sqlhandle,"INSERT INTO " . bracket($tbl) . " VALUES (" .
+           join(',',array_map('db_quote',$row)) . ");\n");
   }
 }
+
+$db->Execute("commit");
+$db->Execute("set autocommit=1");
+fwrite($sqlhandle,"commit;\nset autocommit=1;\n") ||
+janak_error("Couldn't write to $mysql_file");
+
 // We'll be outputting a ZIP file
 header('Content-type: application/zip');
 header('Content-Disposition: attachment; filename="' . 
@@ -54,7 +80,16 @@ if ($dh = opendir($db_dir)) {
 }
 
 function parr($arr) {
-  return '(' . join(',',$arr) . ')';
+  global $db;
+  return '(' . join(',',array_map('db_quote',$arr)) . ')';
+}
+
+function db_quote($str) {
+  global $db;
+  if ($str === null) {
+    return 'NULL';
+  }
+  return $db->quote($str);
 }
 
 ?>
