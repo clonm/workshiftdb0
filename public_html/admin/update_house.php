@@ -285,9 +285,84 @@ if (!array_key_exists('suppress_backup',$_REQUEST)) {
   $_REQUEST['backup_ext'] = '';
   require_once('backup_database.php');
 }
+
 //definitely want to use transactions here -- we don't want only some changes
 //to be made
 $db->StartTrans();
+
+//deletes come first so that renames/adds can work
+if (array_key_exists('delete_members',$_REQUEST)) {
+  $delete_members = $_REQUEST['delete_members'];
+  $temp = array();
+  foreach ($delete_members as $member) {
+#    $member = rtrim($member);
+    if (!$member) {
+      print "deleting '$member' (no name!)";
+#      continue;
+    }
+    $member = array($member);
+    $temp[] = $member;
+  }
+  $delete_members = $temp;
+  if (count($delete_members)) {
+    print "<h4>Deleting old members</h4>";
+    print join(', ',array_map('un_array',$delete_members));
+    print "<br>";
+    if (count($delete_members) > 1) {
+      print "are";
+    }
+    else {
+      print "is";
+    }
+    print " being removed from table(s) <br>\n";
+    if ($USE_MYSQL_50) {
+      $res = $db->Execute('SHOW FULL TABLES');
+    }
+    else {
+      $res = $db->Execute('SHOW TABLES');
+    }
+    while ($tbl_info = $res->FetchRow()) {
+      if (!$USE_MYSQL_50 || $tbl_info['Table_type'] === 'BASE TABLE') {
+        $tbl = $tbl_info['Tables_in_' . $curdb];
+        if (substr($tbl,0,2) === 'zz') {
+          continue;
+        }
+        if (!isset($_REQUEST['delete_all_tables'])) {
+          switch ($tbl) {
+          case 'votes': case 'voting_record': case 'password_table': case 'house_info':
+            continue 2;
+          }
+        }
+        //        print escape_html($tbl) . " ";
+        $rescol = $db->Execute('SHOW FULL COLUMNS FROM ' . bracket($tbl));
+        while ($cols = $rescol->FetchRow()) {
+          $col = $cols['Field'];
+          if (!$cols['Null'] && $col === 'member_name') {
+            $db->Execute('DELETE FROM ' . bracket($tbl) . ' WHERE ' . 
+                         bracket('member_name') . '= ?',$delete_members);
+            set_mod_date($tbl);
+          }
+          else {
+            if (array_key_exists($col,$member_fields)) {
+              $db->Execute('UPDATE ' . bracket($tbl) . ' SET ' . 
+                           bracket($col) . ' = NULL ' .
+                           'WHERE ' . bracket($col) . ' = ? ',
+                           $delete_members);
+              set_mod_date($tbl);
+            }
+          }
+        }
+      }
+    }
+    print "<h4>All done with deleting members!</h4>";
+    elections_log(null,'workshift change','delete member',null,
+                  join("; ",$_REQUEST['delete_members']));
+  }
+  else {
+    print "<h4>No members deleted</h4>\n";
+  }
+}
+
 //are we renaming?
 if (array_key_exists('name_orig',$_REQUEST)) {
   print "<h4>Renaming member</h4>\n";
@@ -296,8 +371,42 @@ if (array_key_exists('name_orig',$_REQUEST)) {
     exit("<h3>No name specified</h3>");
   }
   $name_new = $_REQUEST['rename'];
+  $row = $db->GetRow("select count(*) as `ct` from `password_table` where " .
+                     "`member_name` = ?",
+                     array($name_new));
+  $eren = escape_html($name_new);
+  $eorg = escape_html($name_orig);
+  if ($row['ct']) {
+    $db->FailTrans();
+?>
+You cannot rename <?=$eorg?> to 
+<?=$eren?> because <?=$eren?> is
+an old member whose information still exists in the database.  You have two
+options:
+<form action=<?=this_url()?> method=post>
+<input type=hidden name='delete_members[]' value='<?=$eorg?>'>
+<input type=hidden name='new_members' value='<?=$eren?>' />
+<input type=submit
+value='Delete <?=$eorg?> and reactivate <?=$eren?>'>
+ (do this if <?=$eorg?> is actually the old member <?=$eren?> who has returned.
+  <strong>Warning!!  Any data you have entered for
+the new member will be deleted!!</strong>)
+</form>
+or
+<form action=<?=this_url()?> method=post>
+<input type=hidden name='delete_members[]' value='<?=$eren?>'>
+<input type=hidden name='delete_all_tables' value=1>
+<input type=hidden name='name_orig' value='<?=$eorg?>'>
+<input type=hidden name='rename' value='<?=$eren?>'>
+<input type=submit 
+value='Delete <?=$eren?> and then rename <?=$eorg?> to <?=$eren?>'>
+(do this if <?=$eorg?> is actually a new member with the same name as <?=$eren?>, who will not come back)
+</form>
+<?php
+  exit;
+  }
   if (isset($name_orig) && isset($name_new)) {
-    print escape_html($name_orig) . ' is turning into ' . escape_html($name_new) .
+    print $eorg . ' is turning into ' . $eren .
       " in tables <br>\n";
     if ($USE_MYSQL_50) {
       $res = $db->Execute('SHOW FULL TABLES');
@@ -345,7 +454,14 @@ if (array_key_exists('new_members',$_REQUEST)) {
   if (count($new_members)) {
     print "<h4>Adding new members</h4>";
     print join(', ',$new_members);
-    print "<br>are being added to tables <br>\n";
+    print "<br>";
+    if (count($new_members) > 1) {
+      print "are";
+    }
+    else {
+      print "is";
+    }
+    print " being added to table(s) <br>\n";
     if ($USE_MYSQL_50) {
       $res = $db->Execute('SHOW FULL TABLES');
     }
@@ -386,69 +502,6 @@ if (array_key_exists('new_members',$_REQUEST)) {
   }
   else {
     print "<h4>No members added</h4>\n";
-  }
-}
-
-if (array_key_exists('delete_members',$_REQUEST)) {
-  $delete_members = $_REQUEST['delete_members'];
-  $temp = array();
-  foreach ($delete_members as $member) {
-#    $member = rtrim($member);
-    if (!$member) {
-      print "deleting '$member' (no name!)";
-#      continue;
-    }
-    $member = array($member);
-    $temp[] = $member;
-  }
-  $delete_members = $temp;
-  if (count($delete_members)) {
-    print "<h4>Deleting old members</h4>";
-    print join(', ',array_map('un_array',$delete_members));
-    print "<br>are being removed from tables <br>\n";
-    if ($USE_MYSQL_50) {
-      $res = $db->Execute('SHOW FULL TABLES');
-    }
-    else {
-      $res = $db->Execute('SHOW TABLES');
-    }
-    while ($tbl_info = $res->FetchRow()) {
-      if (!$USE_MYSQL_50 || $tbl_info['Table_type'] === 'BASE TABLE') {
-        $tbl = $tbl_info['Tables_in_' . $curdb];
-        if (substr($tbl,0,2) === 'zz') {
-          continue;
-        }
-        switch ($tbl) {
-          case 'votes': case 'voting_record': case 'password_table': case 'house_info':
-            continue 2;
-        }
-        print escape_html($tbl) . " ";
-        $rescol = $db->Execute('SHOW FULL COLUMNS FROM ' . bracket($tbl));
-        while ($cols = $rescol->FetchRow()) {
-          $col = $cols['Field'];
-          if (!$cols['Null'] && $col === 'member_name') {
-            $db->Execute('DELETE FROM ' . bracket($tbl) . ' WHERE ' . 
-                         bracket('member_name') . '= ?',$delete_members);
-            set_mod_date($tbl);
-          }
-          else {
-            if (array_key_exists($col,$member_fields)) {
-              $db->Execute('UPDATE ' . bracket($tbl) . ' SET ' . 
-                           bracket($col) . ' = NULL ' .
-                           'WHERE ' . bracket($col) . ' = ? ',
-                           $delete_members);
-              set_mod_date($tbl);
-            }
-          }
-        }
-      }
-    }
-    print "<h4>All done with deleting members!</h4>";
-    elections_log(null,'workshift change','delete member',null,
-                  join("; ",$_REQUEST['delete_members']));
-  }
-  else {
-    print "<h4>No members deleted</h4>\n";
   }
 }
 
