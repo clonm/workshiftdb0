@@ -33,8 +33,7 @@ table {
 }
 </style>
 </head><body>
-<a href='<?=escape_html($feature_request_url)?>'>Submit a Feature Request</a>&nbsp;&nbsp;
-<a href='<?=escape_html($bug_report_url)?>'>Submit a Bug</a><br/>
+<?php print_help() ?>
 <h4><?=escape_html($member_name)?></h4>
 <?php 
 //stuff the member can do (that the workshift manager can't)
