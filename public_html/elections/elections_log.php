@@ -1,26 +1,387 @@
 <?php
+//this is because we might be outputting a binary file, if the user
+//wanted details of that.
+ob_start();
 require_once('default.inc.php');
 ?>
 <html><head><title>Elections Log</title></head><body>
 <?php
 if (isset($_REQUEST['details'])) {
-  $row = $db->GetRow("select * from `elections_log` where `autoid` = ?",
-                      array($_REQUEST['details']));
-  if ($row['attrib'] == 'manual_entry') {
+  $row = $db->GetRow("select `autoid`, " .
+                     "unix_timestamp(`time_entered`) as `time_entered`, " .
+                     "`election_name`,`subj_name`,`attrib`,`oldval`,`val` " .
+                     "from `elections_log` where `autoid` = ?",
+                     array($_REQUEST['details']));
+  if (is_empty($row)) {
+    exit;
+  }
+  $row['time_entered'] = user_time($row['time_entered'],'r');
+  print escape_html($row['time_entered']) . "<br/>";
+  switch ($row['attrib']) {
+  case 'manual_entry':
+    //output as normal, no binary file
+    ob_end_flush();
     $arr = unserialize($row['val']);
     foreach ($arr as $race => $vals) {
       print "<h3>" . escape_html($race) . "</h3>\n";
       if (is_array($vals)) {
         print join("; ",$vals);
       }
-      print $vals;
+      print str_replace("\n","<br/>\n",$vals);
       print "<p>\n";
     }
     exit;
+  case 'descript':
+    //output as normal, no binary file
+    ob_end_flush();
+    print "<h3>Election: " . escape_html($row['election_name']) . "</h3>\n";
+    print "The election description was changed: " .
+      "<table border style='empty-cells: show; " . white_space_css() . "'>" .
+      "<tr><th></th><th>Old</th><th>New</th></tr>\n" .
+      "<tr><td>Source:</td><td>" . escape_html($row['oldval']) . 
+      "</td><td>" . escape_html($row['val']) . "</td></tr>\n" .
+      "<tr><td>As html:</td><td>" . $row['oldval'] . "</td><td>" .
+      $row['val'] . "</td></tr></table></body></html>";
+    exit;
+  case 'race_descript':
+    //output as normal, no binary file
+    ob_end_flush();
+    print "<h3>Election: " . escape_html($row['election_name']) . "</h3>\n";
+    print "<h4>Race: " . escape_html($row['subj_name']). "</h4>\n";
+    print "The race description was changed: " .
+      "<table border style='empty-cells: show; " . white_space_css() . "'>" .
+      "<tr><th></th><th>Old</th><th>New</th></tr>\n" .
+      "<tr><td>Source:</td><td>" . escape_html($row['oldval']) . 
+      "</td><td>" . escape_html($row['val']) . "</td></tr>\n" .
+      "<tr><td>As html:</td><td>" . $row['oldval'] . "</td><td>" .
+      $row['val'] . "</td></tr></table></body></html>";
+    exit;
+  case 'descript_file':
+    //maybe a binary file to be output, we might clean() output so far
+    if (array_key_exists('oldval',$_REQUEST)) {
+      $file_contents = $row['oldval'];
+    }
+    else {
+      $file_contents = $row['val'];
+    }
+    if (!strlen($file_contents)) {
+      ob_end_flush();
+      print "File was empty.</body></html>";
+      exit;
+    }
+    ob_end_clean();
+    $props = array('descript_filename' => null,'descript_filetype' => null);
+    $file_info_res = $db->Execute("select `attrib`, `" .
+                                  (array_key_exists('oldval',$_REQUEST)?'oldval':'val') .
+                                  "` as `val` from `elections_log` " .
+                                  "where `autoid` < ? order by `autoid` desc limit 2",
+                                  array($row['autoid']));
+    while ($info_row = $file_info_res->FetchRow()) {
+      if (array_key_exists($info_row['attrib'],$props)) {
+        $props[$info_row['attrib']] = $info_row['val'];
+      }
+    }
+    $sql_arr = array($row['autoid']);
+    foreach ($props as $prop => $value) {
+      if (!$value) {
+        $sql_arr[] = $prop;
+      }
+    }
+    if (count($sql_arr) > 1) {
+      $file_info_res = $db->Execute("select `attrib`, `oldval` from `elections_log` " .
+                                    "where `autoid` > ? and (`attrib` = ?" .
+                                    (count($sql_arr) > 2?' or `attrib` = ?':'') .
+                                    ") order by `autoid` asc",
+                                    $sql_arr);
+      while (($info_row = $file_info_res->FetchRow()) &&
+             array_sum($props) === null) {
+        if (array_key_exists($info_row['attrib'],$props) &&
+            !isset($props[$info_row['attrib']])) {
+          $props[$info_row['attrib']] = $info_row['val'];
+        }
+      }
+      foreach ($props as $prop => $value) {
+        $props[$prop] =  $db->GetRow("select `attrib_value` from " .
+                                     "`elections_attribs` where " .
+                                     "`election_name` = ? and `race_name` = ? " .
+                                     "and `attrib_name` = ?",
+                                     array($row['election_name'],$row['subj_name'],
+                                           $prop));
+        if (!is_empty($props[$prop])) {
+          $props[$prop] = $props[$prop]['attrib_value'];
+        }
+      }
+    }
+    if (isset($props['descript_filetype'])) {
+      header('Content-type: ' . $props['descript_filetype']);
+    }
+    if (isset($props['descript_filetype'])) {
+      header('Content-Disposition: attachment; filename="' . $props['descript_filename'] . '"'); 
+    }
+    else {
+      header('Content-Disposition: attachment;');
+    }
+    print $file_contents;
+    exit;
+  case 'end_president_modif':
+    function runoff_format($val) {
+      if ($val === null) {
+        return "(not set)";
+      }
+      switch ($val) {
+      case 0:
+        return "nothing special";
+      case 1:
+        return "instant runoff";
+      default:
+        return "unranked preferences (up to " . escape_html($val) . ")";
+      }
+    }
+    function threshold_format($val) {
+      if (!$val) {
+        return "(none)";
+      }
+      if ($val > 0) {
+        return escape_html($val) . "%";
+      }
+      return escape_html(-$val) . " votes";
+    }
+
+    $finish_autoid = $row['autoid'];
+    $start_autoid = $db->GetRow("select `autoid` from `elections_log` where " .
+                                "`autoid` < ? and `attrib` = ? order by `autoid` desc limit 1",
+                                array($finish_autoid,'start_president_modif'));
+    $res = $db->Execute("select * from `elections_log` where " .
+                        "`autoid` < ? and `autoid` > ? order by `autoid` asc",
+                        array($finish_autoid,$start_autoid['autoid']));
+    print "<h3>President modified election " . escape_html($row['election_name'])
+      . "</h3>\n";
+    //    print "<div style='" . white_space_css() . "'>";
+    $cur_race = false;
+    $feedback = false;
+    while ($row = $res->FetchRow()) {
+      $row['time_entered'] = user_time($row['time_entered'],'r');
+      if ($row['subj_name'] !== $cur_race) {
+        if ($cur_race !== false) {
+          print "</ul><hr>\n";
+        }
+        $cur_race = $row['subj_name'];
+        $feedback = false;
+        if ($cur_race) {
+          print "<h4>" . escape_html($cur_race) . "</h4>";
+        }
+        print "<ul>\n";
+      }
+      else if ($feedback && 
+               $row['attrib'] != 'member_comments' &&
+               $row['attrib'] != 'feedback') {
+        continue;
+      }
+      switch ($row['attrib']) {
+      case 'rename_race':
+        print "<li>The race name was changed from '" . 
+          escape_html($row['oldval']) . "' to '" . escape_html($row['val']) . 
+          "'.  (" . escape_html($row['time_entered']) . ")</li>\n";
+        break;
+      case 'delete_race':
+        print "<li><strong>The race was deleted.</strong>" .
+          "  (" . escape_html($row['time_entered']) . ")</li>\n";
+        break;
+      case 'descript':
+        print "<li>The election description was changed.  " .
+          "<a href='elections_log.php?details=" . 
+          escape_html($row['autoid']) . 
+          "'>Details</a>" .
+          ".  (" . escape_html($row['time_entered']) . ")</li>\n";
+
+        break;
+      case 'descript_html':
+        print "<li>The election description was changed to print out ";
+          if ($row['oldval']) {
+            print "as plain text, not html";
+          }
+          else {
+            print "as html, not plain text";
+          }
+          print ".  (" . escape_html($row['time_entered']) . ")</li>\n";
+          break;
+      case 'interim_results':
+        print "<li>Results were changed to ";
+        if ($row['oldval']) {
+          print "not ";
+        }
+        print "be viewable before the election was over" .
+          ". (" . escape_html($row['time_entered']) . ")</li>\n";
+
+        break;
+      case 'descript_filename':
+      case 'descript_filetype':
+        break;
+      case 'descript_file':
+        if ($row['val']) {
+          print "<li>A file was uploaded for voters to see.  ";
+        }
+        else {
+          print "<li>A file was removed from the voting page.  ";
+        }
+        if ($row['oldval']) {
+          print "<a href='elections_log.php?details=" .
+            escape_html($row['autoid']) . "&oldval'>Old File Contents</a>.  ";
+            }
+        if ($row['val']) {
+          print "<a href='elections_log.php?details=" . 
+            escape_html($row['autoid']) . "'>File Contents</a>.";
+        }
+        print " (" . escape_html($row['time_entered']) . ")</li>\n";
+        break;
+      case 'race_name':
+        print "<li>The race was created" .
+          ".  (" . escape_html($row['time_entered']) . ")</li>\n";
+        break;
+      case 'race_descript':
+        if (strlen($row['oldval']) || strlen($row['val'])) {
+          print "<li>The race description was changed.  " .
+            "<a href='elections_log.php?details=" . 
+            escape_html($row['autoid']) . 
+            "'>Details.</a>" .
+            ".  (" . escape_html($row['time_entered']) . ")</li>\n";
+        }
+        break;
+      case 'feedback':
+        print "<li><strong>The race was changed to " .
+          ($row['oldval']?'not ':'just ') . 
+          "be a feedback race.</strong>" .
+          ".  (" . escape_html($row['time_entered']) . ")</li>\n";
+        $feedback = $row['val'];
+        break;
+      case 'candidates':
+        print "<li><strong>";
+        if ($row['oldval']) {
+          print "The candidates were changed.  The old candidates were:<br/>\n'" .
+            join("', '",array_map('escape_html',
+                                  explode("\n",$row['oldval']))) . "'<br/>\n";
+        }
+        print "The new candidates are:<br/>\n'" .
+            join("', '",array_map('escape_html',
+                                  explode("\n",$row['val']))) . "'</strong>" .
+          ".  (" . escape_html($row['time_entered']) . ")</li>\n";
+        break;
+      case 'num':
+        print "<li><strong>The number of spots available was changed from " .
+          escape_html($row['oldval']!== null?$row['oldval']:'(not set)') . " to " . 
+          escape_html($row['val']) . "</strong>" .
+          ".  (" . escape_html($row['time_entered']) . ")</li>\n";
+        break;
+      case 'runoff':
+        print "<li><strong>The type of race was changed from " .
+        runoff_format($row['oldval']) . " to " . runoff_format($row['val']) .
+          "</strong>.  (" . escape_html($row['time_entered']) . ")</li>\n";
+        break;
+      case 'threshold':
+        print "<li><strong>The threshold winners needed was changed from " .
+          threshold_format($row['oldval']) . " to " . threshold_format($row['val']) .
+          "</strong>. (" . escape_html($row['time_entered']) . ")</li>\n";
+
+        break;
+      case 'num_voters':
+        print "<li><strong>The minimum number of voters needed to make this " .
+          "a valid election was changed from " . 
+          escape_html($row['oldval'] !== null?$row['oldval']:'(not set)') .
+          " to " . escape_html($row['val'] !== null?$row['val']:'(not set)') .
+          "</strong>. (" . escape_html($row['time_entered']) . ")</li>\n";
+        break;
+      case 'abstain_count':
+        print "<li>Abstentions ";
+        if ($row['val']) {
+          print "now ";
+        }
+        else {
+          print "no longer ";
+        }
+        print "count towards any threshold. (" . 
+          escape_html($row['time_entered']) . ")</li>\n";
+        break;
+      case 'def_val':
+        print "<li>If any threshold is not met, ";
+        if (strlen($row['val'])) {
+          print "the winner will be " . escape_html($row['val']);
+        }
+        else {
+          print "there will be no winner";
+        }
+        if (strlen($row['oldval']) && 
+            $row['oldval'] != $row['val']) {
+          print " which is changed from " . escape_html($row['oldval']);
+        }
+        print ". (" . escape_html($row['time_entered']) . ")</li>\n";
+        break;
+      case 'member_add':
+        print "<li>Members can ";
+        if ($row['val']) {
+          print "now ";
+        }
+        else {
+          print "not ";
+        }
+        print "add their own candidates as they vote" .
+          ".  (" . escape_html($row['time_entered']) . ")</li>\n";
+        break;
+      case 'member_comments':
+        print "<li>";
+        if ($row['oldval'] !== null && $row['val'] !== null) {
+          print "<strong>The member comments were edited by the president</strong>" .
+            ".  (" . escape_html($row['time_entered']) . ")</li>\n";
+        }
+        else {
+          print "Members can ";
+          if ($row['val'] !== null) {
+            print "now ";
+          }
+          else {
+            print "not ";
+          }
+          print "comment on this race as they vote" .
+            ".  (" . escape_html($row['time_entered']) . ")</li>\n";
+        }
+        break;
+      default:
+        print "<li><strong>" . escape_html($row['attrib']) . " was changed " .
+          "from " . escape_html($row['oldval']) . " to " . 
+          escape_html($row['val']) . ".</strong>" .
+          "  (" . escape_html($row['time_entered']) . ")</li>\n";
+
+        break;
+      }
+    }
+    exit;
+  default:
+    print "<table border style='empty-cells: show'><tr>";
+    foreach (array_keys($row) as $col) {
+      print "<th>" . escape_html($col) . "</th>";
+    }
+    print "</tr><tr>";
+    foreach ($row as $entry) {
+      print "<td>" . escape_html($entry) . "</td>";
+    }
+    print "</tr></table>";
+    exit;
   }
 }
+//style is so that links to go back and forward look nice
 ?>
-<form action=<?=escape_html($_SERVER['REQUEST_URI'])?> method=get>
+<style>
+th.linknext {
+  text-align: left;
+ border: 0px;
+}
+
+th.linkprev {
+  text-align: right;
+ border: 0px;
+}
+</style>
+
+<form action=<?=this_url()?> method=get>
 (Leave end blank to go to present)
 Start date (YYYY-MM-DD format): <input name='start_date' size=10>.&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;End date: <input name='end_date' size=10><br/>
@@ -71,19 +432,42 @@ else {
   $ending_exp = '';
 }
 
-$res = $db->Execute("select * from `elections_log` $where_exp " .
-                    "order by `time_entered` desc, `autoid` desc $ending_exp",
+$res = $db->Execute("select `autoid`, " .
+                    "unix_timestamp(`time_entered`) as `time_entered`, " .
+                    "`election_name`,`subj_name`,`attrib`,`oldval`,`val` " . 
+                    "from `elections_log` $where_exp " .
+                    "order by `autoid` desc $ending_exp",
                     $arr);
+//for ob_start that started up there
+ob_end_flush();
+$page_name = $_SERVER['REQUEST_URI'];
+$page_name = escape_html(substr($page_name,0,strpos($page_name,'?')));
+//we need to know whether or not to put links at the top and bottom of page
+$first_last_row = $db->GetRow("select max(`autoid`) as `first`, " .
+                          "min(`autoid`) as `last` from `elections_log`");
+//since the link at the top won't be determined until we finish, we
+//need to buffer
+$last_autoid = 0;
+$first_autoid = null;
 ?>
-<table border=1><thead><tr><th>Time</th><th>Election</th><th>Activity</th>
-<th>Details</th></tr></thead>
+<table border=1>
+<thead>
+<tr><th class='linknext' colspan=2>
+<?php
+ob_start();
+?>
+<thead><tr><th>Time</th><th>Election</th><th>Activity</th>
+<th>Details</th></tr>
+</thead>
 <tbody>
 <?php
-$page_name = $_SERVER['REQUEST_URI'];
-$page_name = substr($page_name,0,strpos($page_name,'?'));
 while ($row = $res->FetchRow()) {
+  if ($first_autoid === null) {
+    $first_autoid = $row['autoid'];
+  }
+  $last_autoid = $row['autoid'];
   echo "<tr>";
-  print "<td>" . escape_html($row['time_entered']) . "</td>";
+  print "<td>" . escape_html(user_time($row['time_entered'],'n/j/y')) . "</td>";
   print "<td>";
   if ($row['election_name']) {
     $election_name = $row['election_name'];
@@ -127,6 +511,10 @@ while ($row = $res->FetchRow()) {
       default:
         print "'>The action " . escape_html($row['attrib']) . " was taken</td><td>&nbsp;";
       }
+    }
+    else {
+      print "corrupt_change'>This change was not logged properly.</a></td><td>" .
+        "<a href='$page_name?details=" . $row['autoid'] . "'>Details</a>";
     }
   }
   else {
@@ -176,13 +564,24 @@ while ($row = $res->FetchRow()) {
   }
   print "</td></tr>";
 }
+if ($first_autoid !== $first_last_row['first']) {
+  $link_str = "<a href='$page_name?end_num=" .
+    escape_html($first_autoid+1) . "'>Next Page</a>";
+}
+else {
+  $link_str = '';
+}
+$link_str .= "</th><th colspan=2 class='linkprev'>";
+if ($last_autoid !== $first_last_row['last']) {
+  $link_str .= "<a href='$page_name?start_num=" . 
+    escape_html($last_autoid-1) . "'>Previous Page</a>";
+}
+$link_str .= "</th></tr>";
+$buf_str = ob_get_clean();
+print $link_str . "</thead>";
+print $buf_str;
+print "<th colspan=2 class='linknext'>" . $link_str;
 print "</tbody></table>";
-
-$get_str = '?';
-foreach ($_GET as $key => $val) {
-  $get_str.= $key . '=' . $val;
-    }
-$page_name = $_SERVER['REQUEST_URI'];
-$page_name = substr($page_name,0,strpos($page_name,'?'));
+print "</div>";
 ?>
                     
