@@ -505,14 +505,26 @@ kitchen this is very essential.
         " voters are needed for this to be a valid election, and " . escape_html(count($votes)) .
         " votes have been cast)</strong><br/>\n";
       if (!$elect_row['open']) {
-        print "Since the election is over, the default result of " .  escape_html($row['def_val']) .
-          " has won<br/>\n";
+        print "Since the election is over, ";
+        if (!$row['def_val']) {
+          print "there is no winner.";
+        }
+        else {
+          print "the default result of " .  escape_html($row['def_val']) .
+            " has won<br/>\n";
+        }
       }
       else {
         print "If not enough people vote by " . 
           escape_html(user_time($elect_row['end_date']), 'l, F j, Y, g:i a') .
-          ", the default result of " . escape_html($row['def_val']) .
+          ", ";
+        if (!$row['def_val']) {
+          print "there will be no winner.";
+        }
+        else {
+          print "the default result of " . escape_html($row['def_val']) .
           " will win<br/>\n";
+        }
       }
       print "The result for the votes cast is:<br/>\n";
     }
@@ -691,7 +703,8 @@ kitchen this is very essential.
     }
   }
   if ($row['num'] > 0 && (count($winners) || !$row['def_val'])) {
-    print("<h4>Warning!  Not enough candidates beat the threshold of " . escape_html($threshold) . "</h4>");
+    print("<h4>Warning!  Not enough candidates beat the threshold of " . 
+          escape_html($threshold) . "</h4>");
   }
   foreach ($winners as $winner) {
     print escape_html($winner);
