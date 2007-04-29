@@ -92,7 +92,7 @@ where `election_name` = ? and member_name = ?"
   }
 }
 if (!array_key_exists('page_type',$_REQUEST) || 
-    $_REQUEST['page_type'] == 'member_input') {
+$_REQUEST['page_type'] == 'member_input') {
 $descript_file = get_election_attrib('descript_filename',null,false);
   if ($descript_file && !array_key_exists('internal',$_REQUEST)) {
     $internal = false;
@@ -824,6 +824,8 @@ delete from `votes` where `member_name` = ? and
 election_name = ?
 SQLSTMT
                  ,array($member_name,$election_name));
+$db->Execute("delete from `voting_record` where `member_name` = ? and " .
+"election_name = ?",array($member_name,$election_name));
     }
     $voting_name = $member_name;
   }
