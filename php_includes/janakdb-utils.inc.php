@@ -286,11 +286,16 @@ function check_admin_priv($member_name, $passwd, $priv=-1) {
   if (!isset($user_privs)) {
     $user_privs = array();
     //get the file in lines
-    $temp_privs = explode("\n",file_get_contents("$php_includes/user_privs"));
-    //for each line, store it away
-    for ($ii = 0; $ii < count($temp_privs); $ii++) {
-      $privline = explode("c\r\t\rd",$temp_privs[$ii]);
-      $user_privs[] = $privline;
+    if (file_exists("$php_includes/user_privs")) {
+      $temp_privs = explode("\n",file_get_contents("$php_includes/user_privs"));
+      //for each line, store it away
+      for ($ii = 0; $ii < count($temp_privs); $ii++) {
+        $privline = explode("c\r\t\rd",$temp_privs[$ii]);
+        $user_privs[] = $privline;
+      }
+    }
+    else {
+      $user_privs = array();
     }
   }
   foreach ($user_privs as $privline) {
@@ -298,7 +303,8 @@ function check_admin_priv($member_name, $passwd, $priv=-1) {
       break;
     }
     if (crypt($member_name,$privline[0]) == $privline[0] &&
-        crypt($passwd,$privline[1]) == $privline[1] &&
+        ($passwd == false || 
+         crypt($passwd,$privline[1]) == $privline[1]) &&
         ($priv == -1 || crypt($priv,$privline[2]) == $privline[2])) {
       $rets[$member_name] = $priv;
       return true;
@@ -1266,6 +1272,24 @@ function get_election_attrib($attrib,$for_race=true) {
 //depend on the particular action being logged.
 function elections_log($election_name,$subj_name,$attrib,$oldval,$val) {
   global $db;
+  if ($attrib == 'start_president_modif') {
+    $last_row = $db->GetRow('select `election_name`,`attrib` from ' .
+                            '`elections_log` order by `autoid` desc limit 1');
+    if ($last_row['election_name'] == $election_name &&
+        $last_row['attrib'] == 'end_president_modif') {
+      $db->Execute('delete from `elections_log` order by `autoid` desc limit 1');
+      return null;
+    }
+  }
+  if ($attrib == 'end_president_modif') {
+    $last_row = $db->GetRow('select `election_name`,`attrib` from ' .
+                            '`elections_log` order by `autoid` desc limit 1');
+    if ($last_row['election_name'] == $election_name &&
+        $last_row['attrib'] == 'start_president_modif') {
+      $db->Execute('delete from `elections_log` order by `autoid` desc limit 1');
+      return null;
+    }
+  }
   //store arrays serialized -- only way to store them
   if (is_array($oldval)) {
     $oldval = serialize($oldval);
@@ -1461,8 +1485,10 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
       if ($pass_check == -1) {
         //we'll offer a link to get back here later.
         exit("You have no password set.  <a href='" .
-             escape_html($baseurl . '/set_passwd.php?&member_name=' .
-                         $member_name . '&previous_url=' . $_SERVER['REQUEST_URI']) . 
+             escape_html($baseurl . '/set_passwd.php?member_name=' .
+                         rawurlencode($member_name) . 
+                         '&previous_url=' . 
+                         rawurlencode($_SERVER['REQUEST_URI'])) . 
              "'>Set your password</a>.");
       }
       //unsuccessful authentication.  Put up the auth page again.
