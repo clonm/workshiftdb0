@@ -151,7 +151,10 @@ if (isset($_REQUEST['details'])) {
     $start_autoid = $db->GetRow("select `autoid` from `elections_log` where " .
                                 "`autoid` < ? and `attrib` = ? order by `autoid` desc limit 1",
                                 array($finish_autoid,'start_president_modif'));
-    $res = $db->Execute("select * from `elections_log` where " .
+    $res = $db->Execute("select `autoid`, " .
+                        "unix_timestamp(`time_entered`) as `time_entered`, " .
+                        "`election_name`, `subj_name`, `attrib`," .
+                        "`oldval`,`val` from `elections_log` where " .
                         "`autoid` < ? and `autoid` > ? order by `autoid` asc",
                         array($finish_autoid,$start_autoid['autoid']));
     print "<h3>President modified election " . escape_html($row['election_name'])
