@@ -42,7 +42,7 @@ function list_elections($bad_election = null,$manual_entry = false) {
   }
 #}
 ?>
-<form method='GET' action='<?=escape_html($_SERVER['REQUEST_URI'])?>'>
+<form method='GET' action='<?=this_url()?>'>
 <?php 
 $ii = 0;
 foreach ($elections as $election) {
@@ -69,7 +69,10 @@ $election_name = $_REQUEST['election_name'];
 $row = $db->GetRow("select unix_timestamp() < `end_date` as `open`, " .
                    "`anon_voting` < 2 as `status` from `elections_record` " .
                    "where `election_name` = ?", array($election_name));
-
+if (is_empty($row)) {
+print ("Election does not exist.");
+list_elections(null,$manual_entry);
+}
 if ((!$manual_entry && $row['open']) || 
     ($manual_entry && !$row['open'] && $row['status'])) {
   $votable = true;
@@ -79,9 +82,6 @@ else {
 }
 $row = $db->GetRow("select `anon_voting` from `elections_record` where `election_name` = ?",
                    array($election_name));
-if (is_empty($row)) {
-  print ("Election does not exist.");
-}
 $anon_voting = $row['anon_voting']%2;
 if ($anon_voting && !$manual_entry) {
   $row = $db->GetRow("select count(*) as ct from `voting_record`
