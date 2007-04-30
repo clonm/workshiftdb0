@@ -20,6 +20,10 @@ function is_checkbox(elt) {
   return (is_input(elt) && elt.type && elt.type == 'checkbox');
 }
 
+function is_radio(elt) {
+  return is_input(elt) && elt.type && elt.type == 'radio';
+}
+
 function is_link(elt) {
   return (elt.nodeName && elt.nodeName == 'A');
 }
@@ -63,7 +67,7 @@ function get_value(thing) {
     alert("error retrieving element value.  Please contact administrator");
     return null;
   }
-  if (is_checkbox(thing)) {
+  if (is_checkbox(thing) || is_radio(thing)) {
     return thing.checked?(thing.value!='on'?thing.value:1):(thing.hasAttribute('defaultValue')?thing.getAttribute('defaultValue'):0);
   }
   if (is_link(thing)) {
@@ -100,6 +104,7 @@ function get_value(thing) {
 
 function get_value_by_id(str) {
   return get_value(get_elt_by_id(str));
+
 }
 
 function set_value(elt,value) {
