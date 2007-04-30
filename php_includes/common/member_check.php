@@ -13,7 +13,7 @@ else {
   $member_name = null;
 }
 ?>
-<form action='<?=escape_html($_SERVER['REQUEST_URI'])?>' method=POST>
+<form action='<?=this_url()?>' method=POST>
    Name: <select name='member_name'>
 <OPTION>
 <?php
@@ -46,7 +46,7 @@ foreach ($_REQUEST as $key => $val) {
   else {
     foreach ($val as $value) {
       print "<input type=hidden name='" . escape_html($key . '[]') . "' " .
-        "value='" . escape_html($val) . "' />\n";
+        "value='" . escape_html($value) . "' />\n";
     }
   }
 }
