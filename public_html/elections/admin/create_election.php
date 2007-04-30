@@ -743,8 +743,25 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
       if (!strlen($val)) {
         exit("<h2>You must have at least one candidate!</h2>");
       }
+      $arr_val = explode("\n",$val);
+      $new_arr_val = array();
+      foreach ($arr_val as $cand) {
+        $tcand = ltrim(rtrim($cand));
+        if (strlen($tcand) && !in_array($tcand,$new_arr_val)) {
+          $new_arr_val[] = escape_html($tcand);
+        }
+        else if (!strlen($tcand)) {
+          print "<h4>Discarding candidate '" . escape_html($cand) .
+            "' because it is only whitespace.</h4>";
+        }
+        else {
+          exit("<h2>Candidate '" . escape_html($cand) . 
+               "' was included multiple times.</h2>");
+        }
+      }
       print "<li>Candidates are: '" . 
-        join("', '",array_map('escape_html',explode("\n",$val))) . "'</li>";
+        join("', '",$new_arr_val) . "'</li>";
+      $val = join("\n",$new_arr_val);
       break;
     case 'num': 
       if (!ctype_digit($val) || !$val) {
