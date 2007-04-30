@@ -896,9 +896,42 @@ function script_name() {
   return substr(end(explode('/',$_SERVER['SCRIPT_NAME'])),0,-4);
 }
 
-//for form actions
+//for form actions.  Note that other scripts can "fake" a new url by
+//changing the GET (or SERVER) arrays, and voting.php (at least)
+//already does this.
 function this_url() {
-  return escape_html($_SERVER['REQUEST_URI']);
+  //script name will have the script without the get parameters
+  if (array_key_exists('SCRIPT_NAME',$_SERVER)) {
+    $page_name = $_SERVER['SCRIPT_NAME'];
+  }
+  else {
+    //this better exist
+    $page_name = $_SERVER['REQUEST_URI'];
+    //chop off the ?'s.  Might be a problem if the script name has a ?
+    //in it, but that would be such bad coding practice.  Still, it
+    //was worth the effort.
+    if (count($_GET)) {
+      $page_name = substr($page_name,0,strpos($page_name,'?'));
+    }
+  }
+  $first_flag = true;
+  //put the GET on, but encode it all so it's safe.  Use raw because
+  //who wants + for <space>?
+  foreach ($_GET as $key => $val) {
+    if ($first_flag) {
+      $first_flag = false;
+      $page_name .= '?';
+    }
+    else {
+      $page_name .= '&';
+    }
+    $page_name .= rawurlencode($key);
+    if (strlen($val)) {
+      $page_name .= '=' . rawurlencode($val);
+    }
+  }
+  //escape it so we can print directly to the page
+  return escape_html($page_name);
 }
 
 /////  My error-handling section.
@@ -1511,7 +1544,7 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
   }
   //here's the logout button -- don't print it yet, because maybe the
   //page is doing funky stuff and doesn't want output.
-  $str = "<form action='" . escape_html($_SERVER['REQUEST_URI']) . 
+  $str = "<form action='" . this_url() . 
     "' method=post><input type=hidden name='forget_login'>" .
     "<input type=submit value='Logout'></form>";
   //how the page tells us if output is not ok -- it sets $body_insert
