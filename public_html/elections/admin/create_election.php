@@ -741,7 +741,7 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
       $val = str_replace("\r\n","\n",$val);
       $val = rtrim($val);
       if (!strlen($val)) {
-        exit("You must have at least one candidate!");
+        exit("<h2>You must have at least one candidate!</h2>");
       }
       print "<li>Candidates are: '" . 
         join("', '",array_map('escape_html',explode("\n",$val))) . "'</li>";
@@ -759,13 +759,15 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
       default: 
         $val = $_REQUEST[$attrib . '_' . $ii . '_num'];
         if (!ctype_digit($val) || !$val) {
-          exit(escape_html($val) . " is not a valid number of choices to specify.");
+          exit("<h2>" . escape_html($val) . 
+               " is not a valid number of choices to specify.</h2>");
         }        
-        print "<li>Users will specify " . escape_html($val) . " unranked choices.</li>";
+        print "<li>Users will specify " . escape_html($val) . 
+          " unranked choices.</li>";
         break 2;
       default:
-        exit("There was an error reading your options.  " .
-             "Please go back and check them.\n");
+        exit("<h2>There was an error reading your options.  " .
+             "Please go back and check them.</h2>");
       }
     case 'threshold':
       switch ($val) {
@@ -774,7 +776,8 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
         $val = $_REQUEST[$attrib . '_' . $ii . '_num'];
         $threshold = true;
         if (!is_numeric($val) || $val <= 0) {
-          exit(escape_html($val) . " is not a valid percentage threshold.");
+          exit("<h2>" . escape_html($val) . 
+               " is not a valid percentage threshold.</h2>");
         }
         print "<li>Candidate(s) must get at least " . escape_html($val) . 
           "% of the vote to win.</li>";
@@ -783,15 +786,17 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
         $val = $_REQUEST[$attrib . '_' . $ii . '_num_absolute'];
         $threshold = true;
         if ( !$val || !ctype_digit($val)) {
-          exit(escape_html($val) . " is not a valid number threshold.");
+          exit("<h2>" . escape_html($val) . 
+               " is not a valid number threshold.</h2>");
         }
         print "<li>Candidates must get at least " . escape_html($val) .
           " votes to win.</li>";
         $val *= -1;
         break 2;
       default:
-        exit("There was an error reading your threshold preference.  Please " .
-             "go back and check it.\n");
+        exit("<h2>There was an error reading your threshold preference.  " .
+             "Please go back and check it.  <span style='display: none'>" .
+             escape_html($val) . "</span></h2>\n");
       }
     case 'abstain_count':
       if ($val) {
@@ -807,7 +812,8 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
       break;
     case 'num_voters':
       if (strlen($val) && (!$val || !ctype_digit($val))) {
-        exit(escape_html($val) . " is not a valid minimum number of voters.\n");
+        exit("<h2>" . escape_html($val) . 
+             " is not a valid minimum number of voters.</h2>");
       }
       if (strlen($val)) {
         $num_voters = true;
