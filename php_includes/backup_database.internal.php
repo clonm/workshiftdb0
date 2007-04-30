@@ -3,7 +3,7 @@
 //this gives a way for managers to backup their databases, both for emergency
 //recovery and every semester, so they can refer back to them.
 if (!array_key_exists('backup_ext',$_REQUEST)) { ?>
- <form action='<?=$_SERVER['REQUEST_URI']?>' method=POST>
+ <form action='<?=this_url()?>' method=POST>
     <?php 
     //if using multiple databases, the backup will be to a new database
    if ($USE_MYSQL_FEATURES) {
@@ -27,7 +27,7 @@ timestamp is probably what you want.
    <input type=submit value=Backup></form>
    <?php exit; } 
 $retval = true;
-$backup_ext = stripformslash($_REQUEST['backup_ext']);
+$backup_ext = $_REQUEST['backup_ext'];
 if (!$backup_ext) {
   $backup_ext = date('Y_m_d_H_i_s');
 }
