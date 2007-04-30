@@ -227,7 +227,7 @@ function add_race() {
   elt.setAttribute('name','threshold_' + num_races);
   elt.setAttribute('id','threshold_' + num_races + '_percent');
   elt.setAttribute('type','radio');
-  elt.setAttribute('value','1');
+  elt.setAttribute('value','percent');
   elt.setAttribute('onchange','threshold_change(' + num_races + ',1)');
   spanelt2.appendChild(elt);
   labelt = document.createElement('label');
@@ -255,7 +255,7 @@ function add_race() {
   elt.setAttribute('name','threshold_' + num_races);
   elt.setAttribute('id','threshold_' + num_races + '_number');
   elt.setAttribute('type','radio');
-  elt.setAttribute('value','2');
+  elt.setAttribute('value','number');
   elt.setAttribute('onchange','threshold_change(' + num_races + ',2)');
   spanelt2.appendChild(elt);
   elt = document.createElement('input');
