@@ -168,7 +168,8 @@ $start_date = get_static('semester_start');
 if (!strlen($start_date) == 0) {
   $start_date = explode('-',$start_date);
   $start_date[0]+=0;
-  $start_date[1]+=0;
+  //months are 0-indexed
+  $start_date[1]-=1;
   $start_date[2]+=0;
   if (!isset($javascript_pre)) {
     $javascript_pre = '';
@@ -185,7 +186,7 @@ if (!strlen($start_date) == 0) {
   
   var mydate = new Date();
   mydate.setFullYear({$start_date[0]},{$start_date[1]},{$start_date[2]});
-  mydate.setDate(mydate.getDate()+7*$week_num);
+  mydate.setDate(Number(mydate.getDate())+7*$week_num);
   function change_handler(elt) {
     default_change_handler(elt);
     if (!elt.id) {
@@ -193,7 +194,8 @@ if (!strlen($start_date) == 0) {
       else if (elt.srcElement) elt = elt.srcElement;
     }
     var coords = get_cell(elt);
-    if (coords && coords[1] == 1 && !get_value(elt.parentNode.parentNode.cells[0].firstChild)) {
+    if (coords && coords[1] == 1 && 
+        !get_value(elt.parentNode.parentNode.cells[0].firstChild)) {
       var add_val = 6;
       if (typeof(days_arr[get_value(elt)]) != 'undefined') {
         add_val = Math.min(6,days_arr[get_value(elt)]);
