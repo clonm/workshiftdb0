@@ -1,9 +1,7 @@
+<html><head><title>Administer election</title></head><body>
 <?php
 require_once('default.inc.php');
-?>
-<html><head><title>Administer election</title></head><body>
-
-<?php
+print_help();
 if (!authorized_user($member_name,'president')) {
   exit("You are not authorized to use this page.");
 }
@@ -131,6 +129,10 @@ while ($row = $res->FetchRow()) {
       escape_html($row['email']) . "&gt;,<br>\n";
   }
 }
+$elect_row = $db->GetRow("select * from `elections_record` where " .
+                         "`election_name` = ?",
+                         array($election_name));
+if ($elect_row['anon_voting']%2) {
 ?>
  Enter a member who voted manually (so they can't vote online as well):
 <form action='<?=$_SERVER['REQUEST_URI']?>' method='post'>
@@ -146,6 +148,9 @@ print "<option>" . escape_html($person) . "\n";
 <input type=hidden name='election_name' value='<?=$_REQUEST['election_name']?>'>
 <input type=submit value='Record voter'>
 </form><p>
+<?php 
+}
+?>
 <hr>
 <a href='create_election.php?modify_election&election_name=<?=
                                     escape_html(rawurlencode($election_name))?>'>
