@@ -30,8 +30,9 @@ function init_approved(ii) {
 }
 
 function threshold_change(race_num,ind) {
-  get_elt_by_id('abstain_count_span_' + race_num).style.color = (ind == 0?'gray':'');
-  get_elt_by_id('abstain_count_' + race_num).disabled = (ind == 0);
+  get_elt_by_id('abstain_count_span_' + race_num).style.color = 
+    (ind != 1?'gray':'');
+  get_elt_by_id('abstain_count_' + race_num).disabled = (ind != 1);
   if (ind) {
     if (ind == 1) {
       set_value_by_id('threshold_' + race_num + '_num_absolute','');    
