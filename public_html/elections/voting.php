@@ -422,7 +422,9 @@ while ($namerow = $nameres->FetchRow()) {
   }
   //some things get their own variables
   $candidates = explode("\n",$row['candidates']);
-  if (!$candidates[0]) {
+  //this shouldn't be necessary now that we check for empty candidates
+  //in create_election.
+  if (!strlen($candidates[0])) {
     array_shift($candidates);
   }
   //normalize data
@@ -431,6 +433,12 @@ while ($namerow = $nameres->FetchRow()) {
     if (!$row['num_voters']) {
       $row['def_val'] = null;
     }
+  }
+  if (!array_key_exists('feedback',$row) {
+    $row['feedback'] = null;
+  }
+  if (!$row['feedback']) && !$row['num']) {
+    $row['num'] = 1;
   }
   //if there is only one (or no) candidate, then instant runoff and
   //choosing multiple candidates are meaningless.
