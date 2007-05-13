@@ -519,7 +519,10 @@ while ($row = $res->FetchRow()) {
           escape_html($row['val']);
         break;
       default:
-        print "'>The action " . escape_html($row['attrib']) . " was taken</td><td>&nbsp;";
+        print "unknown'>The action " . escape_html($row['attrib']) . 
+          " was taken</td><td><a href='$page_name?details=" . $row['autoid'] . 
+          "'>Details</a>";
+
       }
     }
     else {
@@ -569,6 +572,70 @@ while ($row = $res->FetchRow()) {
           escape_html($row['val']) . " changed their password</a></td><td>&nbsp;";
         break;
       }
+      break;
+    case 'change_privilege':
+      //member had a privilege added or removed, like president, house, or nonvoter
+      //since nonvoter is different, displayed separately
+      $oldval = unserialize($row['oldval']);
+      if (isset($oldval['authority_figure'])) {
+        $authority_figure = escape_html($oldval['authority_figure']);
+        unset($oldval['authority_figure']);
+      }
+      else {
+        $authority_figure = null;
+      }
+      $val = unserialize($row['val']);
+      //bug from earlier elections logging in add_authorized_user
+      if (isset($oldval[0]) && !strlen($val[0])) {
+        array_shift($val);
+      }
+      if (isset($oldval[0]) && !strlen($oldval[0])) {
+        array_shift($oldval);
+      }
+      $mem = escape_html($row['attrib']);
+      $new_privs = array_diff($val,$oldval);
+      $old_privs = array_diff($oldval,$val);
+      if (in_array('nonvoter',$new_privs) || in_array('nonvoter',$old_privs)) {
+        print "nonvoter_privilege'>$mem was made a ";
+        if (count($new_privs)) {
+          print 'nonvoter';
+        }
+        else {
+          print 'voter';
+        }
+        print "</a></td><td>";
+      }
+      else {
+        foreach (array('president','workshift','house')+$new_privs+$old_privs
+                 as $priv) {
+          if (in_array($priv,$new_privs) || in_array($priv,$old_privs)) {
+            switch ($priv) {
+            case 'president': case 'workshift': case 'house':
+              print $priv;
+              break;
+            default:
+              print "unknown";
+              break;
+            }
+            print "_privilege'>$mem was ";
+            if (count($new_privs)) {
+              print "given";
+            }
+            else {
+              print "stripped of";
+            }
+            print " $priv powers</a></td><td>";
+          }
+        }
+      }
+      if ($authority_figure) {
+        print $authority_figure . " did it.";
+      }
+      break;
+    default:
+      print "unknown'>The action " . escape_html($row['subj_name']) . 
+        " was taken.</td><td>" .
+        "<a href='$page_name?details=" . $row['autoid'] . "'>Details</a>";
       break;
     }
   }

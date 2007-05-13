@@ -1417,8 +1417,11 @@ function add_authorized_user($mem_name,$type) {
     //here are their new privileges
     $privs = array_diff(user_privileges($mem_name),array($type));
     //changing privileges is a suspicious activity
-    elections_log(null,$mem_name,$member_name,
-                  user_privileges($mem_name),
+    //the authority figure key tells us who did the changing.
+    //Unfortunate that we need to pack it in there.
+    elections_log(null,$mem_name,'change_privilege',
+                  user_privileges($mem_name)+
+                  array('authority_figure' => $member_name),
                   $privs);
     return $db->Execute("insert into `privilege_table` (`member_name`," .
                         "`privileges`) values (?,?) " .
@@ -1428,7 +1431,7 @@ function add_authorized_user($mem_name,$type) {
   //we're adding the privilege.
   elections_log(null,$mem_name,$member_name,
                 user_privileges($mem_name),
-                array_merge(user_privileges($mem_name),$type));
+                user_privileges($mem_name)+array($type));
   return $db->Execute("insert into `privilege_table` (`member_name`," .
                       "`privileges`) values (?,?) " .
                       "on duplicate key update " .
