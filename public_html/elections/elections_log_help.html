@@ -7,6 +7,7 @@ an impact on an election is logged.  Explanations of these actions are
 below.
 
 <ul>
+<h3>Election events</h3>
 <li><a name='manual_entry'>At the end of an election, the President
 has to enter into the system any paper ballots that were filled out by
 house members.  This must be witnessed by two other house members,
@@ -24,6 +25,7 @@ which has completed.  This action must be witnessed by two other house
 members, whose names appear in the log.  All data from the election is
 gone.
 
+<h3>Member events</h3>
 <li><a name='workshift_reset_password'>The workshift manager reset a
 user's password.  It should be ensured that the user asked the
 workshift manager to reset her/his password, and then set the new
@@ -35,10 +37,6 @@ or more members.  This is a routine action, but could conceivably be
 exploited, so there should be a reason for it if it happens
 during/close to an election.
 
-<li><a name='voter_no_email'>A voter voted without an email address on
-file.  Since voters receive confirmation of their votes by email, the
-lack of an email makes the system have slightly less redundancy.
-
 <li><a name='member_email_change'>A member changed her/his email
 address.  Once again, since emails are used for confirmation, this
 could conceivably be used as part of an exploit to vote for someone
@@ -49,6 +47,40 @@ is routine at the start of the semester, but if it happens around
 election time, the president should make sure that it was the member
 who set the password.
 
+<li><a name='voter_no_email'>A voter voted without an email address on
+file.  Since voters receive confirmation of their votes by email, the
+lack of an email makes the system have slightly less redundancy.
+
+<h3>Privilege events</h3>
+
+<li><a name='nonvoter_privilege'>A nonvoter is not permitted to vote
+in elections.  A nonvoter is typically a boarder, who needs to appear
+in the workshift system, but who perhaps is not allowed to vote.  Note
+that nonvoters cannot vote in <strong>any</strong> elections.
+
+<li><a name='president_privilege'>Having president powers means that a
+member can create and administer elections.  Typically, only the house
+president should have president powers.  If someone else is added to
+this list, the house should be very suspicious.
+
+<li><a name='workshift_privilege'>Having workshift powers could mean
+that a member can act as the workshift manager.  Dangerous actions
+that member could take would include resetting members' passwords, or
+adding and deleting members.  However, this feature is currently
+nonfunctional (as of Spring 2007).
+
+<li><a name='house_privilege'>Having house powers just allows the
+member to view certain fining pages.  It should have no bearing on
+elections.
+
+<li><a name='unknown_privilege'>An unknown privilege was
+added/removed?  This should never happen.  Please file a bug report
+and/or email the workshift website administrator.
+
+<h3>Other</h3>
+<li><a name='unknown'>An unknown action was taken.  This should never
+happen.  If it does, please email the workshift website administrator,
+or submit a bug report.
 </ul>
 </body>
 </html>
