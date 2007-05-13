@@ -1,15 +1,18 @@
 <?php 
 $body_insert = '';
 require_once('default.inc.php');
+//member name is used below in loops
 $member_name_real = $member_name;
-#$db->debug = true;
-$dummy_string = get_static('dummy_string');
 if (!array_key_exists('election_name',$_REQUEST)) {
+  //get elections that have ended and been finalized, along with
+  //elections which allow the viewing of interim results
   $res = $db->Execute('SELECT ' . bracket('election_name') . ' FROM ' .
                       bracket('elections_record') . 
-                      ' WHERE unix_timestamp() >= `end_date` and `anon_voting` > 1 union ' .
-                      'select `election_name` from `elections_attribs` where ' .
-                      '`attrib_name` = ? and `attrib_value` != 0 order by `election_name`',
+                      ' WHERE unix_timestamp() >= `end_date` and ' .
+                      '`anon_voting` > 1 union ' .
+                      'select `election_name` from `elections_attribs` ' .
+                      'where `attrib_name` = ? and `attrib_value` != 0 ' .
+                      'order by `election_name`',
                       array('interim_results'));
   if (is_empty($res)) {
     exit("No elections currently viewable.<p>\n");
@@ -17,33 +20,39 @@ if (!array_key_exists('election_name',$_REQUEST)) {
   while ($row = $res->FetchRow()) {
     $elections[] = $row['election_name'];
   }
-#}
 ?>
 <html><head><title>Election Results</title></head><body>
 <?=$body_insert?>
-<form method='GET' action='<?=escape_html($_SERVER['REQUEST_URI'])?>'>
+<form method='GET' action='<?=this_url()?>'>
 <?php 
 $ii = 0;
 foreach ($elections as $election) {
-#}
+  //trick here -- if everything is checked, last one will be the one.
 ?>
-<label for='<?=$ii?>' ><input type=radio name='election_name' id='<?=$ii++?>' value='<?=escape_html($election)?>' checked><?=escape_html($election)?></label><br>
+<label for='<?=$ii?>' ><input type=radio name='election_name'
+id='<?=$ii++?>' value='<?=escape_html($election)?>'
+checked><?=escape_html($election)?></label><br>
 <?php 
-#{
 }
 ?>
 <input type='submit' value='Choose election'>
 </form></body></html>
 <?php
 exit;
-#{
 }
 $election_name = $_REQUEST['election_name'];
 $elect_row = $db->GetRow("select " .
                          "`anon_voting`, `anon_voting` < 2 as `open`, " .
-                         "`end_date` > unix_timestamp() as `time_open`, `end_date` " .
+                         "`end_date` > unix_timestamp() as `time_open`, " .
+                         "`end_date` " .
                          "from `elections_record` where `election_name` = ? ",
                          array($election_name));
+if (is_empty($elect_row)) {
+  print escape_html($election_name) . " is not a valid election. ";
+  print "<a href='election_results.php'>Click here to choose one</a>.";
+  exit;
+}
+//deal with member comments, member add
 foreach ($_REQUEST as $key => $val) {
   if (!$val) {
     continue;
@@ -62,6 +71,7 @@ foreach ($_REQUEST as $key => $val) {
         "!</h4>";
       continue;
     }
+    //we can use similar logic for both member_comments and member_add
     $race[1] = 'candidates';
   }
   else {
@@ -71,7 +81,9 @@ foreach ($_REQUEST as $key => $val) {
       continue;
     }
   }
+  //what's the current state of the text we're updating?
   $cur_text = get_election_attrib($race[1]);
+  //member comments have to be pre-pended with member info
   if ($race[1] == 'member_comments') {
     if ($elect_row['anon_voting']) {
       $cur_text .= 'somebody says: ';
@@ -82,6 +94,7 @@ foreach ($_REQUEST as $key => $val) {
     $cur_text .= $val . "\n";
   }
   else {
+    //make sure not a candidate already
     $cands = explode("\n",$cur_text);
     if (array_search($val,$cands) !== false) {
       print "<h4>" . escape_html($val) . " is already a candidate!</h4>\n";
@@ -89,6 +102,8 @@ foreach ($_REQUEST as $key => $val) {
     }
     $cur_text .= "\n" . $val;
   }
+  //ok, back.  Note that we don't store this anywhere.  It will be
+  //retrieved later.
   $db->Execute("update `elections_attribs` set `attrib_value` = ? where " .
                "`election_name` = ? and `race_name` = ? and `attrib_name` = ?",
                array($cur_text,$election_name,$race_name,$race[1]));
@@ -97,13 +112,8 @@ foreach ($_REQUEST as $key => $val) {
 <html><head>
 <title>Election results for <?=escape_html($election_name)?></title></head>
 <style>
-/* Browser specific (not valid) styles to make preformatted text wrap */
 pre { 
- white-space: pre-wrap;       /* css-3 */
- white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
- white-space: -pre-wrap;      /* Opera 4-6 */
- white-space: -o-pre-wrap;    /* Opera 7 */
- word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  <?= white_space_css() //white space should wrap and be pre-formatted?>
 }
 table {
   empty-cells: show;
@@ -113,11 +123,15 @@ table {
 <?php
 print $body_insert;
 #$db->debug = true;
-$interim_results = $db->GetRow("select `attrib_value` from `elections_attribs`" .
-                               " where `election_name` = ? and `attrib_name` = ?",
+$interim_results = $db->GetRow("select `attrib_value` " .
+                               "from `elections_attribs`" .
+                               " where `election_name` = ? " .
+                               "and `attrib_name` = ?",
                                array($election_name,'interim_results'));
+//check to see if we can really view this election.
 if (!is_empty($interim_results)) {
   $interim_results = $interim_results['attrib_value'];
+  //this should never happen -- just for legacy
   if ($interim_results == 'sync') {
     if ($elect_row['anon_voting']) {
       $interim_results = 0;
@@ -130,346 +144,182 @@ if (!is_empty($interim_results)) {
 else {
   $interim_results = false;
 }
-if ($elect_row['open'] && 
-    (!$interim_results || ($elect_row['anon_voting'] && $interim_results < 2))) {
-  exit("<h3>$election_name is not finished and interim results are not viewable.</h3>");
+//can't view if election is still open 
+if (!$interim_results && $elect_row['open']) {
+  exit("<h3>" . escape_html($election_name) . 
+       " is not finished and interim results are not viewable.</h3>");
 }
 $anon_voting = $elect_row['anon_voting']%2;
-$full_results = (!$anon_voting && !array_key_exists('full_results',$_REQUEST)) || 
-(array_key_exists('full_results',$_REQUEST) && $_REQUEST['full_results'] !== 0);
+//don't show full results if anonymous voting unless asked -- no need
+//to embarrass people in front of everyone
+$full_results = (!$anon_voting && 
+                 !array_key_exists('full_results',$_REQUEST)) || 
+(array_key_exists('full_results',$_REQUEST) && 
+ $_REQUEST['full_results'] !== 0);
 ?>
 Below are the results of the voting.  
 <?php if ($elect_row['time_open']) { ?>
- You can still <a href='voting.php?election_name=<?=escape_html($election_name)?>'>vote in the election</a>
+ You can still 
+<a 
+href='voting.php?election_name=<?=escape_html(rawurlencode($election_name))?>'
+>vote in the election</a>
 <?php if (!$anon_voting) { ?>
 or change your vote if you wish
                           <?php } ?>
 .
                                                                   <?php } ?>
-The method used for instant runoff is the same as for ASUC elections -- <a href='http://www.barnsdle.demon.co.uk/vote/fracSTV.html'>Here is a description of the procedure</a>.  Ties in the runoff are broken using first the <a href='http://condorcet.org/emr/defn.shtml#Condorcet%20winner'>Condorcet winner</a> (actually loser) if it exists, and then the <a href='http://condorcet.org/emr/methods.shtml#Borda'>Borda winner</a> (actually loser) if it exists.<p>  
-Here is <a href='voting.php?election_name=<?=escape_html(urlencode($election_name))?>'>the ballot</a> that was used.
+The method used for instant runoff is the same as for ASUC elections -- 
+<a href='http://www.barnsdle.demon.co.uk/vote/fracSTV.html'>Here is a
+description of the procedure</a>.  Ties in the runoff (if there are any)
+are broken using first the 
+<a href='http://condorcet.org/emr/defn.shtml#Condorcet%20winner'>Condorcet
+winner</a> (actually loser) if it exists, and then the 
+<a href='http://condorcet.org/emr/methods.shtml#Borda'>Borda winner</a> 
+(actually loser) if it exists.<p>  
+Here is 
+<a 
+href='voting.php?election_name=<?=escape_html(rawurlencode($election_name))?>'>the
+ballot</a> that was used.
   
-<h3>Check out the <a href='elections_log.php'>elections log</a> to make sure no one's trying to cheat</h3>
+<h3>Check out the <a href='elections_log.php'>elections log</a> to make
+sure no one's trying to cheat.</h3>
   <?php
 #';
-#$db->debug = true;
-$res = $db->Execute("select * from `votes` where `election_name` = ?",array($election_name));
+
+//get *all* the votes
+$res = $db->Execute("select * from `votes` where `election_name` = ?",
+                    array($election_name));
 $all_votes = array();
 $members = array();
+//might need totals for threshold purposes
+$global_totals = array();
+//parse votes and put in array, with races as the keys
 while ($row = $res->FetchRow()) {
   $race = $row['option_name'];
   if (!array_key_exists($race,$all_votes)) {
     $all_votes[$race] = array();
+    $global_totals[$race] = 0;
   }
   $member_name = $row['member_name'];
+  if (!isset($members[$member_name])) {
+    $members[$member_name] = array();
+  }
+  //already voted in this race?  Remember, a race where multiple
+  //options can be chosen will just have everything in one field,
+  //separated by "\n"
   if (array_key_exists($member_name,$all_votes[$race])) {
-    print("<h3>Error!  It looks like " . escape_html($member_name) . " has voted twice!</h3>");
+    print("<h3>Error!  It looks like " . escape_html($member_name) . 
+          " has voted twice!</h3>");
   }
   else {
+    //unnecessary options here for some things, but who cares.  Weight
+    //is only important for instant runoff.
     $all_votes[$race][$member_name] = array();
     $all_votes[$race][$member_name]['weight'] = 1;
+    $global_totals[$race]++;
     if (strlen($row['option_choice'])) {
       $members[$member_name][$race] = 
-        $all_votes[$race][$member_name]['ballot'] = explode("\n",$row['option_choice']);
+        $all_votes[$race][$member_name]['ballot'] = 
+        explode("\n",$row['option_choice']);
     }
+    //abstaining
     else {
-            $members[$member_name][$race] = 
-              $all_votes[$race][$member_name]['ballot'] = array();
+      $members[$member_name][$race] = 
+        $all_votes[$race][$member_name]['ballot'] = array();
     }
 
   }
 }
-$res = $db->Execute("select distinct `member_name` from `votes` " .
-                    "where `election_name` = ?",array($election_name));
-$global_total = 0;
-while ($res->FetchRow()) {
-  $global_total++;
-}
 
-$nameres = $db->Execute('select `autoid`,`race_name` from `elections_attribs` ' .
-                        'where `election_name` = ? and `attrib_name` = ? order by 0+`attrib_value`',
+//get races in order
+$nameres = $db->Execute('select `autoid`,`race_name` ' .
+                        'from `elections_attribs` ' .
+                        'where `election_name` = ? and `attrib_name` = ? ' .
+                        'order by 0+`attrib_value`',
                         array($election_name,'race_name'));
 
+//start of huge race loop
 while ($namerow = $nameres->FetchRow()) {
   $race = $namerow['autoid'];
   $race_name = $namerow['race_name'];
   $race_names[$race] = $race_name;
   $race_nums[] = $race;
-  $res = $db->Execute('select `attrib_name`,`attrib_value` from `elections_attribs`' .
+  $res = $db->Execute('select `attrib_name`,`attrib_value` ' .
+                      'from `elections_attribs`' .
                       ' where `election_name` = ? and `race_name` = ?',
                       array($election_name,$race_name));
   $row = array();
   while ($temprow = $res->FetchRow()) {
     $row[$temprow['attrib_name']] = $temprow['attrib_value'];
   }
-  if (!isset($row['num'])) {
+  //normalize data
+  if (!$row['threshold']) {
+    $row['abstain_count'] = null;
+    if (!$row['num_voters']) {
+      $row['def_val'] = null;
+    }
+  }
+  if (!array_key_exists('feedback',$row)) {
+    $row['feedback'] = null;
+  }
+  if (!$row['feedback'] && !$row['num']) {
     $row['num'] = 1;
   }
-
   $all_races[$race]['display_name'] = $race_name;
   $all_races[$race]['feedback'] = isset($row['feedback']) && $row['feedback'];
   print("<h4>" . escape_html($race_name) . "</h4>");
+  //assign by reference -- just a pointer
   $votes =& $all_votes[$race];
   if ($all_races[$race]['feedback']) {
-    foreach ($votes as $key => $val) {
-      $votes[$key] = join($val['ballot'],"\n");
-    }
-    usort($votes,'rand_md5_cmp');
-    print "<ul>\n";
-    foreach ($votes as $feed) {
-      if (strlen($feed)> 0) {
-        print "<li>" . $feed . "\n";
+    //maybe nobody's voted yet in this race
+    if ($votes) {
+      foreach ($votes as $key => $val) {
+        $votes[$key] = join(array_map('escape_html',$val['ballot']),"<br/>\n");
       }
-    }
-    if ($house_name == 'hoy') {
-      switch ($all_races[$race]['display_name']) {
-        case 'VOC President':
-          print ("<li> Sometimes there are a bit too many emails, could be
-more succint. House meetings are very scattered-the second meeting was
-short notice.  Perhaps making a poster shown in the stairwell would
-help as well to do a reminder other than email.
-<li> yeah, please less emails.  i need weekend meetings, i
-can't meet on monday through thursday.
-<li> Overall, good job. She takes her job seriously and does
-the best she can. I think the emails could be more to-the-point, as a
-previous member has written, but I don't mind them as I think they are
-important notices and save on paper, which has been a complaint in the
-past. I think the house president's job is to say very little during a
-meeting, but rather to simply direct \"traffic\" so-to-speak. Perhaps
-she could work on this as sometimes I feel that she reitterates things
-that do not need reitteration. Otherwise-great job.
-<li> Maria conducts meetings efficiently.  However, it would
-be nice to have a little time at the end of the meetings for member
-announcements and last minute member concerns.
-<li> Have the by-laws been updated yet?  Individuals keep
-saying, \"We're working on it,\" but no word has been said on the
-progress made since summer.  Now that we have an online voting system,
-more free time should be available, right?");
-          break;
-      case 'VOC House Manager':
-        print ("<li> I haven't had a fire safety training yet and it is
-already well into the semester.
-<li> fire safety isn't mandatory, it's a precaution that
-Hoyt takes that is above and beyond, and it's really just walking down
-the fire escape.
-<li> You could always go up to her individually and schedule one.
-<li> Quiet hours are never inforced until two hours after
-they start.  I can hear her coming out of the television room after
-ten being loud herself.
-<li> I think quiet hours are enforced just fine. The few
-seconds after one comes out of the television room seems hardly a
-point of contention, in my opinion. Perhaps if someone is that light
-of a sleeper, they should wear earplugs. I haven't heard any after
-hours loud noises/conversations for an extended period of time this
-semester. I think it's important to remember that managers cannot be
-everywhere at once. And if any individual in the house has a problem,
-it is important to speak up directly and not just bring it up in VOCs.
-A manager is not omnipotent, so please be fair.
-<li> Controlling by fine threats is not good for the house moral.
-<li> She is excellent at taking comments and putting them
-into action or at least directing questions/comments to the right
-individuals. In response to the \"fine threats\" comment--when all else
-has been tried first, this is the most efficient way to get things
-done after a Hoytian does not abide by house rules. If you feel fine
-threats are not good, perhaps you should try to talk to the managers
-about a new system. The fine system is tried and true, and in the end,
-it's good for the house and yields great returns (ie, the surplus
-which has paid for dues in the past).
-<li> Iisha rocks!  I think she's doing a great job, the
-house is running great this semester. :)
-<li> Keep it up! She's doing an awesome job.
-<li> Iisha is not as approachable as she could be and
-doesn't follow up on some matters she is responsible for.");
-        break;
-      case 'VOC Workshift Manager':
-        print("<li> She really tries hard to accommodate workshifters- she
-does not want them to get fined. I have never seen a workshift manager
-work so hard for the members.
-<li> I think she does an awesome job of both being an
-advocate for the members while at the same time enforcing the laws of
-the land which MUST be done so we don't live in a dump. Great job!<li> You go girl!");
-        break;
-      case 'VOC Maintenance Manager':
-        print("<li> I don't think this question has to do with the job that
-the Maintenance Manager is doing. Our house is old and there's always
-something that's going to go wrong, but Joan is doing an amazing job
-to battle it, so I'm abstaining.
-<li> Needs to be more on top of central maintenance when
-house level tasks are not completed.
-<li> There is no being more on top of CM than Joan is. They
-are simply VERY difficult to deal with at times and I think she is
-doing an outstanding job being on top of things. Many times they won't
-return calls, or they'll leave something half finished, but she calls
-and leaves multiple messenges. Why not talk to her if you think that
-something is not being done? I bet you 10 times out of 10, she's
-already talked to them.
-<li> When you enter a room leave it the way it was- lock the
-deadbolt.
-<li> I did not receive a note that she would be entering my
-room for the second round of room inspections.
-<li> you need to let people know 48 hours in advance if
-you're going to be entering their room.  i believe that's in the
-bylaws.
-<li> one word- piano :(
-<li> Very open to suggestions and comments! Thank you for
-listening to us!
-<li> I suggest an orientation on how to plunge a toilet be
-made mandatory. Individuals should know how to declog their own
-toilets.  This would not only free up time for the maintenance crew to
-do more important tasks, but it would also be more pleasant for the
-next visitor.
-<li> My guess would be that people know how they just don't
-want to because either their embarrassed or lazy. Either way, I know
-for a fact that the maintenance crew members do not spend all their
-time unclogging toilets.
-<li> Joan is thorough in her work, very approachable to all
-members, and has gone beyond what is required of her as maintenance
-manager.  Keep it up, Joan!");
-        break;
-      case 'VOC Finance Manager':
-        print("<li> we should have gotten a house bill for fall already,
-it's the 5th week.
-<li> Yes! When I let her know about our faulty laundry
-machines she got right on it that very moment! (I feel that not a lot
-of people know this, but Finance Managers are in charge of the
-maintenance of the washers and driers, so let her know if anything
-happens).
-<li> Tracy is an excellenct finance manager in all regards.");
-        break;
-      case 'VOC Kitchen Manager':
-        print("<li> She is the best kitchen manager I have seen to this
-date! It is very tough to be a kitchen manager and a lot of her job is
-behind the scenes. I think she goes above and beyond the call of duty.
-<li> Definitely. IKC is but one example--not to mention the
-alphabetizing of the spices! The list goes on and on...
-<li> If the co-ops offer the tea and it is not expensive,
-then it should not be a problem to cater to individuals.
-<li> What tea? We have tea, and it's yummy!
-<li> Very unapproachable.
-<li> I think sometimes she can take an unconstructive
-complaint too personally. Granted, it's tough not to. Managers have it
-rough--no question--people can get really nasty sometimes, but I don't
-think that should influence her feelings (especially about the house
-in general) because she's good at what she does. Other than that she
-is awesome when it comes to comments and suggestions. She implements
-things right away and is VERY proactive. If anything happens she is
-very responsible and takes care of the problem immediately.
-<li> Can the cooks occasionally make brown rice instead of
-white?  Secondly, tuna salad (or any salad for the matter) as the only
-main meat dish is insufficient. Finally, please ask the cooks to make
-a vegetarian or vegan side (leafy vegetables!) instead of another
-dessert.
-<li> All cooks have a vegan and vegetarian side. It is not
-required to have two vegan sides, but perhaps you can take it to the
-house meeting for a vote. It is true that desserts are optional, but
-sometimes there are a limited supply of vegetables (let alone
-\"leafy\"), so consult the refrigerator or the KM to be more informed.
-Also I think that leafy vegetables are more expensive and the house is
-on a budget, but for that you should consult our KM directly. When all
-else fails, you can always make an extra side for yourself when the
-cooks have finished.
-<li> Jeanie is an excellent kitchen manager.  She goes
-beyond what her position requires of her, like cooking dinner herself
-when no one had signed up for the shift.  Thanks, Jeanie!");
-        break;
-      case 'VOC Recycling Manager':
-        print("
-<li> Full bins in the alley way.  Free pile needs to be gone
-through.
-<li> Just this week the recycling area looked magnificent.
-The free pile needs to go on a diet, though. It makes the common room
-look dumpy.
-<li> Should require recycling class for new members.
-<li> I agree with the above comment.  People are not
-composting correctly.  The incentive given to attend the recycling
-orientation was not enough.  Fines should be given if one does not
-attend the orientation.
-<li> I agree too. In the past, when the recycling
-orientation was mandatory, people knew what to do.");
-        break;
-      case 'VOC Garden Manager':
-        print("<li> Should have kept log from the beginning
-<li> I agree. I think that along with tours there should be
-a map on the garden board of what is planted where--not only for house
-members but for future garden managers to update.
-<li> Taking out perfectly good flowers is a little upsetting.
-<li> I would rather see her sweeping the backyard than using
-her hours to search the hills for lettuce as it says in her flier,
-because we get lettuce at the house anyways. I don't think that a
-manager should get 5 hours a week for this. Right now we have a lot of
-open shifts in the house. It would be a shame for lettuce would be
-more important than washing pots.
-<li> I think she was looking for plants to transplant, not
-for greens to toss into one single salad. Those native lettuce plants
-now brighten the back yard. Thanks, Morley!");
-        break;
-      case 'VOC Social Manager':
-        print("<li> Movies do not count as social events as people do those
-all of the time anyway.
-<li> Should offer to take groups to other parties, since not
-everyone is invited to the groups that the house forms itself.
-<li> Maybe Caitlin could post schedules and info on upcoming
-social events for other houses on the social board.
-<li> Not enough events.
-<li> How much money is being spend on alcohol alone?
-<li> It would be great to have a chart showing how much
-money is going where.
-<li> I think it was great that she did a room to room right
-away to get things rolling, although it has always been tough for
-social managers to get money early enough, so usually events were
-postponed.");
-        break;
-      case 'VOC Secretary':
-        print("<li> Where are the by-laws available?
-<li> Last time I saw them they were above the mailbox in a
-blue binder.
-<li> Maybe Kaja could post the minutes in the bathroom where
-everyone would see them.");
-        break;
-      case 'VOC Board Rep':
-        print ("<li> I really appreciate the signs posted in the restrooms
-because they help me to stay informed.");
-        break;
-      case 'VOC Ethernet Manager':
-        print("
-<li> Very helpful and accommodating
-<li> The people at the ends of the house do not get a good
-wireless signal or none at all. It would be nice if we could install
-wireless extenders in the house. One could be in the store, since it
-is locked at all times, or at least under supervision when the finance
-manager or her assistant is there.");
-        break;
-      case 'VOC Health Worker':
-        print("
-<li> I absolutely love our health tips.
-<li> Bandaids and neosporin are never in stock in the
-kitchen this is very essential.
-<li> I like that she offers hikes");
-      default:
+      //sort votes as randomly as we can get it, so we don't know who
+      //entered ballots first.
+      usort($votes,'rand_md5_cmp');
+      print "<ul>\n";
+      foreach ($votes as $feed) {
+        if (strlen($feed)> 0) {
+          //already escaped above.
+          print "<li>" . $feed . "\n";
+        }
       }
+      print "</ul>";
     }
-    print "</ul>";
+    print "<hr>";
     continue;
   }
-
-
   $all_races[$race]['candidates'] = explode("\n",$row['candidates']);
+  //again, just a pointer
   $candidates =& $all_races[$race]['candidates'];
   if (count($candidates) && !$candidates[0]) {
     array_shift($candidates);
   }
   $count = count($candidates);
+  //if there is only one (or no) candidate, then instant runoff and
+  //choosing multiple candidates are meaningless.
+  if ($count < 2) {
+    $row['runoff'] = 0;
+  }
   $choices = array();
   foreach ($candidates as $cand) {
     $choices[$cand] = 0;
   }
+  //get copy of the votes for archiving -- we're about to change them
   $votes_copy = array();
+  $race_votes = 0;
   if (count($votes)) {
     foreach ($votes as $mem => $junk) {
       $mem_ballot =& $votes[$mem];
+      //make sure the ballot is ok, no unknown candidates (should
+      //never happen), and also that ballot is non-empty.
       if (!normalize_ballot($mem_ballot['ballot'],$mem)) {
         continue;
       }
+      $race_votes++;
+      //this weight should always be 1.  There's no way it couldn't.
       if ($row['runoff']) {
         $choices[$mem_ballot['ballot'][0]] += $mem_ballot['weight'];
       }
@@ -483,26 +333,33 @@ kitchen this is very essential.
       $votes_copy[$mem] = $votes[$mem]['ballot'];
     }
   }
-  complete_ballots($choices,$votes_copy);
+  //figure out the threshold for this race
   if ($row['threshold'] != 0) {
+    //absolute number needed
     if ($row['threshold'] < 0) {
       $threshold = -$row['threshold'];
     }
+    //percentage needed.  Abstain count tells us whether or not it
+    //should come from the global or race (doesn't include abstain)
+    //totals
     else {
-      $threshold = $row['threshold']*$global_total/100;
+      $threshold = $row['threshold']*
+        ($row['abstain_count']?$global_totals[$race]:$race_votes)/100;
     }
-  }
-  else if ($row['runoff']>0) {
-    $threshold = $global_total/($row['num']);
   }
   else {
     $threshold = -1;
   }
+  //keep track of winners
   $winners = array();
+  //is there a minimum number of voters?
   if (isset($row['num_voters'])) {
+    //not enough voters yet?
     if (count($votes) < $row['num_voters']) {
-      print "<strong>Not enough people have voted yet (" . escape_html($row['num_voters']) .
-        " voters are needed for this to be a valid election, and " . escape_html(count($votes)) .
+      print "<strong>Not enough people have voted yet (" . 
+        escape_html($row['num_voters']) .
+        " voters are needed for this to be a valid election, and " . 
+        escape_html(count($votes)) .
         " votes have been cast)</strong><br/>\n";
       if (!$elect_row['open']) {
         print "Since the election is over, ";
@@ -515,6 +372,7 @@ kitchen this is very essential.
         }
       }
       else {
+        //user time puts the time in the user's time zone
         print "If not enough people vote by " . 
           escape_html(user_time($elect_row['end_date']), 'l, F j, Y, g:i a') .
           ", ";
@@ -528,11 +386,16 @@ kitchen this is very essential.
       }
       print "The result for the votes cast is:<br/>\n";
     }
-  } 
+  }
+  //put condorcet, borda at end.  We do it now for tie-breaking, but
+  //suppress the printing until later.
   ob_start();
+  //condorcet doesn't regard weights, if those were ever different, so
+  //we use votes_copy, which didn't have the weights.
   $other_choice = condorcet_choice(array_keys($choices),$votes_copy,null,true);
   if ($other_choice !== null) {
     print("Condorcet choice");
+    //maybe multiple Condorcet choices
     if (is_array($other_choice)) {
       print "s: " . join(', ',array_map('escape_html',$other_choice));
     }
@@ -542,29 +405,43 @@ kitchen this is very essential.
     print "<br>\n";
   }
   if (($other_choice = borda_choice($choices,$votes_copy,null,true)) !== null) {
-    print("Borda choice: " . escape_html($other_choice) . "<br>");
-  }
-  $other_methods = ob_get_clean();
-  while (count($choices) && $row['num']) {
-    if (count($choices) == 1) {
-      $threshold = 0;
+    print("Borda choice");
+    if (is_array($other_choice)) {
+      print "s: " . join(', ',array_map('escape_html',$other_choice));
     }
+    else {
+      print ": " . escape_html($other_choice);
+    }
+    print "<br>\n";
+  }
+  //store for later.
+  $other_methods = ob_get_clean();
+  //while there are still any candidates left and any winners to pick, loop
+  while (count($choices) && $row['num']) {
+    //sort them in reverse order, so most votes comes first.
     arsort($choices);
+    //if we're printing everything out, print out all the votes here.
     if ($full_results && count($votes)) {
       print("<table border=1>");
+      //put ballots into bins by current choice, then print out
       $name_choices = array();
       foreach ($votes as $member => $junk) {
         $mem_ballot =& $votes[$member];
-        if (!is_array($mem_ballot['ballot']) || !count($mem_ballot['ballot'])) {
+        //Abstentions
+        if (!is_array($mem_ballot['ballot']) || 
+            !count($mem_ballot['ballot'])) {
           continue;
         }
         if (!isset($name_choices[$mem_ballot['ballot'][0]])) {
           $name_choices[$mem_ballot['ballot'][0]] = array();
         }
+        //member goes in bin, voting for this candidate
         $name_choices[$mem_ballot['ballot'][0]][] = $member;
       }
+      //ok, print out
       print("<tr>");
       foreach ($choices as $option => $count) {
+        //nobody voted for this one?
         if (!isset($name_choices[$option])) {
           $name_choices[$option] = array();
         }
@@ -572,21 +449,31 @@ kitchen this is very essential.
               " (" . count($name_choices[$option]) . ")</td>");
       }
       print("</tr>\n");
+      //ok, nasty logic.  We need to print as many rows as the number
+      //of votes the most popular candidate got.  Hence the flag -- it
+      //tells us to keep on printing rows.
       $flag = true;
       $ii = 0;
       while ($flag) {
         $flag = false;
         print("<tr>");
         foreach ($choices as $option => $count) {
-          if (!isset($name_choices[$option]) || count($name_choices[$option]) <= $ii) {
+          //done printing this candidate's voters?
+          if (!isset($name_choices[$option]) || 
+              count($name_choices[$option]) <= $ii) {
             continue;
           }
+          //does this print not finish things for this choice?
           if (count($name_choices[$option]) > $ii + 1) {
             $flag = true;
           }
+          //print the voter
           print("<td>" . escape_html($name_choices[$option][$ii]));
+          //weight might not be 1 -- overflow and all that
           if ($votes[$name_choices[$option][$ii]]['weight'] != 1) {
-            print (" (" . escape_html($votes[$name_choices[$option][$ii]]['weight']) . ")");
+            print (" (" . 
+                   escape_html($votes[$name_choices[$option][$ii]]['weight']) 
+                   . ")");
           }
           print("</td>");
         }
@@ -595,140 +482,265 @@ kitchen this is very essential.
       }
       print("</table>");
     }
+    //winners this time around
     $cur_winners = array();
-    foreach ($choices as $option => $count) {
-      if ($count >= $threshold) {
-        if ($row['num']-count($cur_winners) <= 0 &&
-            end($cur_winners) > $count) {
+    //people who might be winners, if they're not tied with too many others
+    $tie_winners = array();
+    //we need a threshold to pick the most popular candidates still
+    //remaining if we're doing instant runoff.  They will have at
+    //least #votes/#choices, but #votes is #votes *remaining*
+    //comment here for emacs
+    if ((!isset($threshold) || $threshold == -1) && $row['runoff'] == 1) {
+        $soft_threshold = array_sum($choices)/max(1,count($choices));
+    }
+    else {
+      $soft_threshold = $threshold;
+    }
+    //check choices for winners
+    //how many votes did the last "winner" get?
+    $cur_votes = -1;
+    foreach ($choices as $option => $choice_count) {
+      //passed the threshold?
+      if ($choice_count >= $soft_threshold) {
+        //do we already have enough winners, and the last winner
+        //elected had more votes than this potential winner?  If so,
+        //don't add this winner.
+        if ($row['num']-count($cur_winners)-count($tie_winners) <= 0 &&
+            $cur_votes > $choice_count) {
           break;
         }
-        $cur_winners[$option] = $count;
+        //otherwise, add them.
+        //are we ok to put these tied winners in with the rest?
+        if (!count($tie_winners) || $cur_votes > $choice_count) {
+          $cur_winners += $tie_winners;
+          $tie_winners = array();
+          $cur_votes = $choice_count;
+        }
+        $tie_winners[$option] = $choice_count;
       }
+      //because we ordered by votes, all the rest of the candidates
+      //don't have enough.
       else {
         break;
       }
     }
-    $row['num'] -= count($cur_winners);
-    if ($row['num'] < 0) {
-      print "<h4>This race has too many candidates tied for winner!</h4>";
-      print "The candidates to be chosen from are: ";
-      //printed out down below, in list of winners
-      /*      foreach ($cur_winners as $option => $votes) {
-        print escape_html($option) .  " (" . escape_html($votes) . " votes)<br>\n";
-      }*/
+    if (count($cur_winners)+count($tie_winners) <= $row['num']) {
+      $cur_winners += $tie_winners;
     }
-    if ($row['runoff'] == 1) {
-      if (count($cur_winners)) {
-        $choices = array_diff($choices,$cur_winners);
-        foreach ($cur_winners as $winner => $count) {
-          if ($count) {
-            $multiplier = 1-$threshold/$count;
-            if ($multiplier) {
-              foreach ($votes as $mem => $junk) {
-                $mem_ballot =& $votes[$mem];
-                if (count($mem_ballot['ballot']) && $mem_ballot['ballot'][0] == $winner) {
-                  $mem_ballot['weight'] *= $multiplier;
-                  if (normalize_ballot($mem_ballot['ballot'])) {
-                    $choices[$mem_ballot['ballot'][0]] += $mem_ballot['weight'];
-                  }
-                }
+    //decrease number of winners needed by winners we just got.
+    $row['num'] -= count($cur_winners);
+    //no runoff?
+    if ($row['runoff'] != 1) {
+      //these are it -- set and get out of loop forever
+      $winners = array_keys($cur_winners);
+      break;
+    }
+    //clean up ballots for next time, since it's instant runoff
+    //were there winners whose votes might spill over?
+    if (count($cur_winners)) {
+      //get the remaining choices
+      $choices = array_diff($choices,$cur_winners);
+      foreach ($cur_winners as $winner => $count) {
+        //maybe there were as many or more winners as candidates
+        if (!$count) {
+          continue;
+        }
+        //here's their extra
+        $multiplier = 1-$soft_threshold/$count;
+        //if there was any extra
+        if (!$multiplier) {
+          continue;
+        }
+        //look at every vote to see if they voted for this choice
+        foreach ($votes as $mem => $junk) {
+          $mem_ballot =& $votes[$mem];
+          //did they?
+          if (!count($mem_ballot['ballot']) || 
+              $mem_ballot['ballot'][0] != $winner) {
+            continue;
+          }
+          //scale the weight of this ballot
+          //and if there are any choices remaining after
+          //getting rid of the top one, add it in.
+          array_shift($mem_ballot['ballot']);
+          if (!normalize_ballot($mem_ballot['ballot'])) {
+            continue;
+          }
+          $mem_ballot['weight'] *= $multiplier;
+          $choices[$mem_ballot['ballot'][0]] += 
+            $mem_ballot['weight'];
+        }
+      }
+      //add these winners into the big list of winners for this race
+      $winners = array_merge($winners,array_keys($cur_winners));
+    }
+    //no winners?  We have to drop somebody
+    else {
+      //we need to get the lowest candidates.  Lowest will be
+      //last, because they're ordered most -> least.  The
+      //complication is that there might be multiple candidates who
+      //are tied for last.
+      $indices = array_keys($choices);
+      $drops = array();
+      //loop through the choices, getting candidates tied for last
+      //start with the last choice and add choices until a candidate
+      //doesn't have the same number of votes as the last candidate
+      for ($drops[] = array_pop($indices); 
+           end($drops) !== null && 
+             $choices[end($drops)] == $choices[$drops[0]]; 
+           $drops[] = array_pop($indices)) {}
+      //we added one too many
+      array_pop($drops);
+      //did they get any votes at all?  As a short-circuit, all
+      //candidates with 0 votes are eliminated immediately, to avoid
+      //100-round runoffs.
+      if ($choices[$drops[0]]) {
+        if (count($drops) > 1) {
+          //of these potential drops, who is the least popular?
+          $loser = condorcet_choice($drops,$votes_copy,1);
+          if ($loser) {
+            if (!is_array($loser)) { 
+              if ($choices[$loser]) {
+                print "Using the Condorcet method to break a tie " .
+                  "and eliminate a candidate.";
               }
             }
+            else {
+              if (count($loser) < count($drops) && 
+                  $choices[$loser[0]]) {
+                print "Narrowing which candidate to drop " .
+                  "using the Condorcet method.<br>\n";
+              }
+              $drops = $loser;
+              $loser = null;
+            }
           }
-        }
-        $winners = array_merge($winners,array_keys($cur_winners));
-      }
-      else {
-        $indices = array_keys($choices);
-        $drops = array();
-        for ($drops[] = array_pop($indices); 
-             end($drops) !== null && $choices[end($drops)] == $choices[$drops[0]]; 
-             $drops[] = array_pop($indices)) {}
-        array_pop($drops);
-        if ($choices[$drops[0]]) {
-          if (count($drops) > 1) {
-            $loser = condorcet_choice($drops,$votes_copy,1);
+          //might have been reset right above
+          if (!$loser) {
+            $loser = borda_choice($drops,$votes_copy,1);
             if ($loser) {
               if (!is_array($loser)) { 
                 if ($choices[$loser]) {
-                  print "Using the Condorcet method to break a tie and eliminate a candidate.";
+                  print "Using the Borda method to break a tie " .
+                    "and eliminate a candidate.";
                 }
               }
               else {
-                if (count($drops) < count($loser) && $choices[$loser[0]]) {
-                  print "Narrowing which candidate to drop using the Condorcet method.<br>\n";
+                if (count($loser) < count($drops) && 
+                    $choices[$loser[0]]) {
+                  print "Narrowing which candidate to drop " .
+                    "using the Borda method.<br>\n";
                 }
                 $drops = $loser;
                 $loser = null;
               }
             }
-            //might have been reset right above
-            if (!$loser) {
-              $loser = borda_choice($drops,$votes_copy,1);
-              if ($loser && $choices[$loser]) {
-                print "Using the Borda method to break a tie and eliminate a candidate";
-              }
-            }
-            if (!$loser) {
-              $loser = $drops[0];
-              if ($choices[$loser]) {
-                print "<h4>Warning!  There is no good way to choose which candidate should be " .
-                  "eliminated!</h4>";
-              }
-            }
           }
-          else {
+          //oh well, just drop the last one
+          if (!$loser) {
             $loser = $drops[0];
+            if ($choices[$loser]) {
+              print "<h4>Warning!  There is no good way to choose " . 
+                "which candidate should be eliminated!</h4>";
+            }
           }
+        }
+        //there was only one loser, so easy to choose
+        else {
+          $loser = $drops[0];
+        }
+        //get rid of loser
+        unset($choices[$loser]);
+      }
+      //get rid of all 0-vote choices
+      else {
+        foreach ($drops as $loser) {
           unset($choices[$loser]);
         }
-        else {
-          foreach ($drops as $loser) {
-            unset($choices[$loser]);
-          }
-        }
-        foreach ($votes as $mem => $junk) {
-          $mem_ballot =& $votes[$mem];
-          if (count($mem_ballot['ballot']) && $mem_ballot['ballot'][0] == $loser) {
-            if (normalize_ballot($mem_ballot['ballot'])) {
-              $choices[$mem_ballot['ballot'][0]] += $mem_ballot['weight'];
-            }
+      }
+      //go through votes.  Don't normalize all the ballots yet,
+      //because maybe there's no need -- just normalize the ones
+      //that definitely have to be reassigned.  Note that this is
+      //trivial for 0-vote-losers, because they weren't anyone's
+      //first choice
+      foreach ($votes as $mem => $junk) {
+        $mem_ballot =& $votes[$mem];
+        //did they chose the loser?
+        if (count($mem_ballot['ballot']) && 
+            $mem_ballot['ballot'][0] == $loser) {
+          if (normalize_ballot($mem_ballot['ballot'])) {
+            //reassign
+            $choices[$mem_ballot['ballot'][0]] += $mem_ballot['weight'];
           }
         }
       }
     }
-    else {
-      $winners = array_keys($cur_winners);
-      break;
-    }
   }
-  if ($row['num'] > 0 && (count($winners) || !$row['def_val'])) {
-    print("<h4>Warning!  Not enough candidates beat the threshold of " . 
-          escape_html($threshold) . "</h4>");
-  }
+  //phew, done with big loop
+  //print out winners
   foreach ($winners as $winner) {
     print escape_html($winner);
+    //vote totals are inaccurate for runoffs, and don't embarrass
+    //people without full results
     if (!$row['runoff'] && $full_results) {
-      print " (" . escape_html($choices[$winner]) . " out of " . escape_html($global_total) . " votes)";
+      print " (" . escape_html($choices[$winner]) . " out of " . 
+        escape_html($global_totals[$race]) . " votes)";
     }
-    print "<br>\n";
+    print "<br/>\n";
   }
-  if (!count($winners) && $row['def_val']) {
+  //were there no winners at all, and a default value?
+  if (!count($winners) && strlen($row['def_val'])) {
     print escape_html($row['def_val']);
-    print " (";
-    foreach ($choices as $choice => $count) {
-      if ($choice == $row['def_val']) {
-        continue;
+    //# of votes is meaningless in instant runoff
+    //comment for emacs
+    if ($row['runoff'] != 1) {
+      print " (";
+      $firstflag = true;
+      foreach ($choices as $choice => $count) {
+        if ($choice == $row['def_val']) {
+          continue;
+        }
+        if ($firstflag) {
+          $firstflag = false;
+        }
+        else {
+          print "; ";
+        }
+        //if the threshold is a percent and abstains don't count, then
+        //it's the race_votes, otherwise threshold comes from global
+        //total.
+        print escape_html($choice) . " had "  . 
+          escape_html($count) . " out of " . 
+          escape_html($row['threshold'] < 0 && !$row['abstain_count']?
+                      $race_votes:$global_totals[$race]) . 
+          " votes with " .
+          escape_html(ceil($threshold)) . " needed";
+        //      break;
       }
-      print escape_html($choice) . " had "  . 
-        escape_html($count) . " out of " . escape_html($global_total) . " votes with " .
-        escape_html(ceil($threshold)) . " needed ";
-      //      break;
+      print ")";
     }
-    print ")";
   }
-  $str = "<form method=post action='" . escape_html($_SERVER['REQUEST_URI']) . "'>" .
-    "<input type=hidden name='election_name' value='" . escape_html($election_name) . "'>";
+  //are there still some spots to be filled?
+  if ($row['num'] > 0) {
+    //might have happened because threshold was too high
+    if ($threshold != -1) {
+      print("<h4>Warning!  Not enough candidates beat the threshold of " . 
+            escape_html($threshold) . "</h4>");
+    }
+    //or maybe not enough candidates running to start with
+    else {
+      print "<h4>Warning!  Not enough candidates were elected!</h4>";
+    }
+    if (count($tie_winners)) {
+      print "The last " . escape_html($row['num']) . " winner(s) should be " .
+        "chosen from the following:<br/>";
+      print join("<br/>",array_map('escape_html',array_keys($tie_winners)));
+    }
+  }
+  //do add comments/candidates
+  $str = "<form method=post action='" . escape_html(this_url()) . "'>" .
+    "<input type=hidden name='election_name' value='" . 
+    escape_html($election_name) . "'>";
   if ($row['member_comments'] !== null) {
     if (strlen($row['member_comments'])) {
       $str .= "People say:\n<pre>";
@@ -740,7 +752,8 @@ kitchen this is very essential.
       "-member_comments'></textarea><br>";
   }
   if ($row['member_add']) {
-    $str .= "<br>Add a candidate (make sure your candidate does not already appear above!)<br>";
+    $str .= "<br>Add a candidate (make sure your candidate does " .
+      "not already appear above!)<br>";
     $str .= "<input name='" . $race . "-member_add'>";
   }
   if ($row['member_add'] || isset($row['member_comments'])) {
@@ -755,9 +768,9 @@ kitchen this is very essential.
     else {
       print 'comment';
     }
-    print "' onclick='document.getElementById(\"page_type\").value=\"member_input\"'>";
+    print "'>";
   }
-
+  //if there were other methods, and we're being asked for everything:
   if ($full_results && $other_methods) {
 ?>
 <h3>What do other methods say?</h3>
@@ -767,36 +780,43 @@ kitchen this is very essential.
               }
 }
 
-#ob_end_clean();
+  //ok, just need to print out everyone's ballots for verification
 echo "<h3>List of ballots:</h3>";
 echo "<table border>\n";
 echo "<tr>\n";
 echo "<td>voter id</td>";
-foreach ($all_votes as $race => $ballots) {
-  if (!isset($all_races[$race]['feedback']) || !$all_races[$race]['feedback']) {
-    echo "<td>" . escape_html($all_races[$race]['display_name']) . "</td>";
+//header row 
+foreach ($all_races as $race => $info) {
+  //feedback isn't shown here -- don't want feedback from different
+  //races to be correlated.
+  //and sometimes there's a deleted race
+  if (!isset($info['feedback']) || 
+       !$info['feedback']) {
+    echo "<td>" . escape_html($info['display_name']) . "</td>";
   }
 }
 echo "</tr>\n";
+//loop through members 
 foreach ($members as $member_name => $votes) {
   echo "<tr>\n";
-  echo "<td>$member_name</td>";
-  foreach ($all_votes as $race => $ballots) {
-    if (!isset($votes[$race])) {
-      $choices = array();
-    }
-    else {
-      $choices = $votes[$race];
-    }
-    if (isset($all_races[$race]['feedback']) && $all_races[$race]['feedback']) {
+  echo "<td>" . escape_html($member_name) . "</td>";
+  foreach ($all_races as $race => $info) {
+    //feedback isn't printed
+    if (isset($info['feedback']) && 
+        $info['feedback']) {
       continue;
     }
     echo "<td>";
-    if (count($choices)) {
-      echo implode("<br>\n",$choices);
+    if (array_key_exists($race,$votes)) {
+      if (count($votes[$race])) {
+        echo implode("<br/>\n",array_map('escape_html',$votes[$race]));
+      }
+      else {
+        echo "(abstain)";
+      }
     }
     else {
-      echo "(abstain)";
+      echo "(No vote)";
     }
     echo "</td>";
   }
@@ -806,41 +826,60 @@ foreach ($members as $member_name => $votes) {
   </table>
 <?php
   if (!$full_results) {
+    //trickiness with this_url()
+    $_GET['full_results'] = null;
+    $_GET['election_name'] = $election_name;
 ?>
- <a href='<?=escape_html($_SERVER['REQUEST_URI'])?><?=count($_GET)?'&':'?'?>full_results=1&election_name=<?=escape_html(
-urlencode($election_name))?>'>View full results</a>
+ <a href='<?=this_url()?>'>View full results</a>
 <?php
     }
 ?>
 </body></html>
 <?php 
+//used mainly when candidates have been eliminated, to clean them out.
+//Also used as a check at the beginning to make sure all candidates
+//are valid, which exposes bugs in the voting process.
 function normalize_ballot(&$ballot,$voter=null) {
+  //current candidates
   global $choices;
   if (!is_array($ballot) || !count($ballot)) {
     return 0;
   }
+  //go through ballot
   for ($ii = 0; $ii < count($ballot); $ii++) {
+    //there is the option for "equal preference" with this, although
+    //not in the general election options, yet.
+    //here, one ranking at this spot?
     if (!is_array($ballot[$ii])) {
+      //is this choice a valid one?
       if (!array_key_exists($ballot[$ii],$choices)) {
+        //it's not.  Warn people about it, if necessary.
         if ($voter && strlen($ballot[$ii])) {
-          print "<h4>Unsetting preference $ii, " . escape_html($ballot[$ii]) . 
-            ", for " . escape_html($voter) . ", since it is not a candidate.</h4>";
+          print "<h4>Unsetting preference $ii, " . 
+            escape_html($ballot[$ii]) . 
+            ", for " . escape_html($voter) . 
+            ", since it is not a candidate.</h4>";
         }
         array_splice($ballot,$ii,1);
+        //repeat this index, since we got rid of this entry
         $ii--;
       }
     }
+    //an array of equally-ranked choices!
     else {
       for ($jj = 0; $jj < count($ballot[$ii]); $jj++) {
         if (!array_key_exists($ballot[$ii][$jj],$choices)) {
           if ($voter) {
-            print "<h4>Unsetting a preference $ii, " . escape_html($ballot[$ii][$jj]) . 
-              ", for " . escape_html($voter) . ", since it is not a candidate.</h4>";
+            print "<h4>Unsetting a preference $ii, " . 
+              escape_html($ballot[$ii][$jj]) . 
+              ", for " . escape_html($voter) . 
+              ", since it is not a candidate.</h4>";
           }
           array_splice($ballot[$ii],$jj,1);
           $jj--;
         }
       }
+      //did we unset every preference at this ranking?
       if (!count($ballot[$ii])) {
         array_splice($ballot,$ii,1);
         $ii--;
@@ -850,61 +889,52 @@ function normalize_ballot(&$ballot,$voter=null) {
   return (count($ballot));
 }
 
-function complete_ballots($choices,&$votes) {
-  //make every ballot complete
-  foreach ($votes as $key => $ballot) {
-    $not_done = $choices;
-    if (is_array($ballot)) {
-      foreach ($ballot as $pref) {
-        unset($not_done[$pref]);
-      }
-    }
-    $votes[$key][] = array_keys($not_done);
-  }
-}
-
+//utility function to find something in array, wherever it may be.
+//Returns key of element in top array that will lead eventually to
+//needle.  Limit key allows you to stop search when you hit something.
 function array_search_recursive($needle,$haystack,$limit_key = false) {
   $key = array_search($needle,$haystack);
   if ($key !== false) {
     return $key;
   }
-  $break_flag = false;
   foreach ($haystack as $key => $bale) {
-    if ($break_flag) {
-      return false;
-    }
-    if ($key === $limit_key) {
-      $break_flag = true;
-    }
     if (is_array($bale) &&
         array_search_recursive($needle,$bale) !== false) {
       return $key;
     }
+    if ($key === $limit_key) {
+      return false;
+    }
   }
   return false;
 }
-
-function compare_two($choice1,$choice2,&$votes) {
+ 
+//figure out which of two things comes first in more ballots -- used
+//for condorcet
+ function compare_two($choice1,$choice2,&$votes) {
   $ctr = 0;
   foreach ($votes as $mem => $ballot) {
     $key1 = array_search_recursive($choice1,$ballot);
     $key2 = array_search_recursive($choice2,$ballot,$key1);
-    if ($key2 === false || $key1 < $key2) {
+    if ($key1 !== false && ($key2 === false || $key1 < $key2)) {
       $ctr++;
     }
-    else if ($key1 > $key2) {
+    else if ($key2 !== false && ($key1 == false || $key1 > $key2)) {
       $ctr--;
     }
   }
-  //  print_r("$choice1 versus $choice2 gives $ctr<br>\n");
   return $ctr;
 }
 
-//find the condorcet winner
+//find the condorcet winner (loser if loser not null).  New forces a
+//recalculation of the whole grid
 function condorcet_choice($opts,&$votes,$loser = null,$new = null) {
+  //choices are the candidates currently existing
   global $choices;
   $choice_keys = array_keys($choices);
   $count = count($choices);
+  //populate this once, then we're done.  It's a 2-d array of
+  //comparisons.
   static $data = array();
   if ($new) {
     $data = array();
@@ -917,40 +947,53 @@ function condorcet_choice($opts,&$votes,$loser = null,$new = null) {
   }
   $rets = array();
   foreach ($choice_keys as $ii) {
+    //skip candidates not in the full list
     if (!in_array($ii,$opts)) {
       continue;
     }
+    //2-d array
     if (!isset($data[$ii])) {
       $data[$ii] = array();
     }
+    //is this choice a winner/loser?  Assume yes and "and" each time
     $return = true;
+   //comparisons reversed for finding losers
     if ($loser) {
       $scalar = -1;
     }
     else {
       $scalar = 1;
     }
+    //compare with all other possible choices
     foreach ($choice_keys as $jj) {
+      //not a valid choice?
       if (!in_array($jj,$opts)) {
         continue;
       }
+      //don't compare with self
       if ($ii == $jj) {
         continue;
       }
+      //have we not calculated this yet?
       if (!isset($data[$ii][$jj])) {
+        //well, if we've calculated the transpose element, that's easy.
         if (isset($data[$jj][$ii])) {
           $data[$ii][$jj] = -$data[$jj][$ii];
         }
+        //do some work -- compare these options
         else {
           $data[$ii][$jj] = compare_two($ii,$jj,$votes);
         }
       }
+      //and return so far with what we got
       $return &= ($scalar*$data[$ii][$jj] >= 0);
     }
+    //it compared > (or <) everything!
     if ($return) {
       $rets[] = $ii;
     }
   }
+  //print the whole grid.
   if ($first) {
     print("<h4>Condorcet grid</h4><table border=1>");
     print("<tr><td></td>");
@@ -975,6 +1018,7 @@ function condorcet_choice($opts,&$votes,$loser = null,$new = null) {
     }
     print("</table>");
   }
+  //don't return an array with one element
   if (count($rets)) {
     if (count($rets) == 1) {
       return $rets[0];
@@ -987,11 +1031,13 @@ function condorcet_choice($opts,&$votes,$loser = null,$new = null) {
 function borda_choice($choices,&$votes,$loser = null,$new = null) {
   static $done = false;
   static $borda = null;
+  //same principle -- cache data
   if ($new) {
     $done = $borda = false;
   }
   if (!$done) {
     $borda = $choices;
+    //zero out votes
     foreach ($borda as $key => $junk) {
       $borda[$key] = 0;
     }
@@ -999,6 +1045,8 @@ function borda_choice($choices,&$votes,$loser = null,$new = null) {
     $count_orig = count($choices);
     foreach ($votes as $voter => $ballot) {
       $count = $count_orig;
+      //choice gets points for being ahead of everything remaining on
+      //this voter's ballot
       foreach ($ballot as $pref) {
         if (!is_array($pref)) {
           $borda[$pref] += --$count;
@@ -1007,11 +1055,15 @@ function borda_choice($choices,&$votes,$loser = null,$new = null) {
         $tie_count = count($pref);
         $count -= $tie_count;
         foreach ($pref as $tie) {
+          //only get half point for being tied with something
           $borda[$tie] += $count + ($tie_count/2);
         }
       }
     }
+    $done = true;
   }
+  //to find the borda winner/loser of a particular set, look for the
+  //max (or min) num among the possible options
   $max_num = null;
   $return_choice = null;
   if ($loser) {
@@ -1021,24 +1073,29 @@ function borda_choice($choices,&$votes,$loser = null,$new = null) {
     $scalar = 1;
   }
   foreach ($borda as $choice => $num) {
-    if (!in_array($choice,$choices)) {
+    //not in the set?  skip
+    if (!array_key_exists($choice,$choices)) {
       continue;
     }
+    //haven't found one yet, or this one is better?
     if ($max_num === null ||
         $scalar*$num > $scalar*$max_num) {
       $max_num = $num;
-      $return_choice = $choice;
+      $return_choice = array($choice);
       continue;
     }
-    if ($max_num !== null &&
-        $scalar*$num == $scalar*$max_num) {
-      $return_choice = null;
+    //tie?
+    if ($num == $max_num) {
+      $return_choice[] = $choice;
     }
   }
-  $done = true;
+  if (count($return_choice) < 2) {
+    $return_choice = $return_choice[0];
+  }
   return $return_choice;
 }
 
+//for as random a sort as we can get so that it stays the same each time.
 function rand_md5_cmp($a,$b) {
   global $race;
   if ($a === $b) {
