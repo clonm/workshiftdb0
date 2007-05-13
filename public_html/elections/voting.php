@@ -434,10 +434,10 @@ while ($namerow = $nameres->FetchRow()) {
       $row['def_val'] = null;
     }
   }
-  if (!array_key_exists('feedback',$row) {
+  if (!array_key_exists('feedback',$row)) {
     $row['feedback'] = null;
   }
-  if (!$row['feedback']) && !$row['num']) {
+  if (!$row['feedback'] && !$row['num']) {
     $row['num'] = 1;
   }
   //if there is only one (or no) candidate, then instant runoff and
@@ -529,34 +529,43 @@ while ($namerow = $nameres->FetchRow()) {
     if ($row['threshold']) {
       //little prettiness for printing out which choices need threshold
       if ($row['def_val']) {
-        if ($count == 2) {
-          $opt = array_diff($candidates,array($row['def_val']));
-          $opt = $opt[0];
+        $opt = array_diff($candidates,array($row['def_val']));
+        //only one candidate (possibly besides default choice?)
+        if (count($opt) == 1) {
+          $opt = $opt[0] . " to win.  Otherwise, " .
+            escape_html($row['def_val']) . " will win.";
         }
+        //more than one other candidate, but def_val isn't a candidate
+        else if (count($opt) == count($candidates)) {
+          $opt = "a candidate to win.  Otherwise, " . 
+            escape_html($row['def_val']) . " will win.";
+        }
+        //more than one other candidate, and def_val is a candidate
         else {
-          $opt = "any choice but " . escape_html($row['def_val']);
+          $opt = "any choice but " . escape_html($row['def_val']) . " to win.";
         }
       }
+      //no def_val
       else {
-        $opt = "a choice";
+        $opt = "a choice to win.";
       }
     }
     if ($row['threshold'] > 0) {
       print("More than " . escape_html($row['threshold']) . 
             "% of the vote is required for " . 
-            escape_html($opt) . " to win.<br>");
+            escape_html($opt) . "<br>");
     }
     else if ($row['threshold'] < 0) {
       print("At least " . escape_html(-$row['threshold']) . 
-            " votes are required for " . $opt . " to win.<br>");
+            " votes are required for " . $opt . "<br>");
     }
     if (!$row['abstain_count']) {
       print("  Abstentions do not count towards the total, so if you wish " .
             "to abstain, you may, by choosing the abstain option.<br>");
     }
     else if ($row['threshold'] > 0) {
-      print "  <strong>Abstentions do count</strong> " .
-        "towards any thresholds a choice must pass to win.<br/>";
+      print "  <strong>Choosing abstain (or not choosing anything at all) " .
+        "makes it harder</strong> for a choice to win.<br/>";
     }
     print("<table><tr>");
     //abstain option
