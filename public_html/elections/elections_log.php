@@ -429,10 +429,13 @@ if (strlen($where_exp)) {
   $where_exp = "where" . $where_exp;
 }
 if (!$ending) {
-  $ending_exp = " limit 100";
+  //overkill on ending expression, because modifications are lumped together
+  $ending_exp = " limit 10000";
+  $max_print_rows = 100;
 }
 else {
   $ending_exp = '';
+  $max_print_rows = null;
 }
 
 $res = $db->Execute("select `autoid`, " .
@@ -464,7 +467,11 @@ ob_start();
 </thead>
 <tbody>
 <?php
+$num_rows_printed = 0;
 while ($row = $res->FetchRow()) {
+  if ($max_print_rows && $num_rows_printed++ >= $max_print_rows) {
+    break;
+  }
   if ($first_autoid === null) {
     $first_autoid = $row['autoid'];
   }
