@@ -373,7 +373,7 @@ None</label>,
 value='percent'
   <?=$radio > 0?' checked':''?> onchange='threshold_change(<?=$ii?>,1)'>
 <span id='threshold_<?=$ii?>_num_percent_span'>
-<label for='threshold_<?=$ii?>_percent'>More than </label>
+<label for='threshold_<?=$ii?>_percent'>At least </label>
 <input name='threshold_<?=$ii?>_num' id='threshold_<?=$ii?>_num_percent'
 size=2 onclick='get_elt_by_id("threshold_<?=$ii?>_percent").click()'
 onchange='get_elt_by_id("threshold_<?=$ii?>_percent").click()'
@@ -426,7 +426,7 @@ Can the voters make comments that other voters will see when they are voting?
   //allow the president to edit (i.e., delete inappropriate) member comments.
   if ($attribs && $attribs['member_comments'] !== null) {
     print "<br>Member comments so far:<br>\n";
-    print "<textarea name='member_comments_current_<?=$ii?>' cols=70 rows=10 wrap=off>";
+    print "<textarea name='member_comments_current_$ii' cols=70 rows=10 wrap=off>";
     print escape_html($attribs['member_comments']) . "</textarea>";
   }
 ?>
@@ -582,6 +582,7 @@ function set_election_attrib($attrib,$val) {
   if (!isset($race_name)) {
     $race_name = '';
   }
+    
   if ($modify) {
     //what did the value used to be?
     $oldval = $db->GetRow("select `attrib_value` from `elections_attribs` " .
@@ -654,19 +655,21 @@ else if (!$modify || array_key_exists('descript_file_remove',$_REQUEST)) {
 }
   
 $num_races = $_REQUEST['num_races'];
-$races = array();
-
 
 //get all the old races, if we're modifying
 if ($modify) {
-  $ret = $db->Execute("select `attrib_value` from `elections_attribs` " .
+  $ret = $db->Execute("select `race_name` from `elections_attribs` " .
                       "where `election_name` = ? and `attrib_name` = ? order by `autoid`",
                       array($election_name,'race_name'));
   $old_races = array(null);
   while ($row = $ret->FetchRow()) {
-    $old_races[] = $row['attrib_value'];
+    $old_races[] = $row['race_name'];
   }
 }
+
+
+//this is used to make sure we don't have any duplicate race names
+$all_race_names = array();
 
 //this is how many races we think we have.  As a matter of fact, there
 //may be fewer, because some of them may have been deleted.
@@ -678,7 +681,7 @@ print("Number of races input: " . $num_races . "<br/>\n");
 for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
   //no name for this race?
   if (!array_key_exists("display_name_$ii",$_REQUEST) || 
-      !$_REQUEST["display_name_$ii"]) {
+      !strlen($_REQUEST["display_name_$ii"])) {
     //then we're deleting the ith race, if it exists
     if ($modify && count($old_races) > $ii) {
       elections_log($election_name,$old_races[$ii],'delete_race',null,null);
@@ -691,6 +694,11 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
   //ok, we really have a race here
   $ii_real++;
   $race_name = $_REQUEST["display_name_$ii"];
+  if (isset($all_race_names[$race_name])) {
+    exit("<h3>Error: " . escape_html($race_name) . " cannot be the name of " .
+         "two different races.  Please choose another name for one of them.</h3>");
+  }
+  $all_race_names[$race_name] = true;
   //we must have just renamed this old race
   if ($modify && count($old_races) > $ii && $race_name != $old_races[$ii]) {
     elections_log($election_name,$race_name,'rename_race',$old_races[$ii],$race_name);
@@ -699,7 +707,7 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
                  array($race_name,$election_name,$old_races[$ii]));
   }
   else {
-    set_election_attrib('race_name',$race_name);
+    set_election_attrib('race_name',$ii_real*10);
   }
   //the following loop takes care of things in a pretty automated way.
   //these are the various race attributes that will be set here
@@ -767,7 +775,7 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
       if (!ctype_digit($val) || !$val) {
         exit(escape_html($val) . " is not a valid number of winners.");
       }
-      print '<li>There will be ' . escape_html($val) . " winners.</li>";
+      print '<li>There will be ' . escape_html($val) . " winner(s).</li>";
       break;
     case 'runoff': 
       switch ($val) {
@@ -791,7 +799,7 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
       case '': break 2;
       case 'percent':
         $val = $_REQUEST[$attrib . '_' . $ii . '_num'];
-        $threshold = true;
+        $threshold = 1;
         if (!is_numeric($val) || $val <= 0) {
           exit("<h2>" . escape_html($val) . 
                " is not a valid percentage threshold.</h2>");
@@ -800,8 +808,8 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
           "% of the vote to win.</li>";
         break 2;
       case 'number':
+        $threshold = -1;
         $val = $_REQUEST[$attrib . '_' . $ii . '_num_absolute'];
-        $threshold = true;
         if ( !$val || !ctype_digit($val)) {
           exit("<h2>" . escape_html($val) . 
                " is not a valid number threshold.</h2>");
@@ -819,7 +827,7 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
       if ($val) {
         $val = 1;
       }
-      if ($threshold) {
+      if ($threshold > 0) {
         print "<li>Abstaining votes will ";
         if (!$val) {
           print "not ";
@@ -868,7 +876,7 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
   if ($modify && $have_member_comments && 
       array_key_exists("member_comments_current_$ii",$_REQUEST)) {
     set_election_attrib('member_comments',
-                        $_REQUEST['member_comments_current']);
+                        $_REQUEST["member_comments_current_$ii"]);
   }
   print "</ul>";
   //done with race loop!
