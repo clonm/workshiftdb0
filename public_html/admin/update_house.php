@@ -33,19 +33,6 @@ If you're uploading just one file, do you really mean to? <input type="checkbox"
 <input type=submit value='Upload Lists!'>
 </form>
 <hr>
-<h4>Enter houselist manually</h4>
-<form action='<?=$_SERVER['REQUEST_URI']?>' method='POST'>
-Enter a complete houselist here ("Lastname, Firstname" [without quotes], 
-or however you do it, one per line).  Members who are <b>not</b> in this list
-will be deleted and any members who are on this list but already in the system
-will be ignored.  This <b>must</b> be a complete list of your house, and not 
-just some new people you are adding later in the semester, otherwise you will
-delete members (and their information) who are still in the house.  If you just
-want to add a few people while keeping your current house members, see below.<br>
-<textarea name='redo_house' rows=20></textarea><br>
-<input type=submit value='Redo whole house'></form>
-
-<hr>
 <h4>Rename member</h4>
 <form action='<?=$_SERVER['REQUEST_URI']?>' method='POST'>
 Change name:
@@ -76,6 +63,19 @@ Delete members: <select multiple size=5 name="delete_members[]">
 </select><br>
 <input type=submit value='Delete members'></form>
  <hr>
+<h4>Enter houselist manually</h4>
+<form action='<?=$_SERVER['REQUEST_URI']?>' method='POST'>
+Enter a complete houselist here ("Lastname, Firstname" [without quotes], 
+or however you do it, one per line).  Members who are <b>not</b> in this list
+will be deleted and any members who are on this list but already in the system
+will be ignored.  This <b>must</b> be a complete list of your house, and not 
+just some new people you are adding later in the semester, otherwise you will
+delete members (and their information) who are still in the house.  If you just
+want to add a few people while keeping your current house members, see below.<br>
+<textarea name='redo_house' rows=20></textarea><br>
+<input type=submit value='Redo whole house'></form>
+
+<hr>
 <form action='<?=$_SERVER['REQUEST_URI']?>' method='POST'>
 Synchronize tables.<br>  If there are users missing in some
    table which should have one row per user, like the
@@ -186,11 +186,30 @@ if (array_key_exists('redo_house',$_REQUEST)) {
     $new_remove = array();
     $old_remove = array();
     while ($row = $res->FetchRow()) {
+      //see if a "new" person is actually just an old person with a new name
       if (isset($points_hash[$row['app_number']])) {
         $new_remove[] = $points_hash[$row['app_number']];
         $old_remove[] = $row['member_name'];
         $pointslist[$mem_hash[$points_hash[$row['app_number']]]][0] = 
           $row['member_name'];
+      }
+      //see if a remaining person is actually a new person with the same name
+      if (isset($mem_hash[$row['member_name']]) &&
+          !isset($points_hash[$row['app_number']])) {
+        $flag_duplicate = true;
+        //find this app number
+        foreach ($points_hash as $appnum => $mem) {
+          if ($mem == $row['member_name']) {
+            break;
+          }
+        }
+        $new_members[] = $mem . $appnum;
+        $delete_members[] = $mem;
+        foreach ($pointslist as $key => $mem_data) {
+          if ($mem_data[0] == $mem) {
+            $pointslist[$key][0] = $mem . $appnum;
+          }
+        }
       }
     }
     $delete_members = array_diff($delete_members,$old_remove);
@@ -209,7 +228,16 @@ a name to prevent deletion of that name):</h3>
 </select>
 <h3>The following members will be added (you may prevent members from
 being added by removing their names here, or add more members by inserting them):</h3>
- <textarea name='new_members' rows=<?=count($new_members)+2?>>
+<?php
+    if (isset($flag_duplicate)) {
+      print "<h4>Warning: you tried to add a new member with the same name as " .
+        "an old member, but who has a different application number, and so is " .
+        "probably someone else.  This new member's name has been changed to " .
+        "their name followed by their application number.  After this is finished, " .
+        "you can rename them to something else.</h4>";
+    }
+?>
+ <textarea name='new_members' cols=50 rows=<?=count($new_members)+2?>>
 <?php
     foreach ($new_members as $mem) {
       print escape_html($mem) . "\n";
@@ -314,7 +342,7 @@ if (array_key_exists('delete_members',$_REQUEST)) {
     else {
       print "is";
     }
-    print " being removed from table(s) <br>\n";
+    print " being removed from tables<br/>\n";
     if ($USE_MYSQL_50) {
       $res = $db->Execute('SHOW FULL TABLES');
     }
