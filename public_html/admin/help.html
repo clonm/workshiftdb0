@@ -5,7 +5,7 @@
 <li><h3>Tasks you can do, and the order you should do them in</h3> 
 
 The <b>first thing</b> you have to do is make sure you can view <a
-href='index.html'>your front page</a>, using whatever username and
+href='index.php'>your front page</a>, using whatever username and
 password were specified by your administrator (the default is
 (three-letter-house-code)laborczar for both the username and password,
 like stblaborczar for Stebbins).  Your front page has links to
@@ -51,10 +51,11 @@ can't, contact the administrator.)
   that if you want the rating/ranking system, you are going to have to
   <a href='assign_shifts.php'>enter a category for each shift</a> or
   your members will have to rate every single one of your shifts,
-  since each will be in its own category.  Note that if you put a
-  single * in the category, the system will treat this as a special
-  shift, and will not put it on the preference form.  If you put **,
-  the system will also not put it in signoff sheets or weekly sheets.
+  since each will be in its own category.  (Note that on the
+  assign_shifts page, if you put a single * in the category, the
+  system will treat this as a special shift, and will not put it on
+  the preference form.  If you put **, the system will also not put it
+  in signoff sheets or weekly sheets.)
   
   <li>If you don't enter the preferences due date and shifts start
   date, <a href='../preferences.php'>preferences.php</a> will look
@@ -64,12 +65,12 @@ can't, contact the administrator.)
   members will enter their shift preferences.  There are a few options
   you can choose about these.  If you would like this text to be
   rendered as html (so things like &lt;strong&gt; make things strong,
-  and you can put links in, etc.), then check the box, and otherwise
+  and you can put links in, etc.), then check the box.  Otherwise
   uncheck it.  Remember that if it's html, to make a line break, you
   have to put in &lt;br&gt; or &lt;p&gt;, not just press the "enter"
-  key.  The second thing you can do is put in 
-  <a href='#escape_sequences'>escape sequences</a>.  If you're using
-  the wanted/unwanted style for shift preferences, there are no escape
+  key.  The second thing you can do is put in <a
+  href='#escape_sequences'>escape sequences</a>.  If you're using the
+  wanted/unwanted style for shift preferences, there are no escape
   sequences for that text, but otherwise, read the instructions.
   </ul>
 
@@ -100,26 +101,29 @@ can't, contact the administrator.)
   they're the same person.  That way, the following semester, you can
   upload the new CO house list, and the system will be able to keep
   track of who is returning just from their application number.
+  
+  There is other <a href='#update_house_more'>important information on
+  updating the house list</a>.  Please check it out.
 
-  <li><a name='master_shifts'>
-  <h4>Enter workshifts</h4> You need to enter the workshifts your
-  house has into the system, along with the days that each shifts is
-  done, floors it's done on, etc.  This is a one-time hassle, since
-  your shifts probably don't change too much year to year.  You can
-  enter them on the usual page, <a
+  <li><a name='master_shifts'> <h4>Enter workshifts</h4> You need to
+  enter the workshifts your house has into the system, along with the
+  days that each shifts is done, floors it's done on, etc.  This is a
+  one-time hassle, since your shifts probably don't change too much
+  year to year.  You can enter them on the usual page, <a
   href='assign_shifts.php'>assign_shifts.php</a>, by clicking on Add
-  Row to add a shift, or you can skip the sidebar by using
-  <a href='master_shifts.php'>master_shifts.php</a>.  Here are a few
-  tips for entering shifts:
-  <ul>
-  <li>If you have multiple copies of a shift (3 people on dinner crew,
-  for example), name the shift the same thing for all of them -- that
-  way, that shift will show up once on preference forms, which is what
-  you want.  Don't name them Dinner Crew 1, Dinner Crew 2, Dinner Crew
-  3.  If there really are different jobs, but they're all basically
-  the same shift (done at the same time, for the same hours you can
-  put the difference ("pots","dishes","tables") in the "floor" column
-  -- sorry the name doesn't make sense.
+  Row to add a shift, or you can skip the sidebar by using <a
+  href='master_shifts.php'>master_shifts.php</a>.  (If you're here
+  because you're having trouble assigning shifts, <a
+  href='#assign_shifts_features'>check out the help</a> for that.)  Here are a
+  few tips for entering shifts: <ul> <li>If you have multiple copies
+  of a shift (3 people on dinner crew, for example), name the shift
+  the same thing for all of them -- that way, that shift will show up
+  once on preference forms, which is what you want.  Don't name them
+  Dinner Crew 1, Dinner Crew 2, Dinner Crew 3.  If there really are
+  different jobs, but they're all basically the same shift (done at
+  the same time, for the same hours you can put the difference
+  ("pots","dishes","tables") in the "floor" column -- sorry the name
+  doesn't make sense.
 
   <li>Shifts that are not supposed to be assigned (if a bathroom
     isn't cleaned on Saturdays, that shift should remain blank) have
@@ -147,20 +151,27 @@ can't, contact the administrator.)
     categories without bothering to rank shifts individually.  As
     well, if a category name starts with a '*', it won't be displayed
     on the preference form, and if it starts with a '**' it won't be
-    displayed on the weekly sheets or signoff sheets.
+    displayed on the weekly sheets or signoff sheets.  (You can use
+    this to avoid having manager positions show up on weekly signoffs
+    or in preference forms.)
 
     <li>Don't have any blank rows!  That's a shift with no name, for no
     hours, and just looks silly on preference forms and the like
 </ul>
 
   <li><a name='set_shift_descriptions'><a name='upload_workshift_doc'>
-  <h4>Set shift descriptions and workshift docs</h4>You can enter
+  <h4>Set shift descriptions and workshift docs</h4></a></a>You can enter
   shift descriptions and upload a workshift document that people can
   get to from the preference form, at <a
   href='set_shift_descriptions.php'>set_shift_descriptions.php</a> and
   <a href='upload_workshift_doc.php'>upload_workshift_doc.php</a>,
   respectively.  The workshift document will be downloaded directly by
   your members, so make sure it's in a format that they can open.
+
+  <li><h4>Set up online signoffs, if you want them.</h4>You can enable
+  online signoffs, at <a
+  href='online_signoff_setup.php'>online_signoff_setup.php</a>.  <a
+  href='#online_signoff_setup'>Read more</a> about it.
 
   <li><h4>Do temp weeks</h4> You probably have a few temp weeks, where
   there aren't permanently assigned shifts.  Go to <a
@@ -178,19 +189,20 @@ can't, contact the administrator.)
   preference form), you can <a href='reset_user_password.php'>reset it</a>
   for them.
   
-  <li><h4>Assign workshifts</h4></a> Actually, don't relax too much,
-  because it's time to <a href='assign_shifts.php'>assign shifts</a>.
-  All submitted data is available to you as it comes, so you can just
-  start assigning as it comes (although note that if someone submits
-  information while you're assigning shifts, that won't be reflected
-  on your page; you'll have to reload it to see the latest info.  Just
-  remember to submit your information before you reload!  Also, as the
-  pages all say, press control-f5 to get a true reload.  (Macs, sorry,
-  I'm not sure what button to press.  Try command-R.)  Your shift
-  assignment interface has some <a href='#assign_shifts_features'>cool
+  <li><h4>Assign workshifts</h4> Actually,
+  don't relax too much, because it's time to <a
+  href='assign_shifts.php'>assign shifts</a>.  All submitted data is
+  available to you as it comes, so you can just start assigning as it
+  comes (although note that if someone submits information while
+  you're assigning shifts, that won't be reflected on your page;
+  you'll have to reload it to see the latest info.  Just remember to
+  submit your information before you reload!  Also, as the pages all
+  say, press control-f5 to get a true reload.  (Macs, sorry, I'm not
+  sure what button to press.  Try command-R.)  Your shift assignment
+  interface has some <a href='#assign_shifts_features'>cool
   features</a>.
   
-  <li><a name='signoff'>After you're done assigning shifts, you may
+  <li><a name='first_signoff'>After you're done assigning shifts, you may
   want to <a href="master_shifts_print.php">print out the master table
   of workshifts</a>, or <a href="../shifts_by_name.php">print out
   shifts by name</a> (see <a href='#table_print_features'>printing
@@ -200,64 +212,69 @@ can't, contact the administrator.)
   like the shifts to be pre-filled-in with the assigned people, make
   sure that box is checked.  If you want a space for the verifier,
   make sure that box is checked.  You can also add extra columns, if
-  for some reason you need that, or put a message on the page.</ul>
+  for some reason you need that, or put a message on the page. <a
+  href='#signoff'>See more help</a> on signoffs.</ul>
 
   <li><a name='week'><h4>Enter weekly data</h4></a> Entering workshift
   data is done through <a href='week.php'>week.php</a>.  Its
   functionality is described in the general <a
-  href='#table_edit_features'>table editing features</a>.  Note that
-  any changes you make are instantly available to workshifters through
-  their personal pages.  If they have questions about whether a shift
-  was counted, they should be able to see what shifts you have them as
-  doing in their personal pages without bothering you at all.  If you
-  are editing a week for the first time, the page will prompt you to
-  create the week.  The week will be created from the <a
-  href='assign_shifts.php'>currently assigned shifts</a>.<br>  
-  At the top of the page, one of two messages may appear.  If you've
-  created, but not yet edited, this week, and you've made some changes
-  to the shift assignments, you have the option of re-creating this
-  sheet from the current assignments.  You might want to do this if,
-  for instance, you assign shifts, look at week 3, and then have to
-  re-assign a shift because of some change.  If you've already
-  modified the sheet, you'll be offered the option of abandoning your
-  changes and re-creating the sheet.  If you've already started
-  entering data, but you've made a lot of changes, that may be what
-  you want to do, but remember: <emph>all</emph> your entered data on
-  this sheet will be lost!<p>
+  href='#table_edit_features'>table editing features</a>.
 
-  To add a special workshift, add a row for it.  You shouldn't ever
-  need to delete rows.  If someone signs out of a shift (in time) and
-  no one signs into it, just put a 0 for the hours -- that way,
-  they'll have an indication that they signed out of that shift.  If
-  someone blows off a shift, make their hours negative (or whatever
-  penalty your house uses).  If you'd like to make any notes for that
-  shift, enter them here and the member will be able to see them in
-  his/her personal page.
-  <li>Online signoffs can be enabled at <a
+  <ul><li>Note that any changes you make are instantly available to
+  workshifters through their personal pages.  If they have questions
+  about whether a shift was counted, they should be able to see what
+  shifts you have them as doing in their personal pages without
+  bothering you at all.
+
+  <li>If you are editing a week for the first time, the page will
+  prompt you to create the week.  The week will be created from the <a
+  href='assign_shifts.php'>currently assigned shifts</a>.<br> At the
+  top of the page, one of two messages may appear.  If you've created,
+  but not yet edited, this week, and you've made some changes to the
+  shift assignments, you have the option of re-creating this sheet
+  from the current assignments.  You might want to do this if, for
+  instance, you assign shifts, look at week 3 (but don't edit it), and
+  then later have to re-assign a shift because of some change.  If
+  you've already modified the sheet, you'll be offered the option of
+  abandoning your changes and re-creating the sheet.  If you've
+  already started entering data, but you've made a lot of changes,
+  that may be what you want to do, but remember: <emph>all</emph> your
+  entered data on this sheet will be lost!
+
+  <li>To add a special workshift, add a row for it.  You shouldn't
+  ever need to delete rows.  When you add the shift, if you enter the
+  day, the date should be filled-in automatically.
+
+  <li>If someone signs out of a shift (in time) and no one signs into
+  it, just put a 0 for the hours -- that way, they'll have an
+  indication that they signed out of that shift.  If someone blows off
+  a shift, make their hours negative (or whatever penalty your house
+  uses).  If you'd like to make any notes for that shift, enter them
+  here and the member will be able to see them in his/her personal
+  page.
+
+  <li><a name='online_signoff_running'>Online</a> signoffs can be enabled at <a
   href='online_signoff_setup.php'>online_signoff_setup.php</a> and
   used at <a href='../online_signoff.php'>online_signoff.php</a>.  You
   can read <a href='#online_signoff_setup'>instructions on setting
   up</a> or <a href='../help.html#online_signoff'>help with signing
   off</a> for more information.  At week.php, if online signoffs are
-  available, the following happen.
-  <ul><li>Every shift can initially be signed off of online, so the
-  online_signoff column will be checked.  To disable online signoff
-  for that shift for this week, uncheck the box.
-  <li>Once someone signs off of a shift online, the following things
-  will happen: the online_signoff field will change to the day and
-  time they signed off online.  The system should prevent people from
-  signing off of shifts that ended too long ago, but you can check
-  that here.  The verifier field will be the person who verified the
-  shift.  Finally, the notes field will say ONLINE and any other
-  details that are important -- if the online signoff was for a
-  different number of hours than usual, the notes field will have the
-  original number of hours the shift was worth, and if the shift is
-  normally done by a different person, the notes field will say who
-  the original person was.
-  <li>If you want to change the fields for someone who signed off
-  online, go ahead and do that -- they're just the same as normal
-  shift entries now.
-  </ul>
+  available, the following things happen: <ul><li>Every shift can
+  initially be signed off of online, so the online_signoff column will
+  be checked.  To disable online signoff for that shift for this week,
+  uncheck the box.  <li>Once someone signs off of a shift online, the
+  following things will happen: the online_signoff field will change
+  to the day and time they signed off online.  The system should
+  prevent people from signing off of shifts that ended too long ago,
+  but you can check that here.  The verifier field will be the person
+  who verified the shift.  Finally, the notes field will say ONLINE
+  and any other details that are important -- if the online signoff
+  was for a different number of hours than usual, the notes field will
+  have the original number of hours the shift was worth, and if the
+  shift is normally done by a different person, the notes field will
+  say who the original person was.  <li>If you want to change the
+  fields for someone who signed off online, go ahead and do that --
+  they're just the same as normal shift entries now.  </ul>
 
   <li><a name='weekly_totals_print'>
   <a name='weekly_totals_update'>
@@ -269,28 +286,44 @@ can't, contact the administrator.)
   the weekly totals</a>.
 
 <ul><li>By default, when updating and printing the weekly totals, just
-    the last two week's total hours done and hours owed are displayed,
+    the last two weeks' total hours done and hours owed are displayed,
     but you can check and uncheck the columns to make it look the way
     you want.  As well, if any fining periods have occurred, the fines
     for those fining periods are displayed, along with any other
     fines, to make the total fines.  If your house has weekly fines,
-    those are included in Other Fines.
+    those are included in Other Fines.  
+
+    <li>At the <a
+    href='../public_utils/weekly_totals_print.php'>weekly totals
+    print</a> and <a href='../weekly_totals.php'>weekly totals</a>
+    pages, the weeks that each person was fined on will be
+    automatically appended to their notes, so it's easy to see at a
+    glance for a member when they've been fined.
+    
+    <li><a name='house_fines'>The house fines page gives a
+    week-by-week breakdown of the fines for every week and fining
+    period for all your members.  At the top of the page is a link to
+    download this page to Excel, and also an option to view the fines
+    for a past semester (if there's a dispute and you need to view old
+    fines).
+
     <li>When updating, you can change the number of hours owed for any
     given person on any given day.  The totals update automatically,
     but you still need to submit your data.  All the <a
     href='#table_edit_features'>table editing features</a> are
     available here.
 
-<p>If someone in your house owes
-    a different number of hours every week (for instance, they're a
-    boarder), choose their name at the top, enter the number of hours
-    they owe every week, and press the button to change their owed
-    hours.  Their owed hours will be changed for the whole semester.
-    However, the system assumes that if, for some week, that person
-    didn't owe the default number of hours owed (usually 5), then
-    maybe you had some reason for setting it that way (maybe it was
-    move-in week, and everyone owed only 1 hour), so it won't change
-    those weeks, unless you check the checkbox to make it.<br>
+<p>If someone in your house usually owes a different number of hours
+    than normal (for instance, they're a boarder), choose their name
+    at the top, enter the number of hours they owe every week, choose
+    the weeks for which to change their hours, and press the button
+    "Change person" to change their owed hours.  Their owed hours will
+    be changed for the entire week range.  However, the system assumes
+    that if, for some week, that person didn't owe the default number
+    of hours owed (usually 5), then maybe you had some reason for
+    setting it that way (maybe it was move-in week, and everyone owed
+    only 1 hour), so it won't change those weeks, unless you check the
+    checkbox to make it.<br/>
 
     Similarly, if there's a week where the default number of hours
     owed is different (spring break, move-in, etc.), enter the
@@ -300,13 +333,6 @@ can't, contact the administrator.)
 
     <li>You can check out <a href='#table_print_features'>table
     printing features</a> for the printing.
-
-    <li><a name='house_fines'>The house fines page gives a
-    week-by-week breakdown of the fines for every week and fining
-    period for all your members.  At the top of the page is a link to
-    download this page to Excel, and also an option to view the fines
-    for a past semester (if there's a dispute and you need to view old
-    fines).
 
     <li><a name='weekly_totals_consts'>Setting your house's fining
     parameters can be confusing.  Please <a
@@ -320,12 +346,16 @@ can't, contact the administrator.)
     <li>You can set the current week, which will make the system
     ignore what it thinks the current week is, and use your week.
     Remember to delete this once the reason for tricking the system is
-    finished (i.e., once you've caught up).  Note that if you haven't
-    yet <a href='week.php'>edited the sheet</a> for some week, the
-    system will assume that that week hasn't happened yet.  This means
-    that if you've fallen behind, the system automatically won't
-    advance in the weeks it displays until you've caught up, so you
-    shouldn't actually ever need to set the current week.
+    finished (i.e., once you've caught up, or seen what things will
+    look like at the end of this week).  Note that if you haven't yet
+    <a href='week.php'>edited the sheet</a> for some week, the system
+    will assume that that week hasn't happened yet.  This means that
+    if you've fallen behind, the system automatically won't advance in
+    the weeks it displays until you've caught up, so you shouldn't
+    actually ever need to set the current week if you fall behind.
+
+    <li>The fining rate is set by CO.  Just enter it in here.  Scaling
+    it as per your house fining policy will be set up below.
 
     <li>Your house may have the possibility of fining members every
     week, even during weeks that don't end fining periods.  If so, you
@@ -335,25 +365,20 @@ can't, contact the administrator.)
     each week or fining period.  After this list are the explanations
     of the other features.
 
-    <li>The fining rate is set by CO.  If, for some reason, you want a
-    particular fining period to have a different fining rate from the
-    standard one (this should never happen), you can set it
-    individually in that fining period.
-
     <li>The fining floor is the baseline for fines: if it is 3, then
     someone who is down 4 hours is fined 1 hour, because they are 1
     hour below the floor.
 
     <li>The buffer is the amount people can be below the floor before
     fines kick in.  If the buffer is 2 and the floor is still 3, then
-    someone down 5 hours is not fined, because they are 2 hours below,
-    and since the buffer is 2, they have to be more than 2 hours below
-    to be fined.  However, if someone is down 6 hours, they are fined
-    for 3 hours, because the buffer does not protect them, and they
-    are 3 hours below the floor.  In Stebbins, on fining weeks the
-    floor is 0 and the buffer is 2 (you're fined for all your
-    negative hours, unless you're less than 2 hours below 0).  By CO
-    policy, the buffer at the end of the semester must be 0.  In
+    someone down 5 hours is not fined, because they are 2 hours below
+    the floor, and since the buffer is 2, they have to be more than 2
+    hours below to be fined.  However, if someone is down 6 hours,
+    they are fined for 3 hours, because the buffer does not protect
+    them, and they are 3 hours below the floor.  In Stebbins, on
+    fining weeks the floor is 0 and the buffer is 2 (you're fined for
+    all your negative hours, unless you're less than 2 hours below 0).
+    By CO policy, the buffer at the end of the semester must be 0.  In
     Stebbins, on non-fining weeks people who are more than 10 hours
     below 0 are fined for each of those hours.  For those weeks, the
     floor is 10 (you must be 10 below 0 to be fined), and the buffer
@@ -385,8 +410,8 @@ can't, contact the administrator.)
     member can be up at the end of a fining period.  CZ, for example,
     put people with up hours back down to 0, so the maximum would be 0
     here.  Hoyt might have 5 here and nothing elsewhere.  As with
-    above, make sure this field is blank (not zero) if this doesn't
-    apply to you.
+    above, make sure this field is blank (not '0', but totally blank)
+    if this doesn't apply to you.
 
     <li><a name='cash_hours_auto'>Stebbins</a>, and possibly some
     other houses, allow members to pay off workshift fines with up
@@ -444,6 +469,10 @@ can't, contact the administrator.)
     <li>Edited cells are shown in red.  If you delete a row, it
     is shown in blue.
 
+    <li>For ease of reading, rows are colored in groups of three,
+    turquoise and white.  If you want to turn that coloring off
+    (perhaps for printing), uncheck the "Color rows?" box.
+
     <li>If you wish to see only rows with a specific person, you can
     either choose their name from the drop-down box at the top of the
     page, or press control-e while you are editing an input box with
@@ -461,7 +490,7 @@ can't, contact the administrator.)
     you wish to hide at the top of the page.  You can also click on
     Show none or Show all and then choose (or unchoose) a few columns,
     if that is easier.  When you unclick Show none or Show all, you'll
-    be back to the original page.
+    be back to the original setup.
   
     <li>To add a new row, press Add Row at the bottom of the page.  To
     delete a row, check the Delete box.
@@ -547,21 +576,82 @@ can't, contact the administrator.)
   window and then bringing it up again, or resizing the window, if
   that happens.
 
-  <li><a name='#escape_sequences'>Some parts of the site will allow
-  you to enter some text that users will see.  Often that text may
-  have parts which are not fixed -- the user's name, for instance, or
-  the current week.  When that happens, there should be a line that
-  says something like "(You can use the following escape codes to
-  insert data into this text: %current_week will insert the Current
-  week)".  When you see this, you know that if, in your text, you put
-  "This week is week %current_week," then the user will see "This week
-  is week 7," in the 7th week.  Remember to put the escape code in
-  exactly as it's written.
-
 </ul>
+
+<li><a name='online_signoff_setup'><h4>Setting up online
+signoffs</h4></a>
+Go here for <a href='#online_signoff_running'>more information</a> on
+actually running online signoffs.  For the actual setup, you have a
+few options.  First of all, if you uncheck the "Enable online
+signoffs" box, then there is nothing else to do.  You might want to
+give online signoffs a shot, though -- here are a few reasons why: you
+don't have to enter the data in, it's automatically put in for you;
+verifiers and any changes from the usual shift are entered with the
+shift, so you can easily see everything about this shift on one line;
+you can require that verifiers enter their passwords, if you want,
+which will cut down on fraud; and you can have the system email
+verifiers every so often, to double-check on fraud.  If you would like
+to have online signoffs, then there are a few parameters to set up.
+
+<ul><li>The first is the maximum number of hours after a shift ends
+that the member is allowed to sign off for it.  Many houses have a
+policy that shifts have to be signed off for within 48 hours.  If you
+do, then put that number here.  Note that the end time you specified
+for a shift when <a href='master_shifts.php'>entering shifts</a> will
+be used here.  If you omitted it, the shift will be assumed to end at
+midnight on the day it was supposed to be done.  People can sign off
+for shifts that are not scheduled to start yet.  Since you will be
+able to review all the entered shifts, this is not a huge
+risk. Weeklong shifts are assumed to be done on Sunday (the last day
+of the week).  Thus, they can be signed off for at any point during
+the week.
+
+<li>Signing off online involves a verifier, just as it does on paper.
+If you would like, you can require that the verifier enter their
+password on the signoff page.  Then a member cannot use someone's name
+without permission (unless they know their password).
+
+<li>The system can automatically audit people signing off, by
+sending emails to the verifiers to check that the verifiers really did
+sign off those shifts.  (This is less of an issue if you require
+verifier passwords above.)
+<ul>
+<li>To avoid overwhelming people with email, you can specify what
+percentage of the shifts signed off online will generate emails.
+Whatever number you put in here, that fraction of the time an email
+will be sent.  If you put in 2, then 1 out of every 2 signed-off
+shifts will be verified via email.  If you put in 10, then 1 out of
+every 10 signed-off shifts will be verified via email.  If you put in
+1, then every signed-off shift will be verified via email.
+
+<li>In case the verifier doesn't have an email on file, email will go
+to you.  The email to the verifier will also appear to be coming from
+you.  For those reasons, you need to enter your email address here.
+
+<li>You can set the subject line of the email.  You get to use
+some <a href='#escape_sequences'>escape sequences</a> to make the
+subject line more informative.
+
+<li>Finally, you can also set the body of the email.  You can use <a
+href='#escape_sequences'>escape sequences</a> again here.
+</ul>
+</ul>
+
+  <li><a name='escape_sequences'><h4>Escape sequences</h4></a>Some parts
+of the site will allow you to enter some text that users will see.
+Often that text may have parts which are not fixed -- the user's name,
+for instance, or the current week.  When that happens, there should be
+a line that says something like "(You can use the following escape
+codes to insert data into this text: %current_week will insert the
+Current week)".  When you see this, you know that if, in your text,
+you put "This week is week %current_week," then the user will see
+"This week is week 7," in the 7th week.  Remember to put the escape
+code in exactly as it's written.
+</ul>
+
 <h3>Miscellaneous Tasks</h3>
 
-<ul><li><a name='#person.admin'>If a member comes to you with a
+<ul><li><a name='person.admin'>If a member comes to you with a
 question about their shifts, you can <a href='person.admin.php'>view
 their personal page</a>, with all their data.  Each week has a line
 giving exactly what happened that week with hours, fines, etc.  The
@@ -571,15 +661,109 @@ its totals are not included in the totals at the top of the page.
 <li><a name='fining_data'>If there is a fine coming from outside the
 system (for a blown bathroom clean, or the like), you can <a
 href='fining_data.php'>enter it</a> and it will be added to their
-fines.  Enter the date in m/d format (so June 22 is 6/22).
+fines.  Enter the date in m/d format (so June 22 is 6/22).  Note that
+for houses in which you can work off fines, you need to enter the
+credit in here, and also enter a shift of "Paying off fines" or
+something similar in the <a href='week.php'>weekly sheet</a>, for
+negative hours (however many they are cashing in).
 
-<li><a name='#special_fining'>Sometimes a member will have a fining
+<li><a name='special_fining'>Sometimes a member will have a fining
 period end at a different week than the rest of the house.  This page
-allows you to set that up.  -1 indicates that the fining period takes
-place the same week as the rest of the house.  Leaving it blank means
-that this fining period is cancelled for this member.  Entering
-another week means that this fining period will take effect for this
-member at the end of that week.
+allows you to set that up.  -1 is the default value: it indicates that
+the fining period takes place the same week as the rest of the house.
+Leaving an entry blank means that this fining period is cancelled for
+this member.  Entering another week means that this fining period will
+take effect for this member at the end of that week, as opposed to the
+normal week.
+
+<li><a name='show_prefs'>You</a> can <a href='show_prefs.php'>view a
+member's preferences</a> directly (usually you will double-click on
+their name in the sidebar when <a href='assign_shifts.php'>assigning
+shifts</a>).  This page will show the member's assigned shifts and
+their preference form.  If you are using a rating system, then the
+member's preferences as regards specific shifts will just be printed
+out, with categories first, and then specific shifts.  If you are
+doing wanted/unwanted, the unwanted shifts and then the wanted shifts
+will be displayed in two tables.  Following that are any notes that
+the member made, and finally, their schedule.  x means they can't do a
+shift at that time, + means they want it, - means they don't want it,
+but can do it, and ? means they don't know yet.
+
+<li><a name='show_emails'>You</a> can <a href='show_emails.php'>view
+the emails</a> of everyone in the house with an email address entered.
+The system tries to make the names looks pretty, and you should be
+able to copy this list directly into an address book or email message
+(make sure you don't include the "No emails for:" part).
+
+<li><a name='signoff'>Configuring <a href='signoff.php'>signoff</a>
+sheets for printing can be confusing.  The first question is, do you
+want your signoff sheet to be a grid with columns for the days, and
+all the shifts down the side, or do you want just one day at a time,
+with one or two days per sheet of paper?  If the first, you are going
+to want to click on the Grid Format button.  If the second, then you
+need to use the "daily sheet style."
+
+<ul><li>The week number here allows you to print out the signoff sheet
+specific to the week you're in.  If you're having a party one week and
+you have a lot of extra party shifts that you've entered, or if you're
+in temp weeks and the regular shifts aren't there, it will be very
+useful to fill this in.  It will also print the dates out properly if
+you do.  If you don't enter this, then the "generic week" with all the
+regularly assigned shifts will be printed out, which in most cases is
+the same.
+
+<li>If you choose to show names, then the shift will be filled in with
+the name of the person who is assigned that shift (whatever that
+weekly sheet says, if you're printing out a specific week, or the
+usual assigned shift, if you didn't say a week).  This makes it one
+step faster for most people if they're signing off of their normal
+shifts.
+
+<li>You can leave a space for the verifier to write their name (either
+in a separate column, in the daily view, or right below the shift, in
+the grid format).
+
+<li>Assuming you don't want grid format (and so you didn't click on
+the Grid Format button), you come now to the selection of which days
+you would like to see.  Check the days you want, and click submit.  If
+you're doing this style, you probably don't want more than one or two
+days printed at a time.  Note that unfortunately there isn't an easy
+way to save which days you want to print out and use them over.  If
+you really want that, I can probably arrange it for you -- let me
+know.
+
+<li>Now come some things you can change permanently about signoffs.
+The first only affects the daily sheet style, but the second affects
+both.  You can enter extra columns which will be printed out in the
+daily sheets.  If, for instance, you would like a "notes" column where
+workshifters can write notes about the shift, you can enter it here.
+If you want the column to be a certain width (otherwise it will be
+very narrow), enter the width immediately below it.  Make sure to
+click the button at the bottom to update these values.
+
+<li>You can also enter a signoff message, that will appear at the top
+of signoff pages, both grid format and daily sheets.  When you compose
+this message, keep in mind that you can use html (so you can make
+things bold with &lt;strong&gt;, etc.).  But that also means that if
+you enter something in html (like, for instance, the symbol &lt;), it
+won't come out the way you want.  You'll need to enter something like
+&amp;lt; for &lt;, and similarly &amp;gt; for &gt;, and so on.  Your
+white space will be used, though, so if you hit the &lt;enter&gt; key,
+there will be a new line.  Remember to click the button below to
+permanently update this message.
+</ul>
+
+<li><a name='change_password'
+href='change_password.php'>change_password.php</a> allows you to
+change your workshift manager password.  Note that you need to know
+your old password.  If you can't remember it (and I don't know how
+you're reading this if you can't), then you need to email the
+workshift website administrator.
+
+<li><a name='reset_user_password'
+href='reset_user_password.php'>reset_user_password.php</a> will reset
+any user's personal password, which they use to view their personal
+page, preference forms, etc.
 
 </ul>
 
@@ -601,15 +785,22 @@ member at the end of that week.
   sure that you are <b>not editing any tables</b> when you change your
   password -- you won't be able to save them!
 
-  <li><a name='view_backup'>You can <a
-  href='../public_utils/weekly_totals_print.php?getarchive'>print out
-  the weekly totals of a backed-up database</a>, or even <a
-  href='weekly_totals_update.php?getarchive'>edit the hours owed or
-  notes for a backed-up database</a>.  <a href='house_fines.php'>House
-  fines</a> are also available.  Very useful if you need to see what
-  someone's fines were at the end of a previous semester.  If
-  necessary, you can also <a
-  href='recover_backup_database.php'>recover a back up</a> if you need
+  <li><a name='view_backup_database'>You can <a
+  href='view_backup_database.php'>view a backup database</a> as though
+  it were the current database.  This allows you to do nearly anything
+  you could want with a backup.  You shouldn't be editing it, but you
+  can print out fines, etc.  Very useful if you need to see what
+  someone's fines were at the end of a previous semester.  <a
+  name='recover_backup_database'>If</a> you actually need to get back
+  the archive as the current database, you can also <a
+  href='recover_backup_database.php'>recover a backup</a>.  Recovering
+  a backup will back up the current database, and then put the backup
+  as the current one, so your members will see it as current, etc.
+  You should only have to do this when you're going from summer to
+  fall, and you want to recover the spring database, because the fall
+  and spring setup are the same, and different from summer.
+  Otherwise, recovering a backup is not a good idea, and you should
+  ask your workshift website administrator if you think that you need
   to.
 
   <li><a href='table_edit.wrapper.wrapper.php'>View or edit a
@@ -619,5 +810,70 @@ member at the end of that week.
 
 </ul>
 
+<h2>More information on various pages.</h2></a>
 <ul>
+  <li><a name='update_house_more' href='#update_house'><h3>update_house.php</h3></a>
+  <ul>
+  <h4>New members and old members</h4>
+  <li>When you delete old members from the system, they're gone but
+  not forgotten.  The system still stores their information.  Thus, if
+  they come back to the house, they'll have the same password as
+  before, as well as the same phone number, email, etc.  This is
+  convenient, but it also means that you can't have a current member
+  who has exactly the same name as an old member.
+
+  <li>If you try to add the current member with the same name, if you
+  do it with the CO list, then the system will check to make sure that
+  the application numbers match.  If they don't, then it will take the
+  new member's name and tack on their application number, to avoid
+  confusion.  After you've added them, you can then go and rename them
+  to what you want.
+
+  <li>Note that if you upload a list without application numbers, the
+  system has no way of knowing that this new person isn't the same as
+  the old one, and so the old one will be re-activated, which will
+  mean that their password, etc., are wrong.
+
+  <li>When you're renaming a member, if you are renaming a new member
+  to an old member's name, the rename page will give you two options.
+  The first option is if this new member really is the old member, and
+  you added them as a new member by mistake.  In that case, what you
+  want to do is delete this new member and add the old member.  Note
+  that you should only do this if you haven't yet done anything with
+  the new member (assigned shifts, etc.).  If you've done anything, or
+  they've done anything, it's better to take the second option.
+
+  The second option is if this new member really is different, or if
+  you have already entered important data (like shift assignments, or
+  if they've submitted preference forms) for him/her.  In that case,
+  you should delete the old member, and rename this new member to the
+  old member.  The old member's info will be lost, but that's not a
+  tragedy.
+
+<h4>Other operations on the update_house page</h4>
+
+<li>You can also rename members.  Note that, because adding/removing
+  members is a potentially dangerous operation, the system backs up
+  the database every time this happens.  You can override a backup
+  being made during a rename (which is less dangerous, usually) by
+  checking the box.  For what happens if you try to rename a new
+  member to an old one, see above.
+
+  <li>You can also add members manually (as opposed to enter houselist
+  manually, below).  These members will be added to the houselist.  No
+  one will be deleted.  Note that the caveats above about adding
+  old members back applies here.  You should hardly, if ever, have to
+  use this.  Boarders, and other people in the system who are not
+  coming through CO are the exception.
+
+  <li>You can delete members, one at a time or many at once by holding
+  down the &lt;control&gt; key as you click.  Note that deleted people
+  have their preference forms deleted, along with their shift
+  assignments and any shifts they've done, so you don't want to do
+  this unless the person has really left the house for the semester.
+
+</ul>
+
+</ul>
+
 </body></html>
