@@ -926,8 +926,26 @@ function this_url() {
       $page_name .= '&';
     }
     $page_name .= rawurlencode($key);
-    if (strlen($val)) {
-      $page_name .= '=' . rawurlencode($val);
+    //problem if there's an array in the GET
+    if (!is_array($val)) {
+      if (strlen($val)) {
+        $page_name .= '=' . rawurlencode($val);
+      }
+    }
+    else {
+      $key = rawurlencode($key);
+      $first_val = true;
+      foreach ($val as $elt) {
+        if ($first_val) {
+          $first_val = false;
+          //we need to make sure php knows this is an array key
+          $page_name .= '[]';
+        }
+        else {
+          $page_name .= '&' . $key . '[]';
+        }
+        $page_name .= '=' . rawurlencode($elt);
+      }
     }
   }
   //escape it so we can print directly to the page
