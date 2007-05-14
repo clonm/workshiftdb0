@@ -9,12 +9,25 @@ if (array_key_exists('signoff_message',$_REQUEST)) {
 }
 $signoff_message = get_static('signoff_message');
 if (array_key_exists('cols',$_REQUEST)) {
-  set_static('signoff_cols',join("\n",$_REQUEST['cols']));
+  $cols = $_REQUEST['cols'];
+  while (!strlen(end($cols))) {
+    array_pop($cols);
+  }  
+  set_static('signoff_cols',join("\n",$cols));
 }
 if (array_key_exists('col_wids',$_REQUEST)) {
-  set_static('signoff_col_wids',join("\n",$_REQUEST['col_wids']));
+  $col_wids = $_REQUEST['col_wids'];
+  while (!strlen(end($col_wids))) {
+    array_pop($col_wids);
+  }  
+  set_static('signoff_col_wids',join("\n",$col_wids));
 }
-
+$cols = split("\n",get_static('signoff_cols',''));
+$col_wids = split("\n",get_static('signoff_col_wids',''));
+while (!strlen(end($cols))) {
+  array_pop($cols);
+  array_pop($col_wids);
+}
 //nothing entered?  Offer front page
 if (count($_GET) == 0) { ?>
 <html><head><title>Print Sign-Off Sheets</title></head><body>
@@ -44,12 +57,6 @@ Show days (only for daily signoffs):
 Do you want extra columns displayed (in daily sheets)?  Put them in here and click below.
 <table>
 <?php
-   $cols = split("\n",get_static('signoff_cols',''));
- $col_wids = split("\n",get_static('signoff_col_wids',''));
- while (!strlen(end($cols))) {
-   array_pop($cols);
-   array_pop($col_wids);
- }
  for ($ii = 0; $ii < max(count($cols)+2,3); $ii++) {
 ?>
 <tr><td>Column name:</td><td><input name='cols[]' value='<?=count($cols) > $ii?$cols[$ii]:''?>'></td></tr>
@@ -547,27 +554,6 @@ exit;
 }
 if (!isset($table_name)) {
 $table_name = 'master_week';
-}
-//signoff list for the workshift manager to print and post each week
-if (isset($_REQUEST['cols'])) {
-  $cols = array();
-  $col_wids = array();
-  for ($ii = 0; $ii < count($_REQUEST['cols']); $ii++) {
-    $temp = stripformslash($_REQUEST['cols'][$ii]);
-    if (!$temp) {
-      break;
-    }
-    $cols[] = $temp;
-    if (isset($_REQUEST['col_wids'][$ii])) {
-      $col_wids[] = stripformslash($_REQUEST['col_wids'][$ii]);
-    }
-  }
-  set_static('signoff_cols',join("\n",$cols));
-  set_static('signoff_col_wids',join("\n",$col_wids));
-}
-else {
-  $cols = split("\n",get_static('signoff_cols',''));
-  $col_wids = split("\n",get_static('signoff_col_wids',''));
 }
 $time = microtime(1);
 function utility_equal ($str) {global $db; return 'day = ' . $db->qstr($str);}
