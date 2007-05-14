@@ -1,33 +1,37 @@
 <?php 
-$require_user = false;
+$body_insert = '';
 require_once('default.inc.php');
+//don't want weeklong in the days
 array_pop($days);
-if (!isset($_REQUEST['submitting']) && count($_GET) == 0) { ?>
-<html><head><title>Print Sign-Off Sheets</title></head><body>
+//deal with signoff message and cols first, since it's independent of what's displayed
+if (array_key_exists('signoff_message',$_REQUEST)) {
+  set_static('signoff_message',$_REQUEST['signoff_message']);
+}
+$signoff_message = get_static('signoff_message');
+if (array_key_exists('cols',$_REQUEST)) {
+  set_static('signoff_cols',join("\n",$_REQUEST['cols']));
+}
+if (array_key_exists('col_wids',$_REQUEST)) {
+  set_static('signoff_col_wids',join("\n",$_REQUEST['col_wids']));
+}
 
-<form action='<?=$_SERVER['REQUEST_URI']?>' method=post id='signoff_form'><input type=hidden name='submitting'>
-   <input size=3 name='week_num'> Enter a week number here to get the signoff sheets from that week (which you
+//nothing entered?  Offer front page
+if (count($_GET) == 0) { ?>
+<html><head><title>Print Sign-Off Sheets</title></head><body>
+<?php
+   print $body_insert;
+ print_help(); 
+?>
+<form action='<?=this_url()?>' method=get id='signoff_form'>
+   <input size=3 name='week_num' value='<?=($cur_week = get_cur_week())>-1?$cur_week:''?>'>
+Enter a week number here to get the signoff sheets from that week (which you
 may have changed to add special hours, etc.).<br>
-<input type=submit value="Grid Format" onclick="signoff_form.action='<?=$_SERVER['REQUEST_URI']?>?gridformat'"><br>
-<hr>
-<table>
-<tr><td><input type=submit value="Monday, Tuesday" onclick="signoff_form.action='<?=$_SERVER['REQUEST_URI']?>?Monday&Tuesday'"></td>
-<td><input type=submit value="Monday, Tuesday with names" onclick="signoff_form.action='<?=$_SERVER['REQUEST_URI']?>?Monday&Tuesday&Name'"></td></tr>
-<tr><td><input type=submit value="Wednesday, Thursday" onclick="signoff_form.action='<?=$_SERVER['REQUEST_URI']?>?Wednesday&Thursday'"></td>
-<td><input type=submit value="Wednesday, Thursday with names" onclick="signoff_form.action='<?=$_SERVER['REQUEST_URI']?>?Wednesday&Thursday&Name'"></td></tr>
-<tr><td><input type=submit value="Friday, Saturday" onclick="signoff_form.action='<?=$_SERVER['REQUEST_URI']?>?Friday&Saturday'"></td>
-<td><input type=submit value="Friday, Saturday with names" onclick="signoff_form.action='<?=$_SERVER['REQUEST_URI']?>?Friday&Saturday&Name'"></td></tr>
-<tr><td><input type=submit value="Sunday" onclick="signoff_form.action='<?=$_SERVER['REQUEST_URI']?>?Sunday'"></td>
-<td><input type=submit value="Sunday with names" onclick="signoff_form.action='<?=$_SERVER['REQUEST_URI']?>?Sunday&Name'"></td></tr>
-<tr><td><input type=submit value="Weeklong" onclick="signoff_form.action='<?=$_SERVER['REQUEST_URI']?>?Weeklong'"></td>
-<td><input type=submit value="Weeklong with names" onclick="signoff_form.action='<?=$_SERVER['REQUEST_URI']?>?Weeklong&Name'"></td></tr></table>
-   (If you click on the first link, you can easily see how to customize
-    the display to what you want by looking at the address bar of your browser.)
-<hr>
-Or you can customize here (Names and Verifier apply to the gridformat as well):
 Show names? <input type=checkbox name='Name' checked><br>
 Have space for verifier? <input type=checkbox name='Verifier' checked><br>
-                         Show days (only for daily signoffs):
+<hr>
+<input type=submit name='gridformat' value="Grid Format"><br>
+<hr>
+Show days (only for daily signoffs):
 <table>
 <tr><td><input type=checkbox name='Monday'>Monday</td><td><input type=checkbox name='Tuesday'>Tuesday</td></tr>
 <tr><td><input type=checkbox name='Wednesday'>Wednesday</td><td><input type=checkbox name='Thursday'>Thursday</td></tr>
@@ -35,12 +39,17 @@ Have space for verifier? <input type=checkbox name='Verifier' checked><br>
 <tr><td><input type=checkbox name='Sunday'>Sunday</td><td><input type=checkbox name='Weeklong'>Weeklong</td></tr>
 </table>
 <input type=submit value='Submit for daily sheet style (click above for gridformat)'><br><hr>
-<table><tr>
-Do you want extra columns displayed?  Put them in here before you click above.
+</form>
+    <form action=<?=this_url()?> method=post>
+Do you want extra columns displayed (in daily sheets)?  Put them in here and click below.
 <table>
 <?php
    $cols = split("\n",get_static('signoff_cols',''));
  $col_wids = split("\n",get_static('signoff_col_wids',''));
+ while (!strlen(end($cols))) {
+   array_pop($cols);
+   array_pop($col_wids);
+ }
  for ($ii = 0; $ii < max(count($cols)+2,3); $ii++) {
 ?>
 <tr><td>Column name:</td><td><input name='cols[]' value='<?=count($cols) > $ii?$cols[$ii]:''?>'></td></tr>
@@ -50,53 +59,53 @@ Do you want extra columns displayed?  Put them in here before you click above.
 ?>
 </table>
 <hr>
-Do you have a message you want at the top of the sheet?  Put it here.
-<textarea name='signoff_message'>
+    Do you have a message you want at the top of the sheet?  Put it here,
+then click below.<br/>
+<textarea name='signoff_message' cols=60 rows=5>
 <?php
-$signoff_message = get_static('signoff_message','');
-if (substr($signoff_message,0,5) == '<pre>' &&
-    substr($signoff_message,-6) == '</pre>') {
-  $signoff_message = substr($signoff_message,5,-6);
-}
- echo escape_html($signoff_message) . "</textarea>";
+ //here for legacy -- shouldn't be anyone with this anymore
+ if (substr($signoff_message,0,5) == '<pre>' &&
+     substr($signoff_message,-6) == '</pre>') {
+   $signoff_message = substr($signoff_message,5,-6);
+ }
+ echo escape_html($signoff_message) . 
+   "</textarea><br/><input type=submit value='Update message/columns'></form>";
  exit; 
 }
 if (!isset($php_start_time)) {
   $php_start_time = array_sum(split(' ',microtime()));
 }
-if (isset($_REQUEST['signoff_message'])) {
-  $signoff_message = stripformslash($_REQUEST['signoff_message']);
-  set_static('signoff_message',$signoff_message);
-}
-$body_insert = "<div>" . get_static('signoff_message','') . "</div>";
+$body_insert = "<div style='" . white_space_css() . "'>" . $signoff_message . "</div>";
    if (isset($_REQUEST['week_num']) && strlen($_REQUEST['week_num'])) {
-   $week_num = stripformslash($_REQUEST['week_num']);
-   if (!table_exists("week_$week_num")) {
-     exit("The sheet for <a href='../admin/week.php?week=" . escape_html($week_num) . "'>Week " .
-                   escape_html($week_num) . "</a> does not exist yet.  Click on the link to create it.");
+     $week_num = stripformslash($_REQUEST['week_num']);
+     if (!table_exists("week_$week_num")) {
+       exit("The sheet for <a href='../admin/week.php?week=" . escape_html($week_num) . "'>Week " .
+            escape_html($week_num) . "</a> does not exist yet.  Click on the link to create it.");
+     }
+     $table_name = "week_$week_num";
+     $start_date = get_static('semester_start');
+     if (strlen($start_date) == 0) {
+       exit("<p>You haven't entered the start of the semester in " .
+            "<a href='../admin/basic_consts.php'>basic_consts.php</a>");
+     }
+     $start_date = explode('-',$start_date);
+     $beg_date = date('n/j',mktime(7*24*$week_num,0,0,$start_date[1],
+                                   $start_date[2],$start_date[0]));
+     $end_date = date('n/j',mktime(24*($week_num*7+6),0,0,$start_date[1],
+                                   $start_date[2],$start_date[0]));
+     function date_maybe($str) {
+       global $start_date,$week_num,$days;
+       return $str . " " . 
+         date('n/j',mktime(7*24*$week_num+array_search($str,$days),0,0,
+                           $start_date[1],$start_date[2],$start_date[0]));
+     }
    }
-   $table_name = "week_$week_num";
-   $start_date = get_static('semester_start');
-   if (strlen($start_date) == 0) {
-     exit("<p>You haven't entered the start of the semester in " .
-          "<a href='../admin/basic_consts.php'>basic_consts.php</a>");
-   }
-   $start_date = explode('-',$start_date);
-   $beg_date = date('n/j',mktime(7*24*$week_num,0,0,$start_date[1],
-                                  $start_date[2],$start_date[0]));
-   $end_date = date('n/j',mktime(24*($week_num*7+6),0,0,$start_date[1],
-                                 $start_date[2],$start_date[0]));
-   function date_maybe($str) {
-     global $start_date,$week_num,$days;
-     return $str . " " . date('n/j',mktime(7*24*$week_num+array_search($str,$days),0,0,$start_date[1],$start_date[2],$start_date[0]));
-   }
- }
- else {
-   $week_num = null;
-   function date_maybe($str) {
-     return $str;
-   }
- }
+else {
+     $week_num = null;
+     function date_maybe($str) {
+       return $str;
+     }
+}
 $verifier = isset($_REQUEST['Verifier']);
 $use_colors = get_static('colors_signoff',false);
 $javascript_pre = '';
@@ -206,7 +215,6 @@ if ($use_colors && isset($table_name)) {
 }
 
 if (array_key_exists('gridformat',$_REQUEST)) {
-  $dummy_string = get_static('dummy_string','XXXXX');
 $title_page = 'Sign-Off Sheet';
 $header = "<h1>Signoffs for Week";
 if (strlen($week_num)) {
@@ -537,7 +545,6 @@ $javascript_pre .= "\n</style>\n";
 require_once("$php_includes/table_print.php");
 exit;
 }
-$dummy_string = get_static('dummy_string');
 if (!isset($table_name)) {
 $table_name = 'master_week';
 }
@@ -571,16 +578,14 @@ foreach ($days as $day) {
     $day_array[] = $day;
   }
 }
+ if (isset($_REQUEST['days'])) {
+   $day_array += $_REQUEST['days'];
+ }
  if (!count($day_array)) {
    exit("Please go back and select some days to print the sheets for!");
  }
 $where_exp = join(' OR ',array_map('utility_equal',$day_array));
-$order_exp = '`day`';
-if (count($day_array) > 1) {
-  if (strcmp($day_array[0],$day_array[1]) > 0)
-    $order_exp .= ' DESC';
-}
-$order_exp .= ', `workshift`';
+$order_exp = '`janak_sort_column`, `workshift`';
 $col_formats = array('date' => 'dateformat','day' => '','workshift' => '',
 		     'member_name' => 
 		     array_key_exists('Name',$_REQUEST)?'':'blankfield');
@@ -594,29 +599,28 @@ $table_edit_query = "select " . ($table_name == 'master_week'?'"" as ':'') . "`d
 ",`day`,`$table_name`.`workshift`,`member_name`,0 as `Verifier`," .
 "`$table_name`.`hours`,`master_shifts`.`start_time`,`master_shifts`.`end_time`, " .
   "null as `" . join('`, null as `',$cols) . "` " .
-  "from " .
-"`$table_name` left join `master_shifts` on `shift_id` = `master_shifts`.`autoid` where " . $where_exp .
+  ", find_in_set(`day`,'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday," .
+  "Sunday,Weeklong,Special') as `janak_sort_column` from " .
+  "`$table_name` left join `master_shifts` on " .
+  "`shift_id` = `master_shifts`.`autoid` where " . $where_exp .
   " order by " . $order_exp;
 $col_formats['start_time'] = 'timeformat';
 $col_formats['end_time'] = 'timeformat';
 }
 if (count($cols)) {
-$cols = array_flip($cols);
-foreach ($cols as $key => $val) {
+$col_flips = array_flip($cols);
+foreach ($col_flips as $key => $val) {
   if (!$key) {
-    unset($cols[$key]);
-continue;
-} 
-  $cols[$key] = '';
+    unset($col_flips[$key]);
+    continue;
+  } 
+  $col_flips[$key] = '';
 }
-$col_formats = array_merge($col_formats,$cols);
+$col_formats = array_merge($col_formats,$col_flips);
 }
  $col_sizes = array_fill(0,count($col_formats),0);
-$ii = 0;
- for ($jj = 0; $jj < count($col_sizes); $jj++) {
-   if (count($col_wids) > $ii && isset($cols[$ii])) {
-     $col_sizes[$jj] = $col_wids[$ii++];
-   }
+ for ($ii = 0; $ii < count($cols) && $ii < count($col_wids); $ii++) {
+   $col_sizes[$ii+count($col_formats)-count($cols)] = $col_wids[$ii];
  }
 
 $col_sortable = array();
