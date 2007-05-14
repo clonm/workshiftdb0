@@ -131,7 +131,7 @@ background colors to get the grey to print properly)</a><br>
 <?php
 if (!$archive) {
 ?>
-<a href="../public_utils/signoff.php<?=$archive?'?archive=' . escape_html($archive):''?>">Print out signoff sheets</a><br>
+<a href="signoff.php<?=$archive?'?archive=' . escape_html($archive):''?>">Print out signoff sheets</a><br>
 <?php
 }
 ?>
