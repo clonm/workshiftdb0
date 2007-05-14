@@ -2,50 +2,95 @@
 
 <ul>
 <li><h3>Pages in the system</h3>
-<ul><li>Fill out your <a href="preferences.php">preference form</a> by
-the deadline listed in the form, so that your workshift manager can
-assign workshifts in accordance with your preferences (shifts you
-want/don't want, times you can make, special requests, etc.).  It's a
-good idea to print out your preference form when it's filled out, and
-definitely to save the resulting page after you submit your
-preferences, and possibly print it out, just in case your preferences
-aren't submitted properly.
-<li><a href="person.php">Your personal page</a> has information about
-shifts you have done, access to your preference form if you need to
-change your preferences before shifts have been assigned, and any
-other goodies your house might have (in Stebbins you can <a
-href="voting.php">vote in elections</a>).
-<li><a href="weekly_totals.php">The weekly totals</a> have the running
-totals of the house's workshift hours.  You can uncheck the column
-boxes to hide columns you don't want to look at, and you can restrict
-to looking at any one person's totals by choosing their name in the
-drop-down box (although that may only work in Firefox).  If you have
-questions about whether your shift hours were counted properly, you
-can check <a href="person.php">your personal page</a> to see a
-complete record of the shifts the workshift manager has you down as
-doing.  As well, the last two columns have any notes the workshift
-manager has for you, and the amount you were fined this past week.
-Note that the fining amount is not cumulative, so if you were fined
-$10 one week, and $10 the next week, that means your total fine is $20
--- $10 twice.
-<li><a href="../public_utils/shifts_by_name.php">Workshifts by
-name</a> tells you what workshifts each person is assigned.
-<li><a name='cash_hours'>If your house has automatic cashing-in of
-hours (and it does, if you clicked on a link to get here), any up
-hours you have at the end of the semester will be applied towards any
-workshift fines that you may have incurred.  If you're not up hours,
-then nothing will happen, but this just lets you know what will
-happen.  Your fines will be similarly modified.  If you have already
-paid your fines, you may be eligible to get a refund of part or all of
-them.
-<li><a href='online_signoff.php'>Online signoff</a> may be available
-in your house.  If it is, then you can sign off there.  Choose your
-name.  A list of your shifts should appear.  If you are signing off
-for one of your regular shifts, choose it there.  If that's it, then
-just get a verifier to enter their name and password, and submit.  You
-should see a message at the top saying you've been signed off, and
-your name should appear in a list at the bottom.  Here's some more
-information about this page:
+
+<ul><li><a name='preferences'>Fill</a> out your <a
+href="preferences.php">preference form</a> by the deadline listed in
+the form, so that your workshift manager can assign workshifts in
+accordance with your preferences (shifts you want/don't want, times
+you can make, special requests, etc.).  It's a good idea to print out
+your preference form when it's filled out, and definitely to save the
+resulting page after you submit your preferences, and possibly print
+it out, just in case your preferences aren't submitted properly.
+
+<li><a href="person.php" name='person'>Your personal page</a> has
+information about shifts you have done, access to your preference form
+if you need to change your preferences before shifts have been
+assigned, and any other goodies your house might have (in Stebbins you
+can <a href="voting.php">vote in elections</a>).
+
+<ul><li>At the top, you have links to everything you should need to go
+to on the site -- your preferences, a link to change your password, a
+directory of the whole house, and links to elections (only applicable
+if your house has online elections).
+
+<li>Below that is a list of your shifts.  You can click on any shift
+to see the description of that shift that the workshift manager has
+entered.
+
+<li>Below that comes the real stuff.  First comes your net hours.  If
+it's in red, you're below 0.  Green is above.  Know your house's
+fining policy!
+
+<li>Fines follow.  Fines that occurred at fining periods are listed on
+the left, and other fines to the right.  If your house has weekly
+fines, they will be in the middle.  You'll see subtotals for each
+category of fine, and a total fine below that.  Remember that negative
+numbers are actually credits (meaning the workshift manager entered
+that you paid a fine, or worked off a fine, etc.).
+
+<li>Next comes a line telling you when the fining periods have been,
+and when the future ones will be.  If you have worked out an
+arrangement with your workshift manager for different fining periods,
+that will be displayed here.
+
+<li>Now comes a list of every shift that you have done this semester,
+organized by week.  At the end of each week, there is a line giving
+the net (done-blown) hours you did that week, how many hours you owed
+for that week, the week's change (net-owed), and your running total --
+your total through this week.  If you incurred fines at the end of
+this week, either because of a fining period or because your house has
+weekly fining, they will also be displayed here.
+
+<li>If you have a question about hours that you've done, look
+carefully at this list of shifts until you see what the discrepancy
+is.  That will help you and the workshift manager to resolve the
+question faster, and will probably make him/her less grumpy.
+
+<li>If there are mysterious terms in your personal page and you don't
+understand them, they might <a href='#personal_terms'>be below</a>.
+</ul>
+
+<li><a href='directory.php' name='directory'>The directory</a> has
+your entire house, along with the information that each member chooses
+to make public.  The email addresses can be directly copied and pasted
+into an email, but don't do that unless you have a good reason.  Come
+on now.  You can choose to let people view your room, email, and phone
+number (assuming you've entered those things).  Otherwise, only the
+workshift manager can see them.  Remember, nobody can ever see your
+password.
+
+<li><a href="weekly_totals.php" name='weekly_totals'>The weekly
+totals</a> have the running totals of the house's workshift hours.
+You can uncheck the column boxes to hide columns you don't want to
+look at, and you can restrict to looking at any one person's totals by
+choosing their name in the drop-down box (although that may only work
+in Firefox).  If you have questions about whether your shift hours
+were counted properly, you can check <a href="person.php">your
+personal page</a> to see a complete record of the shifts the workshift
+manager has you down as doing.  As well, the last two columns have any
+notes the workshift manager has for you, and the amount you were fined
+this past week.  Note that the fining amount is not cumulative, so if
+you were fined $10 one week, and $10 the next week, that means your
+total fine is $20 -- $10 twice.
+
+<li><a href='online_signoff.php' name='online_signoff'>Online
+signoff</a> may be available in your house.  If it is, then you can
+sign off there.  Choose your name.  A list of your shifts should
+appear.  If you are signing off for one of your regular shifts, choose
+it there.  If that's it, then just get a verifier to enter their name
+and password, and submit.  You should see a message at the top saying
+you've been signed off, and your name should appear in a list at the
+bottom.  Here's some more information about this page:
 
 <ul><li>If you did a shift for a different number of hours than usual,
 you can change it next to the shift name.  You can also enter a note,
@@ -76,6 +121,29 @@ you're not sure what the requirements of the shift were, click on it
 to be taken to its description.
 </ul>
 
+<li><a href="../public_utils/shifts_by_name.php"
+name='shifts_by_name'>Workshifts by name</a> tells you what workshifts
+each person is assigned.
+
+<li><a href='shift_descriptions.php' name='shift_descriptions'>Shift
+descriptions</a> should have a detailed description of each shift so
+that you know exactly what you need to do.  The number of hours a
+shift is worth is in parentheses.  The Earliest starting time, if
+entered, is the earliest that you can start your shift on the day
+you're supposed to do it, and similarly for the Latest ending time.
+
+<li><a href='workshift_doc.php' name='workshift_doc'>The workshift
+policy document</a> can be downloaded if your workshift manager has
+uploaded it.  You should be able to download/view it directly on your
+computer.
+
+<li><a href='index.php' name='index.php'>The home page</a> has
+everyone's name and hours.  You can click on your name to log in to
+your personal page.
+</ul>
+
+<li><a name='personal_terms'><h4>Miscellaneous terms you might come
+across on your personal page</h4></a> <ul>
 <li><a name='nonzeroed_total'>If your house keeps track of nonzeroed
 hours (and it does, if you clicked on a link to get here), then your
 house uses nonzeroed hours, that is, your hours where any hours you've
@@ -83,5 +151,15 @@ paid fines on are still counted as down hours, for something.  It's
 probably termination, so if this number drops below the termination
 level, then termination proceedings will be started even if your usual
 hours total is not at termination level.
+
+<li><a name='cash_hours'>If your house has automatic cashing-in of
+hours (and it does, if you clicked on a link to get here), any up
+hours you have at the end of the semester will be applied towards any
+workshift fines that you may have incurred.  If you're not up hours,
+then nothing will happen, but this just lets you know what will
+happen.  Your fines will be similarly modified.  If you have already
+paid your fines, you may be eligible to get a refund of part or all of
+them.
 </ul>
+
 </ul>
