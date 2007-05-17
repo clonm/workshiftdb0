@@ -8,7 +8,18 @@
 //and does a lot of the work for people, as a matter of fact.  people
 //keeps a houselist on the side, which has the number of hours
 //assigned so far, and is a sortable, clickable list.
+
+//the idea here is that as things happen in master_shifts, functions
+//here get called.  The main one is offer_options, which will go
+//through everyone in the people list and display them appropriately,
+//depending on their compatibility with the shift.  To that end there
+//are a number of other functions, all called by offer_options.
+
+//the Logout button usually printed here will be suppressed because
+//this is a framed document.
 require_once('default.inc.php');
+//I forget why this doctype is here.  Possibly just to be anal, but
+//possibly also because frames get tricky.
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN"
    "http://www.w3.org/TR/html4/frameset.dtd">
@@ -16,9 +27,9 @@ require_once('default.inc.php');
 <HEAD>
 <TITLE>Assign Workshifts</TITLE>
 <script type="text/javascript">
-//this variable has the displayed entry for every member, or it will later on
-//in the page once it's initialized.  This allows us to hide, bold, etc.
-//member names without doing getElementById every time.
+//this variable has the displayed entry for every member, or it will
+//later on in the page once it's initialized.  This allows us to hide,
+//bold, etc.  member names without doing getElementById every time.
 var list = new Array();
 <?php
 $houselist = get_houselist();
@@ -96,7 +107,8 @@ for ($ii = 0; $ii <= $max_rating; $ii++) {
 
 //return the html element of the member, so we can do stuff with it
 function get_person(member) {
-  //is this a real member with a real div element in people?
+  //is this a real member with a real div element in people?  Since
+  //the user can enter nonexistent people in fields, we can't be sure.
   if (member && member != self.master_shifts.dummy_string && 
       (listhouse[member] || listhouse[member] == 0)) {
     return list[listhouse[member]];
@@ -117,10 +129,10 @@ function get_style(member) {
   }
 }
 
-//display the person as not being able to do a shift
-//Note that someone may *want* a shift (signified by color and size,
-//normally), but not be able to do it (signified by strike-through and
-//size), which overrides.  The color will be left, though.
+//display the person as not being able to do a shift.  Note that
+//someone may *want* a shift (signified by color and size, normally),
+//but not be able to do it (signified by strike-through and size),
+//which overrides.  The color will be left, though.
 function cant_do_person(member,styleflag) {
   var st;
   if (arguments.length > 1) {
@@ -239,6 +251,7 @@ function reset_list() {
     elt.fontSize = '';
     self.people.houselist[listhouse[mem]][3] = 0;
   }
+  //sort list, and tell function that all that's changed is ratings
   self.people.sort_list(1);
 }
 
@@ -274,17 +287,21 @@ function offer_options(member,hours,workshift) {
       is_unwanted_person(mem);
     }
   }
-  //sort the list, and tell the sort function that all that's changed
-  //is the ratings
+  //sort list, and tell function that all that's changed is ratings
   people.sort_list(1);
 }
 
 <?php
-//we need a houses_array, and a houses_hours array when we're co
+//we need a houses_array, and a houses_hours array when we're co since we need
+//to keep track of how many hours each house has been assigned.
 if ($url_name == 'co') {
 ?>
-var houses_array = [<?=js_array(explode(',',get_static('houses_array',
-                                                                                            'aca,ath,caz,clo,con,dav,euc,fen,hip,hoy,kid,kng,lot,nsc,rid,roc,she,stb,wil,wol')))?>];
+var houses_array = [<?=js_array(explode(',',
+                                        get_static('houses_array',
+                                                   'aca,ath,caz,clo,con,dav,' .
+                                                   'euc,fen,hip,hoy,kid,kng,' .
+                                                   'lot,nsc,rid,roc,she,stb,' .
+                                                   'wil,wol')))?>];
 
 var houses_hours = new Array();
 
@@ -293,15 +310,22 @@ for (var house_index in houses_array) {
 }
 <?php
     }
+//we need to pass the archive below -- it's pretty rare that we ever
+//have to refer to it, but we do here because of the frames.
 ?>
 
 </script>
 
 </HEAD>
 <FRAMESET cols="178px, *">
-<FRAME src="people.php<?=$archive?'?archive=' . escape_html($archive):''?>" name='people'>
-<FRAME src="master_shifts.php<?=$archive?'?archive=' . escape_html($archive):''?>" name='master_shifts'>
+<FRAME src="people.php<?=$archive?'?archive=' . 
+escape_html($archive):''?>" name='people'>
+<FRAME src="master_shifts.php<?=$archive?'?archive=' . 
+escape_html($archive):''?>" name='master_shifts'>
 </FRAMESET>
 <NOFRAMES>
-<P>Get a browser with frames -- sorry!
+<P>Get a browser with frames -- sorry!  Or go directly to
+<a href="master_shifts.php<?=$archive?'?archive=' . 
+escape_html($archive):''?>">master_shifts.php</a> -- you won't get the sidebar,
+but it's better than nothing.</p>
 </HTML>
