@@ -52,8 +52,9 @@ for ($ii = 0; $ii < $week_num; $ii++) {
 ?>
 <?php
 $tot_weeks = get_static('tot_weeks',18);
-$backup_zero_hours = array_fill(0,$tot_weeks,$weekly_zero = get_static('fining_zero_hours',false));
-$backup_max_up_hours = array_fill(0,$tot_weeks,$weekly_max = get_static('max_up_hours',null));
+//need to +1 because there are $tot_weeks+1 weeks -- week 0 too
+$backup_zero_hours = array_fill(0,$tot_weeks+1,$weekly_zero = get_static('fining_zero_hours',false));
+$backup_max_up_hours = array_fill(0,$tot_weeks+1,$weekly_max = get_static('max_up_hours',null));
 $fining_res = $db->Execute("select `week`, `fining_floor`, `fining_buffer`, `zero_hours` " .
                            "from `fining_periods` order by `week`");
 $max_up_hours_fining = get_static('max_up_hours_fining',null);
