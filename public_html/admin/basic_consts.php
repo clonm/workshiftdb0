@@ -1,30 +1,42 @@
 <html><head><title>Update basic numbers</title></head><body>
 <?php 
+//important page that sets lots of parameters.  Cute stuff with
+//automatic setting of parameters (and _bool flag), but otherwise not
+//a whole lot going on here in terms of programming.  There's some
+//javascript, I guess.
 require_once('default.inc.php');
-print_help();
+//are we posting data?  No?
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
   //we really should have an option to recover system values from
   //previous academic or previous summer semester.
   ?>
-<form action='<?=$_SERVER['REQUEST_URI']?>' method='POST'>
+<form action='<?=this_url()?>' method='POST'>
 This page will automatically make a backup before it makes any changes.
 Give a name for this backup (leave blank to use the date).:
-<input name='backup_ext'><br>
+<input name='backup_ext'><br/>
 If you're starting a new semester and you haven't yet backed up the previous
 semester, you could enter the previous semester, like "2006 summer".<p>
-
-   Start of semester (first Monday of week 0 -- enter August 29, 2005 as
+<hr>
+If you are starting the fall semester, and your house used this system
+over the summer, you might want to <a href='recover_backup_database.php'>restore
+your spring database</a> before you set things up here.  Your spring setup
+will probably be much more similar (in shifts, hours per week, etc.) than
+your summer setup, and it could save you some time.
+<hr>
+<ul>
+<li>Start of semester (first Monday of week 0 -- enter August 29, 2005 as
 2005-08-29): 
 <input name='semester_start' value='<?= get_static('semester_start')?>'><br/>
 (Even if week 0 started on a Thursday, enter the date of the Monday that the
 week started.  So in Fall 2006, the contract starts Thursday 2006-08-24, but
 you should enter 2006-08-21, since that is the date of the Monday.)<br/>
-   Hours of workshift owed per week (you can always change any given person's
+<li>Hours of workshift owed per week (you can always change any given person's
 <!-- emacs formatting ' -->
 obligations for a given week): 
 <input name='owed_default' value='<?=get_static('owed_default',5)?>'><br/>
-Number of weeks in the semester (usually 18):
+<li>Number of weeks in the semester (usually 18):
   <input name='tot_weeks' value='<?= get_static('tot_weeks',18)?>'><br/>
+</ul>
 <hr>
 <h4>Check these boxes at the start of the semester, but not after that</h4>
 <input type=checkbox name='delete_prefs_bool'>
@@ -41,11 +53,12 @@ disputes are over, check-out slips have been turned in, etc.  The data
 will still be in the backup, but not in the current database.  
 <hr>
 <h4>Setup of preference forms</h4>
-   Due date of preference forms (enter like Thursday, September 8): 
-<input name='prefs_due_date' value='<?= get_static('prefs_due_date')?>'><br/>
-Start of permanent shifts (Usually a Monday -- enter like Monday, September 12): 
-<input name='shifts_start_date' value='<?= get_static('shifts_start_date')?>'><br/>
-Do you want preference forms to be rated (default is wanted/unwanted)?
+<ul>
+<li>Due date of preference forms (enter like Thursday, September 8): 
+<input name='prefs_due_date' value='<?= get_static('prefs_due_date')?>'>
+<li>Start of permanent shifts (Usually a Monday -- enter like Monday, September 12): 
+<input name='shifts_start_date' value='<?= get_static('shifts_start_date')?>'>
+<li>Do you want preference forms to be rated (default is wanted/unwanted)?
 <input type=checkbox name='shift_prefs_style_bool' 
 <?=get_static('shift_prefs_style',0)?'checked':''?>
  onchange="if (this.checked) {
@@ -80,7 +93,7 @@ What is the default rating for a shift?  I.e., if a member does not rank a shift
 what is your assumption about how they feel about that shift?
 The maximum, the minimum, or somewhere in the middle?
 </div>
-The following text will appear on the 
+<li>The following text will appear on the 
 <a href='../preferences.php' target='_new'>preferences form</a>.  You can modify
 it.<br/>
 What appears at the top:<br/>
@@ -220,19 +233,20 @@ name='allow_single_houselist_upload_bool'
 //same name as the one backup_database uses, so we don't need to set any variables.
 
 require_once('backup_database.php');
-print "<br/>";
+print "<hr>";
 //It's too hard to manually set each setting.  Just loop through $_REQUEST
 //checkboxes have to be dealt with separately, since they aren't present
 //in $_REQUEST if they're not checked
 $shift_flag = false;
-foreach (array('allow_single_houselist_bool','shift_prefs_style_bool') as $key) {
+foreach (array('allow_single_houselist_upload_bool',
+               'shift_prefs_style_bool') as $key) {
   $real = substr($key,0,-5);
-  if ($real == 'shift_prefs_style') {
-    $shift_flag = true;
-  }
   print("Turned " . escape_html($real) . " o");
   if (isset($_REQUEST[$key])) {
     set_static($real,true);
+    if ($real == 'shift_prefs_style') {
+      $shift_flag = true;
+    }
     print("n");
   }
   else {
@@ -258,7 +272,7 @@ foreach ($_REQUEST as $key => $val) {
   switch ($key) {
     //semester *must* start on a Monday
   case 'semester_start':
-    if (date('w',strtotime(stripformslash($val)))!=1) {
+    if (date('w',strtotime($val))!=1) {
       exit("Your semester start date is not a Monday!  " .
            "Please go back and change it!");
     }
@@ -273,8 +287,8 @@ foreach ($_REQUEST as $key => $val) {
   else {
     set_static($key,$val);
   }
-  print("Set " . escape_html($key) . " to <div style='white-space: pre-wrap'>" . 
-        escape_html($val,true) . "</div>\n");
+  print("Set " . escape_html($key) . " to <div style='" . white_space_css() . 
+        "'>" . escape_html($val,true) . "</div>\n");
 }
 
 //not using ratings, but that just means we're rating out of 2, with default 1
@@ -293,13 +307,6 @@ create_and_update_weekly_totals_data();
 //we're about to delete all the data accumulated over the semester
 //we call delete_weeks.php to do it.
 if (array_key_exists('reset_middle_bool',$_REQUEST)) {
-   print("<h4>About to delete old weeks . . .</h4>");
-   $_REQUEST['start_week'] = 0;
-   //just overkill
-   $_REQUEST['end_week'] = 100;
-   //this page doesn't output that much, but it tells the user what it does
-   require_once('delete_weeks.php');
-   print("<h4>Delete succeeded!</h4>");
    print ("<h4>About to delete old fines . . .</h4>");
    //we can't have transactions (with rollbacks) when we're deleting
    //tables, but now that that's been done, we can use it.  Probably
@@ -310,33 +317,21 @@ if (array_key_exists('reset_middle_bool',$_REQUEST)) {
    $db->Execute("delete from `fining_data`");
    set_mod_date('fining_data');
    print ("<h4>Delete successful</h4>");
-   print ("<h4>About to reset all owed hours . . .</h4>");
-   //easier to deal with "show columns" in numeric mode
-   $db->SetFetchMode(ADODB_FETCH_NUM);
-   $res = $db->Execute("show columns from `weekly_totals_data`");
-   $db->SetFetchMode(ADODB_FETCH_ASSOC);
-   $owed_default = get_static('owed_default');
-   while ($row = $res->FetchRow()) {
-     //don't want to reset member_name or autoid
-     if (substr($row[0],0,4) == 'owed') {
-       $db->Execute("update `weekly_totals_data` set `" .
-                    $row[0] . "` = ?",array($owed_default));
-     }
-     //notes should be erased too
-     else if ($row[0] == 'notes') {
-       $db->Execute('update `weekly_totals_data` set `notes` = null');
-     }
-   }
-   set_mod_date('weekly_totals_data');
-   print ("<h4>Reset succeeded!</h4>");
    if ($db->CompleteTrans()) {
-     print "<h4>Resetting of fines and owed hours succeeded!</h4>\n";
+     print "<h4>Succeeded!</h4>\n";
    }
    else {
-     exit("<h3>Resetting of fines and owed hours failed!  " .
-       "Changes were not made (but weeks were deleted).  Please email " .
+     exit("<h3>Resetting of fines failed!  " .
+       "Changes were not made Please email " .
        "the administrator (" . admin_email() . ")</h3>");
    }
+   print("<h4>About to delete old weeks . . .</h4>");
+   $_REQUEST['start_week'] = 0;
+   //just overkill
+   $_REQUEST['end_week'] = 100;
+   //this page doesn't output that much, but it tells the user what it does
+   require_once('delete_weeks.php');
+   print("<h4>Delete succeeded!</h4>");
 }
 
 //get rid of preference forms and assigned shifts
@@ -346,14 +341,15 @@ if (array_key_exists('delete_prefs_bool',$_REQUEST)) {
   $db->StartTrans();
   $db->Execute("delete from `wanted_shifts`");
   set_mod_date('wanted_shifts');
+  //legacy -- should never exist.
   if (table_exists('unwanted_shifts')) {
     $db->Execute("drop table `unwanted_shifts`");
   }
   $db->Execute("update `personal_info` set `notes` = null, `submit_date` = 0");
-  set_mod_date('personal_info');
   for ($ii = 0; $ii < 7; $ii++) {
     $db->Execute("update `personal_info` set `av_$ii` = 0");
   }
+  set_mod_date('personal_info');
   if ($db->CompleteTrans()) {
     print("<h4>Deleting of old preferences succeeded!</h4>");
   }     
