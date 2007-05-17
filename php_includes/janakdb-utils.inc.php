@@ -419,6 +419,7 @@ function create_and_update_weekly_totals_data() {
                            '`notes` LONGTEXT default null, ' .
                            'PRIMARY KEY (`autoid`), ' .
                            'UNIQUE KEY `member_name` (`member_name`))');
+      set_mod_date('weekly_totals_data');
     }
     else {
       //does the table have the right number of columns?
@@ -467,25 +468,9 @@ function create_and_update_weekly_totals_data() {
       if ($add_cols || $alter_cols) {
         $done = $db->Execute("alter table $this_tbl " . 
                              $alter_cols . $add_cols);
+        set_mod_date('weekly_totals_data');
       }
     }
-    /*    //we have a nicely updated table, but now we have to put in all
-    //the members who might have recently been added.  This should
-    //never happen, because update_house.php should take care of it.
-    //the sql query is structured so that we get those member_names
-    //from the house_list which are not in weekly_totals_data already
-    //(so their join is null)
-    $hs_tbl = bracket($archive . 'house_list');
-    $done &= $db->Execute(<<<SYNCDATA
-insert into $this_tbl (`member_name`) select 
-$hs_tbl.`member_name` from $hs_tbl left join $this_tbl 
-on $hs_tbl.`member_name` = $this_tbl.`member_name` 
-where $this_tbl.`member_name` is null
-SYNCDATA
-                          );
-    //we just modified the table, or maybe, anyway
-    set_mod_date('weekly_totals_data');
-    */
   }
   return $done;
 }
@@ -816,7 +801,13 @@ function user_timestamp($sec,$min,$hr,$day,$mo,$yr) {
 
 //Puts a help link at top of each admin page, when called
 function print_help($section=null,$span=false) {
-  global $real_username,$bug_report_url,$feature_request_url,$project_url;
+  global $real_username,$bug_report_url,$feature_request_url,$project_url,
+    $body_insert;
+  static $done = false;
+  if ($done) {
+    return;
+  }
+  $done = true;
   //public_utils has no help file, so we have to link back to admin
   $public_utils = split('/',$_SERVER['REQUEST_URI']);
   if (count($public_utils) > 2 &&
@@ -825,6 +816,9 @@ function print_help($section=null,$span=false) {
   }
   else {
     $public_utils = false;
+  }
+  if (isset($body_insert)) {
+    ob_start();
   }
   print "<" . ($span?'span':'div') . 
     " class='help_link print_hide'><a href='" .
@@ -839,6 +833,12 @@ function print_help($section=null,$span=false) {
     escape_html($project_url) .
     "'>Sourceforge Project Page</a></" .
     ($span?'span':'div') . ">";
+  if (!$span) {
+    print "<hr>";
+  }
+  if (isset($body_insert)) {
+    $body_insert = ob_get_clean();
+  }
 }
 
 //archived private tables shouldn't become public -- check the part
@@ -1363,10 +1363,19 @@ function elections_log($election_name,$subj_name,$attrib,$oldval,$val) {
 //can't vote -- that's the only effect of their "privilege."
 //Privileges are stored as a comma-separated list, indexed by member.
 
-//is this user of this type?
+//is this user of this type?  One wrinkle -- if the first character of
+//the type is '*', then if there are no users of that type, return
+//true.  Meant to be used at the beginning of the semester, when old
+//members may no longer be active and new members haven't been added.
 function authorized_user($member_name,$type) {
   global $db;
   $attribs = user_privileges($member_name);
+  if ($type{0} == '*') {
+    $type = substr($type,1);
+    if (!count(users_with_privileges($type))) {
+      return true;
+    }
+  }
   return in_array($type,$attribs);
 }
 
@@ -1516,8 +1525,15 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
   global $db, $baseurl,$php_includes,$secured,
     $member_name,$basedir,$body_insert,$require_user, $secured;
   //do we not need a user?
-  if ($secured || (isset($require_user) && $require_user === false)) {
+  if (isset($require_user) && $require_user === false) {
     return true;
+  }
+  //if no users for this (starred) privilege authorized yet, ok no
+  //user because maybe we need someone to add themselves.
+  if (isset($require_user) && $require_user{0} == '*' &&
+      (($require_user = substr($require_user,1)) || true) &&
+      !count(users_with_privileges($require_user))) {
+    $require_user = 'ok_nouser';
   }
   //we just set a global variable!  Awesome!
   $member_name = $mem_name;
@@ -1565,7 +1581,7 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
   }
   //here's the logout button -- don't print it yet, because maybe the
   //page is doing funky stuff and doesn't want output.
-  $str = "<form action='" . this_url() . 
+  $str = "<form style='margin: 0px' action='" . this_url() . 
     "' method=post><input type=hidden name='forget_login'>" .
     "<input type=submit value='Logout'></form>";
   //how the page tells us if output is not ok -- it sets $body_insert
@@ -1576,13 +1592,26 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
     $body_insert .= $str;
   }
   //was this an ordinary require_user, or was the page asking if the
-  //user had a certain privilege?
-  if (!$type) {
+  //user had a certain privilege?  Might have been passed in type or
+  //require_user.  I'm going to get rid of type.
+  if (!$type && ($require_user === 'ok_nouser' || 
+                 $require_user === true ||
+                 $require_user === null)) {
     return true;
+  }
+  if (!$type) {
+    $type = $require_user;
   }
   //if it's just one privilege, do they have it?
   if (!is_array($type)) {
-    return authorized_user($member_name,$type);
+    if (!authorized_user($member_name,$type)) {
+      if (isset($body_insert)) {
+        print $body_insert;
+      }
+      exit("You are not authorized to use this page.");
+      return false;
+    }
+    return true;
   }
   //if it's more than one, how many do they have of them?
   return count(array_intersect(user_privileges($member_name),$type));
