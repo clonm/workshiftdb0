@@ -28,7 +28,7 @@ foreach ($houselist as $name) {
 ?>
 </SELECT>
     <?php 
-    if (!$secured) {
+    if (!isset($skip_password) || !$skip_password) {
   ?>
     Password: <input type=password name='passwd'>
                  <?php 
