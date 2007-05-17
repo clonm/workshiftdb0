@@ -1,0 +1,477 @@
+<html><head><title>Help for Workshift Website Administrator</title>
+<style>
+OL { counter-reset: item }
+OL > LI {
+display: block;
+}
+OL > LI:before {
+content: counters(item,".") ".  ";
+counter-increment: item }
+</style>
+</head>
+<body>
+<ol>
+<li><a href='#introduction'>Introduction</a>
+<li><a href='#installation'>Installation</a>
+<ol>
+<li><a href='#system_requirements'>System Requirements</a>
+<li><a href='#directory_structure'>Setting up directory structure</a>
+<li><a href='#apache_setup'>Setting up Apache</a>
+<li><a href='#php_setup'>Setting up PHP</a>
+<li><a href='#mysql_setup'>Setting up MySQL</a>
+</ol>
+<li><a href='#backup_restore'>Backups and Restores</a>
+<li><a href='#other_routine_tasks'>Other Routine Tasks</a>
+<li><a href='#faq'>Frequently Asked Questions</a>
+<li><a href='#file_descriptions'>File Descriptions</a>
+<ul>
+<li><a href='#../'>workshift/</a>
+<li><a href='#public_html/'>public_html/</a>
+<ul>
+<li><a href='#admin/'>admin/</a>
+<ul>
+<li><a href="#admin/assign_shifts.php">assign_shifts.php</a>
+<li><a href="#admin/backup_database.php">backup_database.php</a>
+<li><a href="#admin/basic_consts.php">basic_consts.php</a>
+<li><a href="#admin/change_password.cgi">change_password.cgi</a>
+<li><a href="#admin/change_password.php">change_password.php</a>
+<li><a href="#admin/color_settings.php">color_settings.php</a>
+<li><a href="#admin/compare_backup_databases.php">compare_backup_databases.php</a>
+<li><a href="#admin/create_all_tables.php">create_all_tables.php</a>
+<li><a href="#admin/default.inc.php">default.inc.php</a>
+<li><a href="#admin/delete_backup_database.php">delete_backup_database.php</a>
+<li><a href="#admin/delete_weeks.php">delete_weeks.php</a>
+<li><a href="#admin/export_csv.php">export_csv.php</a>
+<li><a href="#admin/fining_data.php">fining_data.php</a>
+<li><a href="#admin/help.html">help.html</a>
+<li><a href="#admin/house_fines.php">house_fines.php</a>
+<li><a href="#admin/index.php">index.php</a>
+<li><a href="#admin/insert_master_shifts.php">insert_master_shifts.php</a>
+<li><a href="#admin/make_weeks.php">make_weeks.php</a>
+<li><a href="#admin/master_shifts2.js">master_shifts2.js</a>
+<li><a href="#admin/master_shifts2.php">master_shifts2.php</a>
+<li><a href="#admin/master_shifts.js">master_shifts.js</a>
+<li><a href="#admin/master_shifts.php">master_shifts.php</a>
+<li><a href="#admin/online_signoff_setup.php">online_signoff_setup.php</a>
+<li><a href="#admin/people.php">people.php</a>
+<li><a href="#admin/person.admin.php">person.admin.php</a>
+<li><a href="#admin/points.php">points.php</a>
+<li><a href="#admin/recover_backup_database.php">recover_backup_database.php</a>
+<li><a href="#admin/recover_backup_week.php">recover_backup_week.php</a>
+<li><a href="#admin/rename_backup_database.php">rename_backup_database.php</a>
+<li><a href="#admin/reset_user_password.php">reset_user_password.php</a>
+<li><a href="#admin/set_shift_descriptions.php">set_shift_descriptions.php</a>
+<li><a href="#admin/show_emails.php">show_emails.php</a>
+<li><a href="#admin/show_prefs.php">show_prefs.php</a>
+<li><a href="#admin/signoff.php">signoff.php</a>
+<li><a href="#admin/special_fining.php">special_fining.php</a>
+<li><a href="#admin/table_edit.wrapper.wrapper.php">table_edit.wrapper.wrapper.php</a>
+<li><a href="#admin/test_sorting.php">test_sorting.php</a>
+<li><a href="#admin/update_db.php">update_db.php</a>
+<li><a href="#admin/update_house.php">update_house.php</a>
+<li><a href="#admin/upload_workshift_doc.php">upload_workshift_doc.php</a>
+<li><a href="#admin/view_backup_database.php">view_backup_database.php</a>
+<li><a href="#admin/wanted_shift.php">wanted_shift.php</a>
+<li><a href="#admin/weekly_totals_consts.php">weekly_totals_consts.php</a>
+<li><a href="#admin/weekly_totals_update.php">weekly_totals_update.php</a>
+<li><a href="#admin/week.php">week.php</a>
+</ul>
+<li><a href='#common/'>common/</a>
+<ul>
+<li><a href="common/default.inc.php">default.inc.php</a>
+<li><a href="common/tz_set.php">tz_set.php</a>
+</ul>
+<li><a href='#elections/'>elections/</a>
+<ul>
+<li><a href='#elections/admin/'>admin/</a>
+<ul>
+<li><a href="#elections/admin/administer_election.php">administer_election.php</a>
+<li><a href="#elections/admin/backup_database.php">backup_database.php</a>
+<li><a href="#elections/admin/change_password.php">change_password.php</a>
+<li><a href="#elections/admin/create_election.js">create_election.js</a>
+<li><a href="#elections/admin/create_election.php">create_election.php</a>
+<li><a href="#elections/admin/CVS">CVS</a>
+<li><a href="#elections/admin/default.inc.php">default.inc.php</a>
+<li><a href="#elections/admin/help.html">help.html</a>
+<li><a href="#elections/admin/index.html">index.html</a>
+<li><a href="#elections/admin/init_elections.php">init_elections.php</a>
+</ul>
+<li><a href="#elections/default.inc.php">default.inc.php</a>
+<li><a href="#elections/descript_file.php">descript_file.php</a>
+<li><a href="#elections/election_results.php">election_results.php</a>
+<li><a href="#elections/elections_log_help.html">elections_log_help.html</a>
+<li><a href="#elections/elections_log.php">elections_log.php</a>
+<li><a href="#elections/index.php">index.php</a>
+<li><a href="#elections/points.php">points.php</a>
+<li><a href="#elections/test.php">test.php</a>
+<li><a href="#elections/voting.php">voting.php</a>
+</ul>
+<li><a href='#public_utils/'>public_utils/</a>
+<ul>
+<li><a href="#public_utils/default.inc.php">default.inc.php</a>
+<li><a href="#public_utils/master_shifts_print.php">master_shifts_print.php</a>
+<li><a href="#public_utils/old_signoff.php">old_signoff.php</a>
+<li><a href="#public_utils/shifts_by_name.php">shifts_by_name.php</a>
+<li><a href="#public_utils/signout.php">signout.php</a>
+<li><a href="#public_utils/weekly_totals_print-fast.php">weekly_totals_print-fast.php</a>
+<li><a
+href="#public_utils/weekly_totals_print.php">weekly_totals_print.php</a>
+</ul>
+<li><a href="#administer_users.php">administer_users.php</a>
+<li><a href="#default.inc.php">default.inc.php</a>
+<li><a href="#directory.php">directory.php</a>
+<li><a href="#help.html">help.html</a>
+<li><a href="#html_includes">html_includes</a>
+<li><a href="#index.php">index.php</a>
+<li><a href="#online_signoff.php">online_signoff.php</a>
+<li><a href="#person.php">person.php</a>
+<li><a href="#preferences.php">preferences.php</a>
+<li><a href="#public_utils">public_utils</a>
+<li><a href="#record_prefs.php">record_prefs.php</a>
+<li><a href="#set_passwd.php">set_passwd.php</a>
+<li><a href="#shift_descriptions.php">shift_descriptions.php</a>
+<li><a href="#test2.php">test2.php</a>
+<li><a href="#test3.php">test3.php</a>
+<li><a href="#weekly_totals.php">weekly_totals.php</a>
+<li><a href="#workshift_doc.php">workshift_doc.php</a>
+</ul>
+<li><a href='#php_includes/'>php_includes/</a>
+<ul>
+<li><a href="#php_includes/adodb/">adodb/</a>
+<li><a href='#common/'>common/</a>
+<ul>
+<li><a href="#php_includes/common/member_check.php">member_check.php</a>
+<li><a
+href="php_includes/common/witness_check.php">witness_check.php</a>
+</ul>
+<li><a href="#php_includes/php_utils/">php_utils/</a>
+<ul>
+<li><a href="#php_includes/php_utils/array_diff_key.php">array_diff_key.php</a>
+<li><a href="#php_includes/php_utils/array_intersect_key.php">array_intersect_key.php</a>
+<li><a href="#php_includes/php_utils/file_put_contents.php">file_put_contents.php</a>
+<li><a href="#php_includes/php_utils/fputcsv.php">fputcsv.php</a>
+<li><a href="#php_includes/php_utils/stripos.php">stripos.php</a>
+<li><a href="#php_includes/php_utils/strpbrk.php">strpbrk.php</a>
+<li><a href="#php_includes/php_utils/str_split.php">str_split.php</a>
+</ul>
+<li><a href="#php_includes/scratch/">scratch/</a>
+<li><a href="#php_includes/backup_database.internal.php">backup_database.internal.php</a>
+<li><a href="#php_includes/change_password.internal.php">change_password.internal.php</a>
+<li><a href="#php_includes/delete_backup_database.internal.php">delete_backup_database.internal.php</a>
+<li><a href="#php_includes/janakdb.inc.php">janakdb.inc.php</a>
+<li><a href="#php_includes/janakdb-utils.inc.php">janakdb-utils.inc.php</a>
+<li><a href="#php_includes/member_check.php">member_check.php</a>
+<li><a href="#php_includes/points.internal.php">points.internal.php</a>
+<li><a href="#php_includes/recover_backup_database.internal.php">recover_backup_database.internal.php</a>
+<li><a href="#php_includes/table_edit.php">table_edit.php</a>
+<li><a href="#php_includes/table_edit.wrapper.php">table_edit.wrapper.php</a>
+<li><a href="#php_includes/table_print.php">table_print.php</a>
+<li><a href="#php_includes/table_view.php">table_view.php</a>
+<li><a href="#php_includes/update_db.internal.php">update_db.internal.php</a>
+<li><a href="#php_includes/weekly_totals.inc.php">weekly_totals.inc.php</a>
+</ul>
+</ol>
+
+<ul>
+<li><a href='../'><h4>workshift/</h4></a>
+<li><a href='public_html/'><h4>public_html/</h4></a>
+<ul>
+<li><a href='admin/'><h4>admin/</h4></a>
+<ul>
+<li><a name="admin/assign_shifts.php"><h4>assign_shifts.php</h4></a>
+<p>This is the frame container for <a
+href='#admin/master_shifts.php'>master_shifts.php</a> and <a
+href='#admin/people.php'>people.php</a>.  In other words, it provides
+the main interface for workshift assignment.  Because of the frames
+and extensive javascript, it's prone to breakage, but often it's hard
+to debug and fix.  To complicate matters, master_shifts.php has an
+auxilary javascript file, <a
+href='#admin/master_shifts.js'>master_shifts.js</a>.  This file acts
+as a go-between for master_shifts and people, and does a lot of the
+work for people, as a matter of fact.  people keeps a houselist on the
+side, which has the number of hours assigned so far, and is a
+sortable, clickable list.</p>
+
+<p>The idea here is that as things happen in master_shifts, functions
+here get called.  The main one is offer_options, which will go through
+everyone in the people list and display them appropriately, depending
+on their compatibility with the shift.  To that end there are a number
+of other functions, all called by offer_options.</p>
+
+<p>Things to watch out for: there are hacks for Central
+Office-assigned shifts (co) in here -- more in master_shifts.  Also,
+the usual shift rating style (wanted/unwanted or numeric) issues are
+here.</p>
+<li><a
+name="admin/backup_database.php"><h4>backup_database.php</h4></a>
+<p>Fundamental script for backup/restoration.  Originally it was meant
+to be called by users.  It's now include()d automatically by many
+other scripts, and as such, outputs less in some circumstances.
+Important scripts that it is include()d by include <a
+href='#admin/recover_backup_database.php'>recover_backup_database.php</a>.
+Scripts that use it for making routine backups include <a
+href='#admin/update_house.php'>update_house.php</a> and <a
+href='#admin/basic_consts.php'>basic_consts.php</a>.  It should be
+used by workshift managers at the end of every semester, so that the
+house has a nicely named backup that it knows is the final tally for
+each semester.  It's a good idea to email the workshift managers about
+this, since they often don't do it.</p>
+
+<p>It is used both for backup and restoration, since the process is
+largely the same.  It does things very mechanically, just copying
+tables one by one.  It does not use the MySQL feature <code>create
+table like</code> because that became available in version 4.1,
+although now version 4.1 is the one that is used.</p>
+
+<p class='security'>Warning!  Backing up and restoring is
+unfortunately a fairly dangerous operation as regards privileges.  The
+workshift manager could, for instance, restore a backup during an
+election, thus overwriting votes.  <a
+href='#admin/recover_backup_database.php'>recover_backup_database.php</a>
+has information on measures taken to ameliorate this problem, but
+again, backups and restores always have a potential for danger.</p>
+<li><a name="admin/basic_consts.php"><h4>basic_consts.php</h4></a>
+<p>Crucial page for workshift managers to go to.  Unfortunately, it
+looks pretty intimidating.  A lot needs to be done to set up the
+semester, though, and I thought that it was best that it all be done
+on one page.</p>
+
+<p>The first part sets up absolutely essential information that
+several other pages need to get started.  The second part is
+potentially dangerous, but necessary.  Preference forms should be
+deleted in a new semester, as should assigned shifts.  They're
+separated because workshift managers occasionally want to delete
+assigned shifts at the end of the semester, so that they can generate
+temp weeks. Finally, fines, hours, etc., should be deleted in the new
+semester.  While preference forms and assigned shifts can be deleted
+in the last days of an old semester, fines, etc., cannot be deleted
+until the semester is finished and backed up.</p>
+
+<p>The third part is just about preference forms.  There's some
+javascript trickery with <a
+href='#wanted/unwanted-ratings'>wanted/unwanted versus the ratings
+style</a>.  Then there is the text that appears on the <a
+href='#preferences.php'>preference form</a>.  It comes in two places,
+at the very top (before the user has filled in any information), and
+right before the shifts.  These texts have two complications -- they
+can be considered as html, and there are <a
+href='#php_includes/janakdb-utils.inc.php/escape_sequences'>escape
+sequences</a> that can go into the text.  They are accessed and set
+using <a
+href='#php_includes/janakdb-utils.inc.php/static_text'>static_text
+functions</a>.</p>
+
+<p>The submission page is not very pretty, but it's not supposed to be
+viewed that often.  The main complication is the loop that does <a
+href='#php_includes/janakdb-utils.inc.php/set_static'>set_static</a>
+to all the variables.  This part doesn't need to be modified as things
+are changed in the intro page, and so it has to deal with lots of
+things, like booleans and static_text.  Booleans are dealt with in a
+different loop that tests individually for them.  There is a further
+complication, as always, with the rating system -- if we're in
+wanted/unwanted, we don't want to tell the user that we're just
+emulating wanted/unwanted with ratings between 0 and 2, so we need to
+check for that.</p>
+
+<p>Finally, the real modification of the database begins.  First, we
+redo the weekly_totals_data table based on the number of weeks now in
+the semester and the default number of hours, using <a
+href='#php_includes/janakdb-utils.inc.php/create_and_update_weekly_totals_data'>create_and_update_weekly_totals_data</a>.
+Then, if we are going to delete things, we do it.  First, the weekly
+sheets and fines.  Deleting weeks is done using <a
+href='#admin/delete_weeks.php'>delete_weeks.php</a>, and other stuff
+is done transactionally, to save something.  The second two are both
+pretty simple -- empty out <a
+href='#mysql:wanted_shifts'>wanted_shifts</a> and delete notes,
+submit_date, and zero out availabilities in <a
+href='#mysql:house_info'>house_info</a> for deleting preferences, and
+deleting all names in <a href='#mysql:master_shifts'>master_shifts</a>.</p>
+<li><a
+name="admin/change_password.php"><h4>change_password.php</h4></a>
+
+<li><a name="admin/color_settings.php"><h4>color_settings.php</h4></a>
+<li><a
+name="admin/compare_backup_databases.php"><h4>compare_backup_databases.php</h4></a>
+<li><a
+name="admin/create_all_tables.php"><h4>create_all_tables.php</h4></a>
+
+<li><a name="admin/default.inc.php"><h4>default.inc.php</h4></a>
+As all default.inc.php files do, includes the one in the next-up
+directory.  It also sets the <a
+href='#$require_user'>$require_user</a> flag if it hasn't already been
+set (currently only <a
+href='#admin/update_house.php'>update_house.php</a> sets otherwise).
+
+<li><a
+name="admin/delete_backup_database.php"><h4>delete_backup_database.php</h4></a>
+<li><a name="admin/delete_weeks.php"><h4>delete_weeks.php</h4></a>
+<li><a name="admin/export_csv.php"><h4>export_csv.php</h4></a> <li><a
+name="admin/fining_data.php"><h4>fining_data.php</h4></a> <li><a
+name="admin/help.html"><h4>help.html</h4></a> <li><a
+name="admin/house_fines.php"><h4>house_fines.php</h4></a> <li><a
+name="admin/index.php"><h4>index.php</h4></a> <li><a
+name="admin/insert_master_shifts.php"><h4>insert_master_shifts.php</h4></a>
+<li><a name="admin/make_weeks.php"><h4>make_weeks.php</h4></a> <li><a
+name="admin/master_shifts2.js"><h4>master_shifts2.js</h4></a> <li><a
+name="admin/master_shifts2.php"><h4>master_shifts2.php</h4></a> <li><a
+name="admin/master_shifts.js"><h4>master_shifts.js</h4></a> <li><a
+name="admin/master_shifts.php"><h4>master_shifts.php</h4></a> <li><a
+name="admin/online_signoff_setup.php"><h4>online_signoff_setup.php</h4></a>
+<li><a name="admin/people.php"><h4>people.php</h4></a> <li><a
+name="admin/person.admin.php"><h4>person.admin.php</h4></a> <li><a
+name="admin/points.php"><h4>points.php</h4></a> <li><a
+name="admin/recover_backup_database.php"><h4>recover_backup_database.php</h4></a>
+<li><a
+name="admin/recover_backup_week.php"><h4>recover_backup_week.php</h4></a>
+<li><a
+name="admin/rename_backup_database.php"><h4>rename_backup_database.php</h4></a>
+<li><a
+name="admin/reset_user_password.php"><h4>reset_user_password.php</h4></a>
+<li><a
+name="admin/set_shift_descriptions.php"><h4>set_shift_descriptions.php</h4></a>
+<li><a name="admin/show_emails.php"><h4>show_emails.php</h4></a>
+<li><a name="admin/show_prefs.php"><h4>show_prefs.php</h4></a> <li><a
+name="admin/signoff.php"><h4>signoff.php</h4></a> <li><a
+name="admin/special_fining.php"><h4>special_fining.php</h4></a> <li><a
+name="admin/table_edit.wrapper.wrapper.php"><h4>table_edit.wrapper.wrapper.php</h4></a>
+<li><a name="admin/test_sorting.php"><h4>test_sorting.php</h4></a>
+<li><a name="admin/update_db.php"><h4>update_db.php</h4></a> <li><a
+name="admin/update_house.php"><h4>update_house.php</h4></a> <li><a
+name="admin/upload_workshift_doc.php"><h4>upload_workshift_doc.php</h4></a>
+<li><a
+name="admin/view_backup_database.php"><h4>view_backup_database.php</h4></a>
+<li><a name="admin/wanted_shift.php"><h4>wanted_shift.php</h4></a>
+<li><a
+name="admin/weekly_totals_consts.php"><h4>weekly_totals_consts.php</h4></a>
+<li><a
+name="admin/weekly_totals_update.php"><h4>weekly_totals_update.php</h4></a>
+<li><a name="admin/week.php"><h4>week.php</h4></a>
+</ul>
+<li><a href='#common/'><h4>common/</h4></a>
+<ul>
+<li><a href="common/default.inc.php"><h4>default.inc.php</h4></a>
+<li><a href="common/tz_set.php"><h4>tz_set.php</h4></a>
+</ul>
+<li><a href='#elections/'><h4>elections/</h4></a>
+<ul>
+<li><a href='#elections/admin/'><h4>admin/</h4></a>
+<ul>
+<li><a
+name="elections/admin/administer_election.php"><h4>administer_election.php</h4></a>
+<li><a
+name="elections/admin/backup_database.php"><h4>backup_database.php</h4></a>
+<li><a
+name="elections/admin/change_password.php"><h4>change_password.php</h4></a>
+<li><a
+name="elections/admin/create_election.js"><h4>create_election.js</h4></a>
+<li><a
+name="elections/admin/create_election.php"><h4>create_election.php</h4></a>
+<li><a name="elections/admin/CVS"><h4>CVS</h4></a> <li><a
+name="elections/admin/default.inc.php"><h4>default.inc.php</h4></a>
+<li><a name="elections/admin/help.html"><h4>help.html</h4></a> <li><a
+name="elections/admin/index.html"><h4>index.html</h4></a> <li><a
+name="elections/admin/init_elections.php"><h4>init_elections.php</h4></a>
+</ul>
+<li><a name="elections/default.inc.php"><h4>default.inc.php</h4></a>
+<li><a
+name="elections/descript_file.php"><h4>descript_file.php</h4></a>
+<li><a
+name="elections/election_results.php"><h4>election_results.php</h4></a>
+<li><a
+name="elections/elections_log_help.html"><h4>elections_log_help.html</h4></a>
+<li><a
+name="elections/elections_log.php"><h4>elections_log.php</h4></a>
+<li><a name="elections/index.php"><h4>index.php</h4></a> <li><a
+name="elections/points.php"><h4>points.php</h4></a> <li><a
+name="elections/test.php"><h4>test.php</h4></a> <li><a
+name="elections/voting.php"><h4>voting.php</h4></a>
+</ul>
+<li><a href='#public_utils/'><h4>public_utils/</h4></a>
+<ul>
+<li><a
+name="public_utils/default.inc.php"><h4>default.inc.php</h4></a>
+<li><a
+name="public_utils/master_shifts_print.php"><h4>master_shifts_print.php</h4></a>
+<li><a
+name="public_utils/old_signoff.php"><h4>old_signoff.php</h4></a>
+<li><a
+name="public_utils/shifts_by_name.php"><h4>shifts_by_name.php</h4></a>
+<li><a name="public_utils/signout.php"><h4>signout.php</h4></a> <li><a
+name="public_utils/weekly_totals_print-fast.php"><h4>weekly_totals_print-fast.php</h4></a>
+<li><a
+name="public_utils/weekly_totals_print.php">weekly_totals_print.php</a>
+</ul>
+<li><a name="administer_users.php"><h4>administer_users.php</h4></a>
+<li><a name="default.inc.php"><h4>default.inc.php</h4></a> <li><a
+name="directory.php"><h4>directory.php</h4></a> <li><a
+name="help.html"><h4>help.html</h4></a> <li><a
+name="html_includes"><h4>html_includes</h4></a> <li><a
+name="index.php"><h4>index.php</h4></a> <li><a
+name="online_signoff.php"><h4>online_signoff.php</h4></a> <li><a
+name="person.php"><h4>person.php</h4></a> <li><a
+name="preferences.php"><h4>preferences.php</h4></a> <li><a
+name="public_utils"><h4>public_utils</h4></a> <li><a
+name="record_prefs.php"><h4>record_prefs.php</h4></a> <li><a
+name="set_passwd.php"><h4>set_passwd.php</h4></a> <li><a
+name="shift_descriptions.php"><h4>shift_descriptions.php</h4></a>
+<li><a name="test2.php"><h4>test2.php</h4></a> <li><a
+name="test3.php"><h4>test3.php</h4></a> <li><a
+name="weekly_totals.php"><h4>weekly_totals.php</h4></a> <li><a
+name="workshift_doc.php"><h4>workshift_doc.php</h4></a>
+</ul>
+<li><a href='#php_includes/'><h4>php_includes/</h4></a>
+<ul>
+<li><a name="php_includes/adodb/"><h4>adodb/</h4></a> <li><a
+href='#common/'><h4>common/</h4></a>
+<ul>
+<li><a
+name="php_includes/common/member_check.php"><h4>member_check.php</h4></a>
+<li><a
+href="php_includes/common/witness_check.php">witness_check.php</a>
+</ul>
+<li><a name="php_includes/php_utils/"><h4>php_utils/</h4></a>
+<ul>
+<li><a
+name="php_includes/php_utils/array_diff_key.php"><h4>array_diff_key.php</h4></a>
+<li><a
+name="php_includes/php_utils/array_intersect_key.php"><h4>array_intersect_key.php</h4></a>
+<li><a
+name="php_includes/php_utils/file_put_contents.php"><h4>file_put_contents.php</h4></a>
+<li><a
+name="php_includes/php_utils/fputcsv.php"><h4>fputcsv.php</h4></a>
+<li><a
+name="php_includes/php_utils/stripos.php"><h4>stripos.php</h4></a>
+<li><a
+name="php_includes/php_utils/strpbrk.php"><h4>strpbrk.php</h4></a>
+<li><a
+name="php_includes/php_utils/str_split.php"><h4>str_split.php</h4></a>
+</ul>
+<li><a name="php_includes/scratch/"><h4>scratch/</h4></a> <li><a
+name="php_includes/backup_database.internal.php"><h4>backup_database.internal.php</h4></a>
+<li><a
+name="php_includes/change_password.internal.php"><h4>change_password.internal.php</h4></a>
+<li><a
+name="php_includes/delete_backup_database.internal.php"><h4>delete_backup_database.internal.php</h4></a>
+<li><a
+name="php_includes/janakdb.inc.php"><h4>janakdb.inc.php</h4></a>
+<li><a
+name="php_includes/janakdb-utils.inc.php"><h4>janakdb-utils.inc.php</h4></a>
+<li><a
+name="php_includes/member_check.php"><h4>member_check.php</h4></a>
+<li><a
+name="php_includes/points.internal.php"><h4>points.internal.php</h4></a>
+<li><a
+name="php_includes/recover_backup_database.internal.php"><h4>recover_backup_database.internal.php</h4></a>
+<li><a name="php_includes/table_edit.php"><h4>table_edit.php</h4></a>
+<li><a
+name="php_includes/table_edit.wrapper.php"><h4>table_edit.wrapper.php</h4></a>
+<li><a
+name="php_includes/table_print.php"><h4>table_print.php</h4></a>
+<li><a name="php_includes/table_view.php"><h4>table_view.php</h4></a>
+<li><a
+name="php_includes/update_db.internal.php"><h4>update_db.internal.php</h4></a>
+<li><a
+name="php_includes/weekly_totals.inc.php"><h4>weekly_totals.inc.php</h4></a>
+</ul>
+
+</body></html>
