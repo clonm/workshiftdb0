@@ -129,6 +129,10 @@ if (array_key_exists('forget_login',$_REQUEST)) {
     setcookie($key,"",0,"/");
     unset($_REQUEST[$key]);
   }
+  //don't want any scripts getting confused and thinking they were
+  //posted.  Basically just update_house.php, because it's pretty much
+  //the only script that can post without being logged in.
+  $_SERVER['REQUEST_METHOD'] = 'GET';
 }
 
 //This array has all the basic information about the connection, as
@@ -147,12 +151,12 @@ $url_array = array('db' => "usca_janak$house_name",
 //different workshift managers out of each other's sites, so we need
 //to check the authentication here.
 $real_username = get_real_username();
-//secured means we're in the ...admin/ portion
-if ($secured && $real_username !== get_username() && 
-    $real_username !== 'workshiftadmin') {
-  trigger_error("You are trying to access with the wrong username/password " .
-                "for this database: $real_username",E_USER_ERROR);
-}
+#//secured means we're in the ...admin/ portion
+#if ($secured && $real_username !== get_username() && 
+#    $real_username !== 'workshiftadmin') {
+#  trigger_error("You are trying to access with the wrong username/password " .
+#                "for this database: $real_username",E_USER_ERROR);
+#}
 
 //table_allow and _deny are used similarly to permissions in apache,
 //assuming we don't have use_mysql_features.  If _allow is non-null,
@@ -224,7 +228,10 @@ if ($house_name !== 'admin') {
   $MYSQL_VERSION += 1000*$temp[1];
   $temp = explode('-',$temp[2]);
   $MYSQL_VERSION += $temp[0];
+  //both of the below can be suppressed via $body_insert being non-null
   //authentication for site.  Sets up cookie session.
   require_user();
+  //help for users.  Should always be there.  Don't be mean.
+  print_help();
 }
 ?>
