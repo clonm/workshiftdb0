@@ -8,10 +8,7 @@
 //don't print body_insert immediately
 $body_insert = '';
 require_once('default.inc.php');
-//only the president can access this page
-if (!authorized_user($member_name,'president')) {
-  exit("You are not authorized to use this page.");
-}
+
 //are we submitting this form?
 if (!array_key_exists('election_name',$_REQUEST) || 
     (array_key_exists('modify_election',$_REQUEST) &&
