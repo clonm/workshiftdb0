@@ -1,7 +1,11 @@
 <html><head><title>Change house list</title></head><body>
 <?php
+//we allow anyone to access this page if there is no workshift manager
+//set.  This is so that if the old workshift manager has been removed,
+//but the new one isn't on the current house list, the new one can
+//still upload the new house list, and then add themselves.
+$require_user = '*workshift';
 require_once('default.inc.php');
-print_help();
 
 create_and_update_weekly_totals_data();
 
@@ -29,7 +33,8 @@ same time<br>
 <br>
 Does the first file contain only women, and the second (if it exists) only men?
 <input type=checkbox name='gendered_lists'><br>
-If you're uploading just one file, do you really mean to? <input type="checkbox" name="allow_single_file">
+If you're uploading just one file, do you really mean to?
+<input type="checkbox" name="allow_single_file">
 <input type=submit value='Upload Lists!'>
 </form>
 <hr>
