@@ -9,8 +9,18 @@ href='index.php'>your front page</a>, using whatever username and
 password were specified by your administrator (the default is
 (three-letter-house-code)laborczar for both the username and password,
 like stblaborczar for Stebbins).  Your front page has links to
-everything mentioned here.  Make sure you can log in to it.  (If you
-can't, contact the administrator.)
+everything mentioned here.  Make sure you can log in to it.  If you
+can't, then somebody else is the workshift manager.  You need them to
+go <a href='../administer_users.php?privilege_type=workshift'>remove
+themselves</a>.  Then you can <a
+href='../administer_users.php?privilege_type=workshift'>add
+yourself</a> (at the same page).  If you can't get in touch with them,
+the <a href='mailto:workshiftadmin@gmail.com'>workshift
+administrator</a> can remove them as workshift manager.  If you are
+not yet on the house list, you'll need to <a
+href='update_house.php'>upload the new house list</a> first -- you
+would have to do it anyway, so you might as well do it now.  <a
+href='#update_house:newmanager'>Instructions are available.</a>.
 
 <ul>
 
@@ -79,14 +89,15 @@ can't, contact the administrator.)
   href='update_house.php'>upload</a> to set the house list.<br>
 
 </ul>
-<li><a name='update_house'><h4>Enter house list</h4> You need to have a house list entered.
-  You can do that at <a href='update_house.php'>update_house.php</a>.
-  Make sure every member's name you enter is unique.  Try to enter
-  them in a consistent format, like Lastname, Firstname (what Stebbins
-  does), LastNameFirstname, or whatever.  Just keep it consistent.
-  Since there is auto-completion on most of the pages, don't worry too
-  much about length of names -- you won't have to type the whole thing
-  in every time.  The best way to do this is to email <a
+<li><a name='update_house'><h4>Enter house list</h4> You need to have
+  a house list entered.  You can do that at <a
+  href='update_house.php'>update_house.php</a>.  Make sure every
+  member's name you enter is unique.  Try to enter them in a
+  consistent format, like Lastname, Firstname (what Stebbins does),
+  LastNameFirstname, or whatever.  Just keep it consistent.  Since
+  there is auto-completion on most of the pages, don't worry too much
+  about length of names -- you won't have to type the whole thing in
+  every time.  The best way to do this is to email <a
   href='mailto:housing@usca.org'>housing@usca.org</a> and have them
   email you a houselist.  If your house is co-ed, and it's the
   academic year, you will need to upload both lists, for men and
@@ -95,13 +106,14 @@ can't, contact the administrator.)
   will be able to confirm all the deletions and additions that will be
   done.  Make sure you look through them to see that someone isn't
   being deleted just because their name is spelled differently or
-  something similar.  Note that if you upload using the CO house
-  lists, then your house members' application numbers are stored, so
-  that, even if you rename them later, the system can tell that
-  they're the same person.  That way, the following semester, you can
-  upload the new CO house list, and the system will be able to keep
-  track of who is returning just from their application number.
-  
+  something similar.  <a name='update_house:newmanager'>Note:</a> if
+  you are the new workshift manager and you're not on the house list
+  yet and the above instructions aren't working, and you really,
+  really need to get into the system, just go to the Add Member box,
+  type in your name, and add yourself.  You should then be able to go
+  <a href='../administer_users.php?privilege_type=workshift'>add
+  yourself as workshift manager</a>
+
   There is other <a href='#update_house_more'>important information on
   updating the house list</a>.  Please check it out.
 
@@ -753,13 +765,6 @@ there will be a new line.  Remember to click the button below to
 permanently update this message.
 </ul>
 
-<li><a name='change_password'
-href='change_password.php'>change_password.php</a> allows you to
-change your workshift manager password.  Note that you need to know
-your old password.  If you can't remember it (and I don't know how
-you're reading this if you can't), then you need to email the
-workshift website administrator.
-
 <li><a name='reset_user_password'
 href='reset_user_password.php'>reset_user_password.php</a> will reset
 any user's personal password, which they use to view their personal
@@ -776,14 +781,6 @@ page, preference forms, etc.
   href='recover_database.php'>recover the database</a>.  Every so
   often, you might want to <a href='delete_backup_database.php'>delete
   an old backup if it's definitely not useful anymore</a>.
-
-  <li><a href='change_password.php'>Change your password</a>.  If you
-  need to change your password (maybe you're a new workshift manager
-  and you don't want the old workshift manager to have access to the
-  files), you can change your password.  This mainly affects the
-  prompt you get when you first go to the workshift admin pages.  Make
-  sure that you are <b>not editing any tables</b> when you change your
-  password -- you won't be able to save them!
 
   <li><a name='view_backup_database'>You can <a
   href='view_backup_database.php'>view a backup database</a> as though
