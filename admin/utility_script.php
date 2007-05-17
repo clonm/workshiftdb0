@@ -1,4 +1,6 @@
 <?php
+print escapeshellarg(escapeshellarg('$body_insert = \'\';'));
+exit;
 /*
 if (array_key_exists('logout',$_REQUEST)) {
   setcookie('member_name',null,time()-3600);
