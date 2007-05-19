@@ -1519,12 +1519,25 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
   if (isset($require_user) && $require_user === false) {
     return true;
   }
-  //if no users for this (starred) privilege authorized yet, ok no
-  //user because maybe we need someone to add themselves.
-  if (isset($require_user) && $require_user{0} == '*' &&
-      (($require_user = substr($require_user,1)) || true) &&
-      !count(users_with_privileges($require_user))) {
-    $require_user = 'ok_nouser';
+  //test require_user to see if we really need to check things.  If
+  //one of the privileges is double-starred, and no one has that
+  //privilege, then anyone can enter.
+  if (isset($require_user)) {
+    if (!is_array($require_user)) {
+      $require_user = array($require_user);
+    }
+    foreach ($require_user as $key => $priv) {
+      //if no users for this (starred) privilege authorized yet, ok no
+      //user because maybe we need someone to add themselves.
+      if ($priv{0} == '*' && $priv{1} == '*') {
+        if (!count(users_with_privileges(substr($priv,2)))) {
+          $require_user = 'ok_nouser';
+          break;
+        }
+        //leave * for later on
+        $require_user[$key] = substr($priv,1);
+      }
+    }
   }
   //we just set a global variable!  Awesome!
   $member_name = $mem_name;
@@ -1593,15 +1606,23 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
     $type = array($type);
   }
   foreach ($type as $priv) {
-    if (!authorized_user($member_name,$priv)) {
-      if (isset($body_insert)) {
-        print $body_insert;
+    //if privilege is starred, then if no one has this privilege, then
+    //any user can enter.
+    if ($priv{0} == '*') {
+      $priv = substr($priv,1);
+      if (!count(users_with_privileges($priv))) {
+        return true;
       }
-      exit("You are not authorized to use this page.");
-      return false;
+    }
+    if (authorized_user($member_name,$priv)) {
+      return true;
     }
   }
-    return true;    
+  if (isset($body_insert)) {
+    print $body_insert;
+  }
+  exit("<p>You are not authorized to use this page.</p>");
+  return false;
 }
     
 //some things, mostly in elections, require witnesses -- authenticated
