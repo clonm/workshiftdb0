@@ -30,6 +30,7 @@ counter-increment: item }
 <ul>
 <li><a href='#admin/'>admin/</a>
 <ul>
+<li><a href='#admin/.htaccess'>.htaccess</a>
 <li><a href="#admin/assign_shifts.php">assign_shifts.php</a>
 <li><a href="#admin/backup_database.php">backup_database.php</a>
 <li><a href="#admin/basic_consts.php">basic_consts.php</a>
@@ -178,6 +179,13 @@ href="php_includes/common/witness_check.php">witness_check.php</a>
 <ul>
 <li><a href='admin/'><h4>admin/</h4></a>
 <ul>
+<li><a name='admin/.htaccess'><h4>.htaccess</h4></a>
+<p>This file used to be much more important, because it was used to
+authenticate workshift managers.  Currently, all we use it for is
+setting up php's zlib compression.  The aim is to have the system as
+divorced from the vagaries of any particular server setup as
+possible.  That's easier without lots of special apache files.</p>
+
 <li><a name="admin/assign_shifts.php"><h4>assign_shifts.php</h4></a>
 <p>This is the frame container for <a
 href='#admin/master_shifts.php'>master_shifts.php</a> and <a
@@ -285,15 +293,27 @@ pretty simple -- empty out <a
 href='#mysql:wanted_shifts'>wanted_shifts</a> and delete notes,
 submit_date, and zero out availabilities in <a
 href='#mysql:house_info'>house_info</a> for deleting preferences, and
-deleting all names in <a href='#mysql:master_shifts'>master_shifts</a>.</p>
-<li><a
-name="admin/change_password.php"><h4>change_password.php</h4></a>
+deleting all names in <a
+href='#mysql:master_shifts'>master_shifts</a>.</p>
 
-<li><a name="admin/color_settings.php"><h4>color_settings.php</h4></a>
 <li><a
 name="admin/compare_backup_databases.php"><h4>compare_backup_databases.php</h4></a>
+This is a utility script that you can use to get a rough idea about
+which backups are older than which.  It is superseded largely by the
+functions in <a
+name='#admin/delete_backup_database.php'>delete_backup_database.php</a>
+that figures out which backups are redundant/corrupt.
+
 <li><a
 name="admin/create_all_tables.php"><h4>create_all_tables.php</h4></a>
+This is also a utility script.  It has the create table definitions
+for all tables in the database.  We used to call these functions each
+time any function which used a table was called, but it's better just
+to call them all once.  Note that running this script won't do
+anything, because it just has the table definitions.  It should be
+altered so that the body of the script calls all of the table
+definition functions.  You will need to run it each time you add a
+house.
 
 <li><a name="admin/default.inc.php"><h4>default.inc.php</h4></a>
 As all default.inc.php files do, includes the one in the next-up
@@ -304,12 +324,82 @@ href='#admin/update_house.php'>update_house.php</a> sets otherwise).
 
 <li><a
 name="admin/delete_backup_database.php"><h4>delete_backup_database.php</h4></a>
+<p>An important page if the site is running out of space (which it
+shouldn't on any decent hosting service).  It can also be used to
+delete sensitive information that exists in an old backup (like
+elections data).  For that reason, the president can also access this
+page.</p>
+
+<p>The main feature of the page is a function which goes through the
+backups, groups them by semester, and then tries to figure out which
+of them are redundant.  Redundancy is just calculated based on the
+last-modified table, the number of assigned shifts, the number of
+weeks completed, and the number of preferences submitted.  More is
+better.  The user then has the option to delete redundant backups.
+Backups made by the user (meaning, named by the user) are always
+preserved, and at least 2 backups per semester are always preserved.</p>
+
 <li><a name="admin/delete_weeks.php"><h4>delete_weeks.php</h4></a>
-<li><a name="admin/export_csv.php"><h4>export_csv.php</h4></a> <li><a
-name="admin/fining_data.php"><h4>fining_data.php</h4></a> <li><a
-name="admin/help.html"><h4>help.html</h4></a> <li><a
-name="admin/house_fines.php"><h4>house_fines.php</h4></a> <li><a
-name="admin/index.php"><h4>index.php</h4></a> <li><a
+<p>Should rarely, if ever, be accessed directly by users.  It is
+called by <a href='#admin/basic_consts.php'>basic_consts.php</a> at
+the beginning of the semester, and by <a
+href='#admin/make_weeks.php'>make_weeks.php</a> if it is being run
+without warnings.  It doesn't actually delete weeks, because of the
+risk of losing data.  It just renames the week to
+zzBackupweek_{week-numer}.  Two deletions of the same week will
+overwrite the backup.</p>
+
+<li><a name="admin/export_csv.php"><h4>export_csv.php</h4></a>
+<p>Never actually needs to be called by the user.  However, if the
+user wants .csv versions of their entire database (not including
+backups) here is where they get them from.  There's an elections
+security risk in letting users view all tables, so votes and
+voting_record (along with password_table, house_info, and static_data)
+are not included in the files.  A mysql dump is also given, so that
+the user can always recover a backup they downloaded and then deleted
+from the server.  There are some issues with locking and with the <a
+href='#php_includes/scratch/'>scratch/</a> directory.</p>
+
+<li><a
+name="admin/fining_data.php"><h4>fining_data.php</h4></a>
+<p>This is used to enter fines/rebates manually.  Several columns
+aren't really functional.  It was supposed to allow the workshift
+manager to enter a number of hours someone had worked to pay off a
+debt, and then translate that into dollars here, and subtract it from
+the appropriate week (that's a policy in Stebbins).  That never
+happened, so the workshift manager needs to enter the fine rebate
+here, and then go to the week and enter a negative workshift for
+"paying back fines" or something like that.</p>
+
+<p>Its shortcomings aside, this page is a pretty standard <a
+href='#php_includes/table_edit.php'>table_edit.php</a>-including file.
+Fines entered here will go into "Other Fines" when calculating the
+member's fines.  The data is stored in the <a
+href='#mysql:fining_data'>fining_data</a> table.</p>
+
+<li><a name="admin/help.html"><h4>help.html</h4></a>
+<p>Help for workshift managers.  It is universally viewable, so
+really delicate information like security holes shouldn't be put
+there.  It's good that it's universally viewable, because that way
+workshift managers who are locked out of the system can still read
+it.  Please try to keep it up-to-date.</p>
+
+<li><a name="admin/house_fines.php"><h4>house_fines.php</h4></a>
+<p>This page is mainly a duplicate of <a
+href='#php_includes/weekly_totals.inc.php'>weekly_totals.inc.php</a>,
+but has more details about fines, and less about hours.  Really there
+should be one monster page with different flags, but at this point, no
+way.  The advantage of this page over weekly_totals is that it has the
+fine levied for each week, which is useful if you're trying to see how
+it all adds up.  There are also links at the top for downloading to
+Excel (mainly for sending to house managers), and viewing archives
+(mainly for resolving disputes).  House managers can view this page as
+well.</p>
+
+<li><a name="admin/index.php"><h4>index.php</h4></a>
+
+
+<li><a
 name="admin/insert_master_shifts.php"><h4>insert_master_shifts.php</h4></a>
 <li><a name="admin/make_weeks.php"><h4>make_weeks.php</h4></a> <li><a
 name="admin/master_shifts2.js"><h4>master_shifts2.js</h4></a> <li><a
