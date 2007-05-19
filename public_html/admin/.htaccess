@@ -1,7 +1,2 @@
-#AuthType Basic
-#AuthName "Workshift Admin"
-#AuthUserFile /home/usca/domains/usca.org/public_html/workshift/php_includes/apache_users
-#Require valid-user
-
 php_value zlib.output_compression 1
 php_value zlib.output_compression_level 3
