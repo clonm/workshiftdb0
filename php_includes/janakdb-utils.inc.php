@@ -817,14 +817,11 @@ function print_help($section=null,$span=false) {
   else {
     $public_utils = false;
   }
-  if (isset($body_insert)) {
-    ob_start();
-  }
   print "<" . ($span?'span':'div') . 
-    " class='help_link print_hide'><a href='" .
+    " class='help_link print_hide'><strong><a href='" .
     ($public_utils?'../admin/':'') . "help.html#" . 
     escape_html($section?$section:script_name())  . 
-    "' target='workshift_help'>Help</a> " .
+    "' target='workshift_help'>Help</a></strong> " .
     "<a href='" .
     escape_html($bug_report_url) .
     "'>Submit Bug</a>&nbsp;&nbsp;<a href='" .
@@ -833,12 +830,6 @@ function print_help($section=null,$span=false) {
     escape_html($project_url) .
     "'>Sourceforge Project Page</a></" .
     ($span?'span':'div') . ">";
-  if (!$span) {
-    print "<hr>";
-  }
-  if (isset($body_insert)) {
-    $body_insert = ob_get_clean();
-  }
 }
 
 //archived private tables shouldn't become public -- check the part
@@ -1581,16 +1572,11 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
   }
   //here's the logout button -- don't print it yet, because maybe the
   //page is doing funky stuff and doesn't want output.
-  $str = "<form style='margin: 0px' action='" . this_url() . 
-    "' method=post><input type=hidden name='forget_login'>" .
-    "<input type=submit value='Logout'></form>";
-  //how the page tells us if output is not ok -- it sets $body_insert
-  if (!isset($body_insert)) {
-    print $str;
-  }
-  else {
-    $body_insert .= $str;
-  }
+  print "<form style='margin: 0px; display: inline' action='" . this_url() . 
+    "' method=post>";
+  print "&nbsp;&nbsp;<input type=hidden name='forget_login'>" .
+    "<input type=submit value='Logout " . escape_html($member_name) . 
+    "'>&nbsp;&nbsp;</form>";
   //was this an ordinary require_user, or was the page asking if the
   //user had a certain privilege?  Might have been passed in type or
   //require_user.  I'm going to get rid of type.

@@ -230,8 +230,17 @@ if ($house_name !== 'admin') {
   $MYSQL_VERSION += $temp[0];
   //both of the below can be suppressed via $body_insert being non-null
   //authentication for site.  Sets up cookie session.
+  if (isset($body_insert)) {
+    ob_start();
+  }
+  print_help(null,true);
+  //require_user might never really return (if it calls member_check).
+  //So we don't get to print our nice <hr/>.  We'll live.  The output
+  //buffering might also not end until the script ends.
   require_user();
-  //help for users.  Should always be there.  Don't be mean.
-  print_help();
+  print "<hr/>";
+  if (isset($body_insert)) {
+    $body_insert .= ob_get_clean();
+  }
 }
 ?>
