@@ -69,7 +69,7 @@ foreach ($houses as $house_name) {
       foreach ($tbl_rows as $data_row) {
         fwrite($handle,
                "INSERT INTO `$tbl` VALUES (" . 
-               join(',',array_map('db_quote',$res->GetRows())) . ");\n") ||
+               join(',',array_map('db_quote',$data_row)) . ");\n") ||
           janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
       }
     }
