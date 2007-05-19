@@ -1590,17 +1590,18 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
   }
   //if it's just one privilege, do they have it?
   if (!is_array($type)) {
-    if (!authorized_user($member_name,$type)) {
+    $type = array($type);
+  }
+  foreach ($type as $priv) {
+    if (!authorized_user($member_name,$priv)) {
       if (isset($body_insert)) {
         print $body_insert;
       }
       exit("You are not authorized to use this page.");
       return false;
     }
-    return true;
   }
-  //if it's more than one, how many do they have of them?
-  return count(array_intersect(user_privileges($member_name),$type));
+    return true;    
 }
     
 //some things, mostly in elections, require witnesses -- authenticated
