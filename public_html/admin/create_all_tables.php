@@ -1,11 +1,15 @@
 <?php
 require_once('default.inc.php');
 
+//this is the only table created.  All others are just waiting to be
+//created, but haven't been yet.
 create_static_text();
 
 function create_master_shifts () {
   global $db;
-  //static so we know if we've tested for existence before
+  //static so we know if we've tested for existence before.  Note that
+  //if you call this from an admin script, it will give an incorrect
+  //response if you're doing it for multiple houses.
   static $done = false;
   if (true) {
     if (!table_exists('master_shifts')) {
