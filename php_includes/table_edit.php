@@ -306,14 +306,12 @@ if (!isset($suppress_help)) {
 if (isset($body_insert)) {
   echo $body_insert;
 }
-//no need to put warnings in if user can't edit page
-if (!$read_only) { ?>
-<p class="status" 
-id="statustext"
->
+//no need to put warnings in if user can't edit page, but too much
+//trouble to alter javascript
+?>
+<p class="status" <?=$read_only?"style='display: none'":''?>
+id="statustext">
 Ready -- remember to reload page (CTRL-F5) before you start editing</p>
-<?php } ?>
-
 <form 
 <?php if (!$read_only) { ?>
 method="POST" action="<?=escape_html($update_db_url)?>" 
