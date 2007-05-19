@@ -418,6 +418,16 @@ while ($namerow = $nameres->FetchRow()) {
   $other_methods = ob_get_clean();
   //while there are still any candidates left and any winners to pick, loop
   while (count($choices) && $row['num']) {
+    //little hack so that display of results does not show last
+    //candidate standing with all the votes -- just make sure that
+    //this candidate will get elected in this iteration.
+    if ($row['runoff'] == 1 && count($choices) == 1 && 
+        (!isset($threshold) || $threshold == -1)) {
+      $one_winner = array_keys($choices);
+      $winners[] = $one_winner[0];
+      $row['num']--;
+      break;
+    }
     //sort them in reverse order, so most votes comes first.
     arsort($choices);
     //if we're printing everything out, print out all the votes here.
@@ -491,7 +501,7 @@ while ($namerow = $nameres->FetchRow()) {
     //least #votes/#choices, but #votes is #votes *remaining*
     //comment here for emacs
     if ((!isset($threshold) || $threshold == -1) && $row['runoff'] == 1) {
-        $soft_threshold = array_sum($choices)/max(1,count($choices));
+        $soft_threshold = array_sum($choices)/$row['num'];
     }
     else {
       $soft_threshold = $threshold;
