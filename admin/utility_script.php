@@ -1,6 +1,4 @@
 <?php
-print escapeshellarg(escapeshellarg('$body_insert = \'\';'));
-exit;
 /*
 if (array_key_exists('logout',$_REQUEST)) {
   setcookie('member_name',null,time()-3600);
@@ -26,6 +24,7 @@ else {
 */
 $php_includes = '../php_includes/';
 require_once('../php_includes/janakdb.inc.php');
+exit;
 $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
 		'kid','kng','lot','rid','she','stb','wil','wol','co');
 #$houses = array('rid','she','stb','wil','wol','co');
