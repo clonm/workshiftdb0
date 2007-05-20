@@ -4,7 +4,6 @@
 //set.  This is so that if the old workshift manager has been removed,
 //but the new one isn't on the current house list, the new one can
 //still upload the new house list, and then add themselves.
-$require_user = '*workshift';
 require_once('default.inc.php');
 
 create_and_update_weekly_totals_data();
