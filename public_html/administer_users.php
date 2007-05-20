@@ -5,19 +5,34 @@
 //usually.  And hopefully there won't be no one in a position too
 //often.
 $body_insert = '';
+$require_user = 'ok_nouser';
+$officer_flag = true;
 require_once('default.inc.php');
 
-//what privileges does this user has?
-$grants = user_grant_privileges($member_name);
-//if no one has this privilege, everyone can grant it
-foreach (array('president','house','workshift') as $managers) {
-  if (!count(users_with_privileges($managers))) {
-    $grants[] = $managers;
-  }
+if (!isset($officer_name) && !isset($member_name)) {
+  require_once("$php_includes/common/member_check.php");
+  exit;
 }
+if ($member_name) {
+  //what privileges does this user has?
+  $grants = user_grant_privileges($member_name);
+}
+else {
+  $grants = array();
+}
+if ($officer_name) {
+  $grants[] = substr($officer_name,strlen($house_name));
+}
+//don't want this anymore, because we've added superusers
+#//if no one has this privilege, everyone can grant it
+#foreach (array('president','house','workshift') as $managers) {
+#  if (!count(users_with_privileges($managers))) {
+#    $grants[] = $managers;
+#  }
+#}
 //no privileges to grant?
 if (!count($grants)) {
-  exit;
+  exit($body_insert . "There are no privileges that you can set");
 }
 //if there is one privilege, go directly to that page
 if (count($grants) == 1) {
