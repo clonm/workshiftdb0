@@ -2,7 +2,7 @@
 require_once('default.inc.php');
 $houselist = get_houselist();
 ?>
-<form action='<?=escape_html($_SERVER['REQUEST_URI'])?>' method=POST>
+<form action='<?=this_url()?>' method=POST>
 <?php
 for ($ii = 0; $ii < $num; $ii++) {
 ?>
