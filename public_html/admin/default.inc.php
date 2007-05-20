@@ -6,7 +6,7 @@
 //require workshift privilege on all php files in this directory
 //unless they say otherwise
 if (!isset($require_user)) {
-  $require_user = 'workshift';
+  $require_user = array('workshift');
 }
 
 require_once('../default.inc.php');
