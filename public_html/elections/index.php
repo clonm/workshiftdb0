@@ -1,7 +1,6 @@
 <html><head><title>Elections Page</title></head><body>
 <?php
 require_once('default.inc.php');
-print_help();
 ?>
 <ul>
 <li><a href='voting.php'>Vote in Elections</a>
