@@ -1,76 +1,22 @@
-<?php
-if (!ini_get('magic_quotes_sybase')) {
-  if (get_magic_quotes_gpc()) {
-    function stripformslash($str) {
-      global $first_strip;
-      if (!$first_strip) {
-        return $str;
-      }
-      if (is_array($str)) {
-        return array_map('stripformslash',$str);
-      }
-      return stripslashes($str);
-    }
-  }
-  else {
-    function stripformslash($str) {
-      return $str;
-    }
-  }
-}
-else {
-  //quoting for database?  Man, you're stupid -- databases quote things already
-  function stripformslash($str) {
-    global $first_strip;
-    if (!$first_strip) {
-      return $str;
-    }
-    if (is_array($str)) {
-      return array_map('stripformslash',$str);
-    }
-    return str_replace("''","'",$str);
-  }
-}
-
-//escapes any string so we can put it in a web page safely (though escapes
-//are not processed in javascript -- hence the above function)
-function escape_html($str,$display_all = false) {
-  if ($display_all && !strlen($str)) {
-    switch (true) {
-    case $str === "":
-      return "";
-    case $str === null:
-      return 'null';
-    case $str === false:
-      return 'false';
-    }
-  }
-  return htmlentities($str,ENT_QUOTES);
-}
-
-if (isset($_REQUEST['archive'])) {
-  $archive = stripformslash($_REQUEST['archive']);
-}
-else {
-  $archive = '';
-}
-?>
 <html><head><title>Workshift Manager's links</title></head><body>
-<a target='workshiftdb_help' href='help.html'>Help</a>
-&nbsp;&nbsp;
-<!-- these need to be changed if the bug tracking system changes -->
-<a href='http://sourceforge.net/tracker/?func=add&group_id=191164&atid=936272'>
-Submit Bug</a>&nbsp;&nbsp;
-<a href='http://sourceforge.net/tracker/?func=add&group_id=191164&atid=936275'>
-Submit Feature Request</a>&nbsp;&nbsp;
-<a href='http://sourceforge.net/projects/workshiftdb0/'>
-Sourceforge Project Page</a>
-<br/>
-<h4>Read the help for how to get started.</h4>
-
-This site will not work properly with Internet Explorer -- please use
-Mozilla Firefox.
 <?php
+#emacs comment';
+$require_user = array('workshift','house','president');
+require_once('default.inc.php');
+?>
+<h4><a href='help.html' target='help'>Read the help</a>
+for how to get started.</h4>
+<?php
+$browser = browser_detection('full');
+if ($browser[0] != 'moz') {
+?>
+ <h3>This site works best with 
+<a href='http://www.mozilla.com/'>Mozilla Firefox</a>.
+Other browsers may or may not work.  In particular, Internet Explorer
+will not work for updating weekly sheets, and for lots of other things.
+Please <a href='http://www.mozilla.com/'>download Mozilla Firefox</a>!</h3>
+<?php
+                                                         }
 if ($archive) {
 print "<h2>Viewing backup " . escape_html($archive) . "</h2>";
 }
@@ -140,7 +86,7 @@ if (!$archive) {
 <?php
 if (!$archive) {
 ?>
-<a href="change_password.php">Change your password</a><br>
+<a href="set_passwd.php">Change your password</a><br>
 <a href="reset_user_password.php">Reset the password of a user who has
 forgotten it</a><br>
 <hr><h4>Backup/Restore</h4>
