@@ -363,15 +363,47 @@ function check_passwd($member_name = null, $passwd = null) {
 //if oldpasswd matches.  Called in record_prefs.php and
 //set_passwd.php.  Hashes up password so snooping administrators can't
 //find it out.
-function set_passwd($member_name, $newpasswd,$oldpasswd) {
+function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag) {
   global $db;
-  $check_res = check_passwd($member_name,$oldpasswd);
+  if (!$officer_flag) {
+    $check_res = check_passwd($member_name,$oldpasswd);
+  }
+  else {
+    $check_res = check_officer_passwd($member_name,$oldpasswd);
+  }    
   if ($check_res == -1 || $check_res == -4 || $check_res > 0) {
-    return $db->Execute("REPLACE INTO `password_table` " .
-                        "(`member_name`,`passwd`) VALUES (?,PASSWORD(?)) ",
+    return $db->Execute("REPLACE INTO `" . ($officer_flag?'officer_':'') . 
+                        "password_table` " .
+                        "(`" .
+                        ($officer_flag?'officer':'member') .
+                        "_name`,`passwd`) VALUES (?,PASSWORD(?)) ",
                         array($member_name,$newpasswd));
   }
   return false;
+}
+
+function check_officer_passwd($officer_name = null) {
+  global $db;
+  if (!isset($officer_name)) {
+    if (isset($_REQUEST['officer_name'])) {
+      $officer_name = $_REQUEST['officer_name'];
+    }
+    else  {
+      return false;
+    }
+  }
+  $row = $db->GetRow("select `passwd` from " .
+                     "`officer_password_table` where " .
+                     "`officer_name` = ?",array($officer_name));
+  if (is_empty($row) || !array_key_exists('officer_passwd',$_REQUEST)) {
+    return false;
+  }
+  if (!strlen($row['passwd']) && !strlen($_REQUEST['officer_passwd'])) {
+    return -1;
+  }
+  $row2 = $db->GetRow("select password(?) as `pw`",
+                      array($_REQUEST['officer_passwd']));
+  return make_numeric($row['passwd'] == $row2['pw']);
 }
 
 //just encapsulated for ease of use
@@ -1384,6 +1416,9 @@ function user_privileges($member_name) {
   if (is_empty($attribs)) {
     return array();
   }
+  if (!strlen($attribs['privileges'])) {
+    return array();
+  }
   return explode(',',$attribs['privileges']);
 }
 
@@ -1425,7 +1460,13 @@ function users_with_privileges($type) {
 
 //add/remove a privilege from a user.
 function add_authorized_user($mem_name,$type) {
-  global $db,$member_name;
+  global $db,$member_name,$officer_name;
+  if (!$member_name && $officer_name) {
+    $authority_figure = $officer_name;
+  }
+  else {
+    $authority_figure = $member_name;
+  }
   //we can't alter privileges for someone not in the house
   if (!in_array($mem_name,get_houselist())) {
     return null;
@@ -1437,19 +1478,18 @@ function add_authorized_user($mem_name,$type) {
     //changing privileges is a suspicious activity
     //the authority figure key tells us who did the changing.
     //Unfortunate that we need to pack it in there.
-    elections_log(null,$mem_name,'change_privilege',
-                  user_privileges($mem_name)+
-                  array('authority_figure' => $member_name),
-                  $privs);
+    elections_log(null,'change_privilege',$mem_name,
+                  array('authority_figure' => $authority_figure,$type),
+                  $type);
     return $db->Execute("insert into `privilege_table` (`member_name`," .
                         "`privileges`) values (?,?) " .
                         "on duplicate key update `privileges` = ?",
                         array($mem_name,$type,join(',',$privs)));
   }
   //we're adding the privilege.
-  elections_log(null,$mem_name,$member_name,
-                user_privileges($mem_name),
-                user_privileges($mem_name)+array($type));
+  elections_log(null,'change_privilege',$mem_name,
+                array('authority_figure' => $authority_figure),
+                $type);
   return $db->Execute("insert into `privilege_table` (`member_name`," .
                       "`privileges`) values (?,?) " .
                       "on duplicate key update " .
@@ -1460,15 +1500,16 @@ function add_authorized_user($mem_name,$type) {
 //get member corresponding to the current session id, if it exists.
 //the session id is stored in a table along with the member name and
 //the expiration date.  Witnesses (see below) are also stored there.
-function get_session_member() {
+function get_session_member($officer = false) {
   global $db;
   //get rid of any expired sessions.
   $db->Execute("delete from `session_data` where `expiration` <= now()");
   //is there a session the user thinks they have?
-  if (isset($_REQUEST['session_id'])) {
+  if (isset($_REQUEST[($officer?'officer_':'') . 'session_id'])) {
     $row = $db->GetRow("select `member_name` from `session_data` " .
                        "where `session_id` = ?",
-                       array($_REQUEST['session_id']));
+                       array($_REQUEST[($officer?'officer_':'') .
+                                       'session_id']));
     //we don't have that session.
     if (is_empty($row)) {
       return null;
@@ -1480,24 +1521,42 @@ function get_session_member() {
 }
 
 //set the current session id.
-function set_session($member_name) {
+function set_session($member_name,$officer = false,$delete_session = false) {
   global $db;
   //we don't want this to succeed partially, since then someone gets
   //locked out, even though they were going to be authenticated.
-  $db->Execute("lock tables `session_data` write");
   $db->StartTrans();
+  $db->Execute("lock tables `session_data` write");
   //get rid of any old session ids
-  $db->Execute("delete from `session_data` where `member_name` = ?",
-               array($member_name));
-  //unique session id.  the member_name is so I can track it easily
-  $session_id = time() . $member_name . rand();
-  //expires 1 hour from now
-  $db->Execute("insert into `session_data` " .
-               "(`member_name`,`session_id`,`expiration`) values " .
-               "(?,?,addtime(now(),'01:00:00'))",
-               array($member_name,$session_id));
+  if (!$delete_session) {
+    $db->Execute("delete from `session_data` where `member_name` = ?",
+                 array($member_name));
+    //unique session id.  the member_name is so I can track it easily
+    $session_id = time() . $member_name . rand();
+    //expires 1 hour from now
+    $db->Execute("insert into `session_data` " .
+                 "(`member_name`,`session_id`,`expiration`) values " .
+                 "(?,?,addtime(now(),'01:00:00'))",
+                 array($member_name,$session_id));
+  }
+  else {
+    $db->Execute("delete from `session_data` where `session_id` = ?",
+                 array($member_name));
+  }
   //give user the cookie
-  setcookie('session_id',$session_id,time()+3600,"/");
+  foreach ($_COOKIE as $key => $val) {
+    if ((!$officer && $key == 'session_id') ||
+        ($officer && $key == 'officer_session_id')) {
+      setcookie($key,$val,time()-10800,"/");
+      setcookie($key,"",0,"/");
+      unset($_REQUEST[$key]);
+      break;
+    }
+  }
+  if (!$delete_session) {
+    setcookie(($officer?'officer_':'') . 'session_id',
+              $session_id,time()+3600,"/");
+  }
   $db->CompleteTrans();
   $db->Execute("unlock tables");
 }
@@ -1513,29 +1572,59 @@ function set_session($member_name) {
 //there isn't a valid user, but will set the session if there is one.
 //Useful occasionally.
 function require_user($type = null,$mem_name=null,$passwd=null) {
-  global $db, $baseurl,$php_includes,$secured,
-    $member_name,$basedir,$body_insert,$require_user, $secured;
+  global $db, $baseurl,$php_includes,$secured, $house_name, $set_passwd_flag,
+    $member_name,$basedir,$body_insert,$require_user, $secured,$officer_name;
   //do we not need a user?
   if (isset($require_user) && $require_user === false) {
     return true;
   }
-  //test require_user to see if we really need to check things.  If
-  //one of the privileges is double-starred, and no one has that
-  //privilege, then anyone can enter.
-  if (isset($require_user)) {
-    if (!is_array($require_user)) {
-      $require_user = array($require_user);
+  if ($require_user && $require_user !== true && !is_array($require_user)) {
+    $require_user = array($require_user);
+  }
+  else if (!is_array($require_user)) {
+    $require_user = array();
+  }
+  $officer_skip_flag = false;
+  //do we have an officer?  Either in session or logging in now
+  if ((isset($_REQUEST['officer_name']) && $_REQUEST['officer_name']) ||
+      isset($_REQUEST['officer_session_id'])) {
+    if (isset($_REQUEST['officer_name']) && $_REQUEST['officer_name']) {
+      $officer_name = $_REQUEST['officer_name'];
     }
-    foreach ($require_user as $key => $priv) {
-      //if no users for this (starred) privilege authorized yet, ok no
-      //user because maybe we need someone to add themselves.
-      if ($priv{0} == '*' && $priv{1} == '*') {
-        if (!count(users_with_privileges(substr($priv,2)))) {
-          $require_user = 'ok_nouser';
+    else {
+      $officer_name = null;
+    }
+    //true flag is for officer
+    $session_officer = get_session_member(true);
+    if (!$session_officer || ($officer_name && 
+                              $officer_name != $session_officer)) {
+      if (($pass_check = check_officer_passwd($officer_name)) > 0) {
+        set_session($officer_name,true);
+      }
+      else {
+        $officer_check_flag = true;
+        if (isset($_REQUEST['officer_session_id'])) {
+          set_session($_REQUEST['officer_session_id'],true,true);
+        }
+        $officer_name = null;
+        if ($pass_check === -1) {
+          $_REQUEST['previous_url'] = $_SERVER['REQUEST_URI'];
+          $officer_flag = true;
+          require_once("$php_includes/common/set_passwd.php");
+          exit;
+        }
+      }
+    }
+    else {
+      $officer_name = $session_officer;
+    }
+    if (is_array($require_user)) {
+      //is officer authentication relevant here?
+      foreach ($require_user as $priv) {
+        if ($officer_name == $house_name . $priv) {
+          $officer_skip_flag = true;
           break;
         }
-        //leave * for later on
-        $require_user[$key] = substr($priv,1);
       }
     }
   }
@@ -1553,83 +1642,108 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
                            $member_name != $session_member)) {
     //authenticate afresh.
     $pass_check = check_passwd($member_name,$passwd);
-    //does it really matter if we don't have a user?
-    if ($require_user !== 'ok_nouser') {
-      //not allowed to not have a password!
-      if ($pass_check == -1) {
-        //we'll offer a link to get back here later.
-        exit("You have no password set.  <a href='" .
-             escape_html($baseurl . '/set_passwd.php?member_name=' .
-                         rawurlencode($member_name) . 
-                         '&previous_url=' . 
-                         rawurlencode($_SERVER['REQUEST_URI'])) . 
-             "'>Set your password</a>.");
+    if ($pass_check > 0) {
+      set_session($member_name);
+    }
+    //password check failed
+    else {
+      //doesn't matter much if we didn't *need* a user
+      if (in_array('ok_nouser',$require_user) || $officer_skip_flag) {
+        //don't pass back an incorrect member name
+        if ($pass_check != -1) {
+          $member_name = null;
+        }
+        //nothing more to do unless we're an officer, so print logout
+        if (!strlen($officer_name)) {
+          return false;
+        }
       }
-      //unsuccessful authentication.  Put up the auth page again.
-      if ($pass_check <= 0) {
+      else {
+        //not allowed to not have a password!
+        if ($pass_check == -1) {
+          print 'what?';
+          //we'll offer a link to get back here later.
+          $_REQUEST['previous_url'] = $_SERVER['REQUEST_URI'];
+          require_once("$php_includes/common/set_passwd.php");
+          exit;
+        }
+        //unsuccessful authentication.  Put up the auth page again.
         require_once($php_includes . "/common/member_check.php");
         exit;
       }
     }
-    //didn't really matter if we didn't have a user.  
-    else if ($pass_check <= 0) {
-      $member_name = null;
-      return false;
-    }
-    //got all the way here?  We have a session!
-    set_session($member_name);
   }
   else {
     //we already had a session
     $member_name = $session_member;
   }
-  //here's the logout button -- don't print it yet, because maybe the
-  //page is doing funky stuff and doesn't want output.
+  //here's the logout button
   print "<form style='margin: 0px; display: inline' action='" . this_url() . 
     "' method=post>";
   print "&nbsp;&nbsp;<input type=hidden name='forget_login'>" .
-    "<input type=submit value='Logout " . escape_html($member_name) . 
-    "'>&nbsp;&nbsp;</form>";
+    "<input type=submit value='Logout ";
+  if (isset($member_name)) {
+    print escape_html($member_name);
+  }
+  if (isset($member_name) && isset($officer_name)) {
+    print "/";
+  }
+  if (isset($officer_name)) {
+    print  escape_html($officer_name);
+  }
+  print "'>&nbsp;&nbsp;</form>";
+  //does this officer belong here?  Then fine.
+  if ($officer_skip_flag) {
+    return true;
+  }
+  //if just an officer, no more checking to be done
+  if (!$member_name || isset($officer_check_flag)) {
+    require_once($php_includes . "/common/member_check.php");
+    exit;
+  }
   //was this an ordinary require_user, or was the page asking if the
   //user had a certain privilege?  Might have been passed in type or
   //require_user.  I'm going to get rid of type.
-  if (!$type && ($require_user === 'ok_nouser' || 
-                 $require_user === true ||
-                 $require_user === null)) {
+  if (!$type && ($require_user == array('ok_nouser') || 
+                 $require_user === true || $require_user === false ||
+                 is_empty($require_user))) {
     return true;
   }
   if (!$type) {
     $type = $require_user;
   }
-  //if it's just one privilege, do they have it?
   if (!is_array($type)) {
     $type = array($type);
   }
   foreach ($type as $priv) {
-    //if privilege is starred, then if no one has this privilege, then
-    //any user can enter.
-    if ($priv{0} == '*') {
-      $priv = substr($priv,1);
-      if (!count(users_with_privileges($priv))) {
-        return true;
-      }
-    }
     if (authorized_user($member_name,$priv)) {
       return true;
     }
   }
-  if (isset($body_insert)) {
-    print $body_insert;
-  }
-  exit("<p>You are not authorized to use this page.</p>");
-  return false;
+  require_once($php_includes . "/common/member_check.php");
+  exit;
 }
     
 //some things, mostly in elections, require witnesses -- authenticated
 //members of the house.  They're stored in sessions too.
 //num is how many witnesses are needed.
 function require_witnesses($num = 1) {
-  global $db, $member_name, $php_includes;
+  global $db, $member_name, $php_includes,$officer_name;
+  if (!$member_name && $officer_name) {
+    $member_name = $officer_name;
+  }
+  else {
+    $switch_name = false;
+  }
+  if (!isset($_REQUEST['session_id']) && 
+      isset($_REQUEST['officer_session_id']) &&
+      $_REQUEST['officer_session_id']) {
+    $switch_session = true;
+    $_REQUEST['session_id'] = $_REQUEST['officer_session_id'];
+  }
+  else {
+    $switch_session = false;
+  }
   //do we already have witnesses?
   $witnesses = get_session_witness();
   if ($witnesses && count($witnesses) >= $num) {
@@ -1655,12 +1769,18 @@ function require_witnesses($num = 1) {
     $witnesses[] = $witness_name;
   }
   create_session_witness($witnesses);
+  if ($switch_name) {
+    $member_name = null;
+  }
+  if ($switch_session) {
+    unset($_REQUEST['session_id']);
+  }
   return $witnesses;
 }
 
 //get all the witnesses for this session.
 function get_session_witness() {
-  global $db, $member_name;
+  global $db, $member_name, $officer_name;
   $db->Execute("delete from `session_data` where `expiration` <= now()");
   if (isset($_REQUEST['session_id'])) {
     $row = $db->GetRow("select `witnesses` from `session_data` " .
@@ -1684,6 +1804,27 @@ function create_session_witness($witnesses) {
                                          $member_name));
   $db->CompleteTrans();
   $db->Execute("unlock tables");
+}
+
+function needs_officer($require_user) {
+  global $officer_flag;
+  if (isset($officer_flag) && $officer_flag) {
+    return true;
+  }
+  if (isset($_REQUEST['officer_flag']) && $_REQUEST['officer_flag']) {
+    return true;
+  }
+  if (!isset($require_user)) {
+    return false;
+  }
+  if ($require_user === false || $require_user === true) {
+    return false;
+  }
+  if (!is_array($require_user)) {
+    $require_user = array($require_user);
+  }
+  return count(array_intersect($require_user,
+                               array('house','workshift','president')));
 }
 
 //just returns necessary command to make whitespace break appropriately
