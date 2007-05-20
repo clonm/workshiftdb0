@@ -17,6 +17,34 @@ if (isset($_REQUEST['details'])) {
   }
   $row['time_entered'] = user_time($row['time_entered'],'r');
   print escape_html($row['time_entered']) . "<br/>";
+  if (!strlen($row['election_name'])) {
+    switch ($row['subj_name']) {
+    case 'restore_database':
+      //output as normal, no binary file
+      ob_end_flush();
+      $backup_names = unserialize($row['oldval']);
+      $backup_witnesses = unserialize($row['val']);
+        ?>
+<dl>
+   <dt>Person who did restore:
+  <dd><?=escape_html($row['attrib'])?>
+   <dt>Backup that was restored:
+  <dd><a
+href='<?=escape_html($baseurl)?>/admin/index.php?archive=<?=
+escape_html($archive_pre . $backup_names[0] . "_")?>'
+   ><?=escape_html($backup_names[0])?></a>
+   <dt>Name that database was backed up to:
+  <dd><a
+href='<?=escape_html($baseurl)?>/admin/index.php?archive=<?=
+escape_html($archive_pre . $backup_names[0] . "_")?>'
+   ><?=escape_html($backup_names[1])?></a>
+   <dt>Witnesses:
+  <dd><?=join("<br/>",array_map('escape_html',$backup_witnesses))?>
+</dl>
+<?php
+   break;
+    }
+  }
   switch ($row['attrib']) {
   case 'manual_entry':
     //output as normal, no binary file
@@ -584,20 +612,11 @@ while ($row = $res->FetchRow()) {
       else {
         $authority_figure = null;
       }
-      $val = unserialize($row['val']);
-      //bug from earlier elections logging in add_authorized_user
-      if (isset($oldval[0]) && !strlen($val[0])) {
-        array_shift($val);
-      }
-      if (isset($oldval[0]) && !strlen($oldval[0])) {
-        array_shift($oldval);
-      }
+      $val = $row['val'];
       $mem = escape_html($row['attrib']);
-      $new_privs = array_diff($val,$oldval);
-      $old_privs = array_diff($oldval,$val);
-      if (in_array('nonvoter',$new_privs) || in_array('nonvoter',$old_privs)) {
+      if ($val == 'nonvoter') {
         print "nonvoter_privilege'>$mem was made a ";
-        if (count($new_privs)) {
+        if (in_array($val,$oldval)) {
           print 'nonvoter';
         }
         else {
@@ -606,35 +625,43 @@ while ($row = $res->FetchRow()) {
         print "</a></td><td>";
       }
       else {
-        foreach (array('president','workshift','house')+$new_privs+$old_privs
-                 as $priv) {
-          if (in_array($priv,$new_privs) || in_array($priv,$old_privs)) {
-            switch ($priv) {
-            case 'president': case 'workshift': case 'house':
-              print $priv;
-              break;
-            default:
-              print "unknown";
-              break;
-            }
-            print "_privilege'>$mem was ";
-            if (count($new_privs)) {
-              print "given";
-            }
-            else {
-              print "stripped of";
-            }
-            print " $priv powers</a></td><td>";
-          }
+        switch ($val) {
+        case 'president': case 'workshift': case 'house':
+          print $val;
+          break;
+        default:
+          print "unknown";
+          break;
         }
+        print "_privilege'>$mem was ";
+        if (count($oldval)) {
+          print "given";
+        }
+        else {
+          print "stripped of";
+        }
+        print " " . escape_html($val) . " powers</a></td><td>";
       }
       if ($authority_figure) {
         print $authority_figure . " did it.";
       }
       break;
+    case 'restore_database':
+      $backup_names = unserialize($row['oldval']);
+      $backup_witnesses = unserialize($row['val']);
+      print "restore_database'>A backup was restored, overwriting newer " .
+        "data</a>.</td><td>" .
+        "<a href='$page_name?details=" . $row['autoid'] . "'>" .
+        escape_html($row['attrib']) . ($backup_witnesses?' (witnessed by ' . 
+                                       join(" and ",
+                                            array_map('escape_html',
+                                                      $backup_witnesses)) . 
+                                       ')':'') .
+        " restored backup " . escape_html($backup_names[0]) . "</a>";
+      break;
     default:
       print "unknown'>The action " . escape_html($row['subj_name']) . 
-        " was taken.</td><td>" .
+        " was taken</a>.</td><td>" .
         "<a href='$page_name?details=" . $row['autoid'] . "'>Details</a>";
       break;
     }
