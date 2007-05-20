@@ -1,16 +1,19 @@
 <?php
+#$db->debug = true;
+if (!array_key_exists('submitting_bool',$_REQUEST)) {
+?>
+<html><head><title>Online Signoff Setup</title>
+</head>
+<body>
+<?php
 require_once('default.inc.php');
 $online_signoff = get_static('online_signoff',null);
 $email_signoff = $online_signoff && get_static('online_signoff_email',null);
-#$db->debug = true;
-if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 ?>
-<html><head><title>Online Signoff Setup</title>
-<script type='text/javascript' src='<?=escape_html($html_includes) . '/table_edit.utils.js'?>'></script>
-</head>
-<body>
-   <?php print_help() ?>
+<script type='text/javascript'
+src='<?=escape_html($html_includes) . '/table_edit.utils.js'?>'></script>
 <form action=<?=this_url()?> method=post onsubmit='return validate_form()'>
+<input type=hidden name='submitting_bool' value='1'>
 Enable online signoffs
 <input type=checkbox name='online_signoff_bool' value=1
 <?=$online_signoff?'checked ':''?>
@@ -20,8 +23,9 @@ onchange='change_online(this.checked,"online")'
    What is the maximum number of hours after a shift ends that someone is
 allowed to sign off for it?  (If a shift has no end time entered, it is
 assumed to end at midnight of that day.)
-<input name='max_signoff_time', value='<?=get_static('max_signoff_time',48)?>' >
-
+<input class='online' name='max_signoff_time' 
+value='<?=get_static('max_signoff_time',48)?>' >
+<br/>
 Is the verifier's password required to sign off?  Highly recommended
 to prevent fraud.
 <!-- emacs ' -->
@@ -110,18 +114,29 @@ Body of email to verifier:
 </div>
 <input type=submit value='Submit!'>
 <script type='text/javascript'>
+var attr_bools = new Array();
+attr_bools['online'] = <?=$online_signoff?1:0?>;
+attr_bools['email'] = <?=$email_signoff?1:0?>;
 function change_online(flag,which_class) {
   var elt_types = new Array('input','textarea');
+  attr_bools[which_class] = !attr_bools[which_class];
   for (var tp in elt_types) {
     elts = document.getElementsByTagName(elt_types[tp]);
     for (var ii in elts) {
       if (elts[ii].className) {
         var classes = elts[ii].className.split(" ");
+        var enable_flag = true;
         for (var jj in classes) {
-          if (classes[jj] == which_class) {
-            elts[ii].disabled = (flag>0?'':'true');
-            continue;
+          if (typeof(attr_bools[classes[jj]] != 'undefined')) {
+            if (!attr_bools[classes[jj]]) {
+              elts[ii].disabled = 'true';
+              enable_flag = false;
+              break;
+            }
           }
+        }
+        if (enable_flag) {
+          elts[ii].disabled = '';
         }
       }
     }
@@ -148,7 +163,7 @@ function validate_form() {
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html><head><title>Setting Online Signoffs</title></head><body>
 <?php
-print_help();
+require_once('default.inc.php');
 foreach (array('online_signoff_bool','online_signoff_verifier_password_bool') 
          as $key) {
   $real = substr($key,0,-5);
@@ -167,6 +182,9 @@ foreach ($_REQUEST as $key => $val) {
   if ($val === '') {
     $_REQUEST[$key] = $val = null;
   }
+  if (substr($key,-10) == 'session_id') {
+    continue;
+  }
   if (substr($key,-5) == '_bool') {
     continue;
   }
@@ -176,6 +194,8 @@ foreach ($_REQUEST as $key => $val) {
   else {
     set_static($key,$val);
   }
-  print("Set " . escape_html($key) . " to <div style='white-space: pre-wrap'>" . escape_html($val,true) . "</div>\n");
+  print("Set " . escape_html($key) . 
+        " to <div style='" . white_space_css() . 
+        "'>" . escape_html($val,true) . "</div>\n");
 }
 ?>
