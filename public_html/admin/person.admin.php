@@ -6,7 +6,7 @@ if (array_key_exists('member_name_view',$_REQUEST)) {
 }
 else {
 ?>
-<form action='<?=escape_html($_SERVER['REQUEST_URI'])?>' method=POST>
+<form action='<?=this_url()?>' method=POST>
    Name: <select name='member_name_view'>
 <OPTION>
 <?php
@@ -20,5 +20,5 @@ foreach ($houselist as $name) {
 <?php
     exit ;
 }
-require_once('../person.php');
+require_once("../person.php");
 ?>
