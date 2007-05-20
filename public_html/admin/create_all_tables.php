@@ -1,9 +1,10 @@
 <?php
+$require_user = 'ok_nouser';
 require_once('default.inc.php');
 
 //this is the only table created.  All others are just waiting to be
 //created, but haven't been yet.
-create_static_text();
+create_officer_password_table();
 
 function create_master_shifts () {
   global $db;
@@ -115,6 +116,31 @@ UNIQUE KEY (`member_name`))
 CREATETABLE
 );
       set_mod_date("password_table");
+    }
+    else {
+      $done = true;
+    }
+  }
+  return $done;
+}
+
+function create_officer_password_table() {
+  global $db,$archive;
+  static $done = false;
+  if (true) {
+    if (!table_exists("{$archive}officer_password_table")) {
+      $done = $db->Execute("CREATE TABLE IF NOT EXISTS " . 
+                   bracket("{$archive}officer_password_table") .
+<<<CREATETABLE
+(
+ `autoid` int(11) NOT NULL auto_increment,
+ `officer_name` varchar(50) NOT NULL, 
+ `passwd` varchar(50) DEFAULT NULL, 
+PRIMARY KEY (`autoid`),
+UNIQUE KEY (`officer_name`))
+CREATETABLE
+);
+      set_mod_date("officer_password_table");
     }
     else {
       $done = true;
