@@ -40,7 +40,7 @@ table {
 if (!$secured) {
 ?>
 <a href='preferences.php'>View or modify your preferences</a><p>
-<a href='set_passwd.php?member_name=<?=escape_html($member_name)?>'>
+<a href='set_passwd.php'>
 Change your password</a><p>
 <a href='directory.php'>View the house directory, and modify how public your
 information is</a><p>
