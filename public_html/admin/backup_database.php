@@ -83,7 +83,8 @@ if (preg_match('/\/|\\|:|\*|\?|"|<|>|\|/',$backup_ext)) {
 janak_fatal_error_reporting(E_ALL);
 echo "backup name " . escape_html($backup_ext) . "<p>";
 //tell user what's going on, in a hidden div, so admin can see if necessary
-  echo "<div style='display: none' id=backup_messages>";
+  echo "<div style='display: none' id=" .
+  ($recover?'recover':'backup') . "_messages>";
 //to see what goes on, turn on debugging
   $old_debug = $db->debug;
   $db->debug = true;
@@ -139,7 +140,8 @@ echo "backup name " . escape_html($backup_ext) . "<p>";
     echo "<h4>" . ($recover?"Restore":"Backup") . " had problems!  Try again.</h4>";
   }
   echo "<input type=submit value='View sql commands issued, if you care' " .
-  "onclick=\"document.getElementById('backup_messages').style.display = '';\">";
+  "onclick=\"document.getElementById('" .
+  ($recover?'recover':'backup') . "_messages').style.display = '';\"><br/>";
   $db->debug = $old_debug;
   $db->SetFetchMode($oldfetch);
   //no reload privilege, at least with idologic.
