@@ -4,12 +4,23 @@
 //password if we are in administrative context, will focus on first
 //field that "should" receive input.
 require_once('default.inc.php');
-//get rid of all cookies
-foreach ($_COOKIE as $key => $val) {
-  setcookie($key,$val,time()-10800,"/");
-  setcookie($key,"",0,"/");
-  unset($_REQUEST[$key]);
+if (isset($body_insert)) {
+  print $body_insert;
+  $body_insert = null;
 }
+if (!isset($officer_flag)) {
+  $officer_flag = false;
+}
+//get rid of all cookies
+// foreach ($_COOKIE as $key => $val) {
+//   if ((!$officer_flag && $key == 'session_id') ||
+//       ($officer_flag && $key == 'officer_session_id')) {
+//     setcookie($key,$val,time()-10800,"/");
+//     setcookie($key,"",0,"/");
+//     unset($_REQUEST[$key]);
+//     break;
+//   }
+// }
 $houselist = get_houselist();
 if (array_key_exists('member_name',$_REQUEST)) {
   $member_name = $_REQUEST['member_name'];
@@ -43,7 +54,18 @@ foreach ($houselist as $name) {
   ?>
     Password: <input type=password name='passwd' id='passwd'>
                  <?php 
-                 } 
+                 if (needs_officer($require_user)) {
+?>
+<hr>
+<p>
+You are trying to enter a restricted area.  If you are already an authorized user,
+enter your member name and password above.  Otherwise, enter your managerial
+user name and password here to log in.</p>
+Officer name: <input name='officer_name'>&nbsp;&nbsp; Officer password:
+<input name='officer_passwd' type='password'><hr/>
+<?php
+     }
+    } 
     else { 
       //no passwd id here, because never want to select it
 ?>
@@ -51,10 +73,12 @@ foreach ($houselist as $name) {
 <?php
    }
 //put all remaining form variables in
-foreach ($_REQUEST as $key => $val) {
+foreach (array_diff($_REQUEST,array_merge($_GET,$_COOKIE)) as $key => $val) {
   //except for the ones displayed above
-  if ($key == 'member_name' || $key == 'passwd') {
-    continue;
+  switch ($key) {
+  case 'member_name': case 'passwd': case 'officer_name': case 'officer_passwd': 
+  case 'forget_login':
+    continue 2;
   }
   if (!is_array($val)) {
     print "<input type=hidden name='" . escape_html($key) . "' " .
