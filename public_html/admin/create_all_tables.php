@@ -198,18 +198,13 @@ CREATETABLE
 
 function create_workshift_description() {
   global $db;
-  static $done = false;
-  if (true) {
-    if (!table_exists('workshift_description')) {
-      $done = $db->Execute("create table if not exists " .
-                           "`workshift_description` (`description` longblob, `filename` varchar(100) default null)");
-      set_mod_date('workshift_description');
-    }
-    else {
-      $done = true;
-    }
+  if (!table_exists('workshift_description')) {
+    $done = $db->Execute("create table if not exists " .
+                         "`workshift_description` (`description` longblob, `filename` varchar(100) default null)");
+    set_mod_date('workshift_description');
+    return $done;
   }
-  return $done;
+  return true;
 }
 
 function create_static_data() {
