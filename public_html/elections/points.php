@@ -1,14 +1,15 @@
 <?php error_reporting(E_ALL);
-include_once('default.inc.php');
+$body_insert = '';
+require_once('default.inc.php');
 $time = microtime(1);
-$order_exp = bracket("Point Category") . ", " . bracket("Points") . " DESC, " . bracket("Application Number");
+$order_exp = bracket("category") . ", " . bracket("points") . " DESC, " . bracket("app_number");
 #$week_num = $_GET['week'];
 #if (strlen($week_num) == 1) {
 #  $week_num = "0$week_num";
 #}
 $table_name = "points";
-$col_formats = array('Rank' => 'number', 'member_name' => '', 'Point Category' => '', 'Points' => '',
-		     'Application Number' => '','Current Room' => '', 'Previous Room' => '', 'Gender' => '');
+$col_formats = array('Rank' => 'number', 'member_name' => '', 'category' => '', 'points' => '',
+		     'app_number' => '','squat_room' => '', 'Previous Room' => '', 'Gender' => '');
 $col_names = array_keys($col_formats);
 $col_sizes = array_flip($col_names);
 $jj = 0;
@@ -38,5 +39,5 @@ function number($str, $rownum, $colnum) {
 }
 #$delete_flag = false;
 #$update_db_prefix = "../workshift/admin/";
-include_once("$php_includes/table_view.php");
+require_once("$php_includes/table_view.php");
 ?>
