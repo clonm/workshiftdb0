@@ -40,6 +40,12 @@ INPUT.button {
   border: 2px outset;
 }
 
+INPUT.submit {
+  font-size: 13px;
+  background-color: lightgray;
+  border: 2px outset;
+}
+
 INPUT.pushbutton {
   background-color: lightgray;
   border: 2px outset;
