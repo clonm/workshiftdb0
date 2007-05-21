@@ -152,7 +152,7 @@ function restore_db($restore_dir,$fname) {
   $db->Execute("set table_type = 'InnoDB'");
   $_REQUEST['backup_ext'] = '';
   print("<h3>Backing up old $fname</h3>");
-  require("$php_includes/backup_database.internal.php");
+  require("../public_html/admin/backup_database.php");
   $db->debug = true;
   if ($MYSQL_VERSION >= 41000) {
     //this command will screw up the mysql connection, but it's ok because
