@@ -181,7 +181,8 @@ if (isset($_REQUEST['mem_name'])) {
                      array($_REQUEST['mem_name'],$_REQUEST['all_hours'],
                            $_REQUEST['verifier_name'],'ONLINE: (usually ' . 
                            ($row['member_name'] == $_REQUEST['mem_name']?'':
-                            $row['member_name'] . ' ') .
+                            ($row['member_name']?$row['member_name']:
+                             'not assigned') . ', ') .
                            $row['hours'] . " hrs) ",
                            user_time(null,'Y-m-d H:i:s'),$signoff_autoid));
       }
@@ -195,7 +196,9 @@ if (isset($_REQUEST['mem_name'])) {
                      array($_REQUEST['mem_name'],
                            $_REQUEST['verifier_name'],'ONLINE' .
                            ($row['member_name'] == $_REQUEST['mem_name']?'':
-                            ': (usually ' . $row['member_name'] . ')'),
+                            ': (usually ' . 
+                            ($row['member_name']?$row['member_name']:
+                             'not_assigned') . ')'),
                            user_time(null,'Y-m-d H:i:s'),$signoff_autoid));
       }
       $request_workshift = $_REQUEST['day_name'] . ": " . $_REQUEST['all_shift'];
