@@ -17,6 +17,7 @@
 
 //the Logout button usually printed here will be suppressed because
 //this is a framed document.
+$body_insert = '';
 require_once('default.inc.php');
 //I forget why this doctype is here.  Possibly just to be anal, but
 //possibly also because frames get tricky.
@@ -324,6 +325,7 @@ escape_html($archive):''?>" name='people'>
 escape_html($archive):''?>" name='master_shifts'>
 </FRAMESET>
 <NOFRAMES>
+<?=$body_insert?>
 <P>Get a browser with frames -- sorry!  Or go directly to
 <a href="master_shifts.php<?=$archive?'?archive=' . 
 escape_html($archive):''?>">master_shifts.php</a> -- you won't get the sidebar,
