@@ -1,4 +1,7 @@
 <?php 
+//include everything
+$body_insert = '';
+require_once('default.inc.php');
 //view a member's personal page, with lots of goodies used by members
 //as their primary access point, and by workshift managers to see
 //details of members easily (workshift managers access this page
@@ -9,11 +12,11 @@
 if (!isset($php_start_time)) {
   $php_start_time = array_sum(split(' ',microtime()));
 }
-//include everything
-require_once('default.inc.php');
 ?>
 <html><head><title>Information for <?=escape_html($member_name)?></title>
+</head><body>
 <?php
+print $body_insert;
 //if the workshift manager is viewing this page, we need to relativize
 //links (I'm not sure there are any, but in any case)
 if ($secured) {
@@ -32,8 +35,6 @@ table {
   empty-cells: show;
 }
 </style>
-</head><body>
-<?php print_help() ?>
 <h4><?=escape_html($member_name)?></h4>
 <?php 
 //stuff the member can do (that the workshift manager can't)
