@@ -10,6 +10,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
   //we really should have an option to recover system values from
   //previous academic or previous summer semester.
   ?>
+This can be a confusing page.  Please 
+  <a href='help.html#basic_consts' target='help'>look at the help</a>
+if you are confused, or email <?=admin_email()?>.
+Many values should not change semester to semester.
+<hr/>
 <form action='<?=this_url()?>' method='POST'>
 This page will automatically make a backup before it makes any changes.
 Give a name for this backup (leave blank to use the date).:
