@@ -7,31 +7,40 @@ $attribs = array('floor','day');
 $days = array('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday');
 //strips slashes from form input, assuming php is quoting things
 if (!function_exists('stripformslash')) {
-  if (get_magic_quotes_gpc()) {
-    if (!ini_get('magic_quotes_sybase')) {
+  if (!ini_get('magic_quotes_sybase')) {
+    if (get_magic_quotes_gpc()) {
       function stripformslash($str) {
+        global $first_strip;
+        if (!$first_strip) {
+          return $str;
+        }
         if (is_array($str)) {
-          return array_map('stripslashes',$str);
+          return array_map('stripformslash',$str);
         }
         return stripslashes($str);
       }
     }
     else {
-      //quoting for database?  Man, you're stupid -- databases quote things already
       function stripformslash($str) {
-        if (is_array($str)) {
-          return array_map('stripformslash',$str);
-        }
-        return str_replace("''","'",$str);
+        return $str;
       }
     }
   }
   else {
+    //quoting for database?  Man, you're stupid -- databases quote things already
     function stripformslash($str) {
-      return $str;
+      global $first_strip;
+      if (!$first_strip) {
+        return $str;
+      }
+      if (is_array($str)) {
+        return array_map('stripformslash',$str);
+      }
+      return str_replace("''","'",$str);
     }
-  }  
+  }
 }
+stripformslash($_REQUEST);
 ?>
 <html><head><title>Preferences Submission</title>
 <style>
@@ -58,11 +67,11 @@ Your preferences were:<p>
 
 <?php
 error_reporting(E_ALL & ~E_NOTICE);
-$member_name = stripformslash($_REQUEST['member_name']);
-$room = stripformslash($_REQUEST['room']);
-$email = stripformslash($_REQUEST['email']);
-$phone = stripformslash($_REQUEST['phone']);
-$passwd = stripformslash($_REQUEST['passwd']);
+$member_name = $_REQUEST['member_name'];
+$room = $_REQUEST['room'];
+$email = $_REQUEST['email'];
+$phone = $_REQUEST['phone'];
+$passwd = $_REQUEST['passwd'];
 
 //availability is stored in bit form -- each bit of an integer gives an hour's
 //availability, with 1 meaning busy, and there are 7 integers, one for each day
@@ -70,11 +79,11 @@ $flags = array();
 for ($ii = 0; $ii<7; $ii++) {
   $tmp = array();
   for ($jj=0; $jj<16; $jj++) {
-    $tmp[$jj] = stripformslash($_REQUEST["av_${ii}_${jj}"]);
+    $tmp[$jj] = $_REQUEST["av_${ii}_${jj}"];
   }
   $flags[$ii] = join('',$tmp);
 }
-$notes = stripformslash($_REQUEST['notes']);
+$notes = $_REQUEST['notes'];
 $wanted = array();
 $wanted_attribs = array();
 
@@ -92,7 +101,7 @@ foreach (array('wanted','unwanted') as $which) {
     if (!array_key_exists("$which{$ii_real}",$_REQUEST)) {
       break;
     }
-    $wanted[$which][$ii] = stripformslash($_REQUEST["$which${ii_real}"]);
+    $wanted[$which][$ii] = $_REQUEST["$which${ii_real}"];
     //not an actual preference? skip it
     if (!$wanted[$which][$ii]) {
       $ii--;
@@ -106,7 +115,7 @@ foreach (array('wanted','unwanted') as $which) {
         continue;
       }
       //they come in array form
-      $wanted_attribs[$which][$ii][$attrib] = stripformslash($_REQUEST["$which$ii_real$attrib"]);
+      $wanted_attribs[$which][$ii][$attrib] = $_REQUEST["$which$ii_real$attrib"];
       $num_attribs = count($wanted_attribs[$which][$ii][$attrib]);
       if ($num_attribs === 0) {
         unset($wanted_attribs[$which][$ii][$attrib]);
@@ -159,23 +168,31 @@ endforeach; //wanted/unwanted
 else {
   print "<input type=hidden name='shift_prefs_style' value=1>";
   $categories = array();
-      print "<table>";
-      foreach ($_REQUEST as $key => $val) {
-        if (!strlen($val)) {
-          continue;
-        }
-        if (substr($key,0,4) == 'cat_' || substr($key,0,4) == 'sft_') {
-          print "<tr><td>";
-          print ucfirst(esc_h(stripformslash($_REQUEST['nm_' . $key]))) . 
-            "<input type=hidden name='nm_" . esc_h($key) . "'" .
-            " value='" . esc_h(stripformslash($_REQUEST['nm_' . $key])) . 
-            "'></td><td><input name='" . esc_h($key) . "' value='" .
-            esc_h($val) . "'></tr>";
-          $categories[$key] = $val;
-        }
-      }
-      print "</table>";
+  print "<table>";
+  foreach ($_REQUEST as $key => $val) {
+    if (!strlen($val)) {
+      continue;
     }
+    if (substr($key,0,4) == 'cat_' || substr($key,0,4) == 'sft_') {
+      print "<tr><td>";
+      $shift_arr = $_REQUEST['nm_' . $key];
+      if (!is_array($shift_arr)) {
+        $shift_arr = array($shift_arr,null);
+      }
+      print ucfirst(esc_h($shift_arr[0] . 
+                          (strlen($shift_arr[1])?' (' . $shift_arr[1] . ')':''))); 
+      foreach ($shift_arr as $prop) {
+        print "<input type=hidden name='nm_" . esc_h($key) . "[]'" .
+          " value='" . esc_h($prop) . 
+          "'>";
+      }
+      print "</td><td><input name='" . esc_h($key) . "' value='" .
+        esc_h($val) . "'></tr>";
+      $categories[$key] = $val;
+    }
+  }
+  print "</table>";
+}
 ?>
 <p>
 <p>Notes:</p>
@@ -417,13 +434,17 @@ else {
   }
 }
 }
-    else {
+else {
       foreach ($categories as $cat => $rating) {
+        $shift_arr = $_REQUEST['nm_' . $cat];
+        if (!is_array($shift_arr)) {
+          $shift_arr = array($shift_array,null);
+        }
         $db->Execute("insert into `wanted_shifts` " .
-                     "(`member_name`,`shift`,`rating`,`day`) " .
-                       "values (?,?,?,?)",
-                     array($member_name,stripformslash($_REQUEST['nm_' . $cat]),
-                           $rating,$cat{0} == 'c'?'category':'shift'));
+                     "(`member_name`,`shift`,`rating`,`day`,`floor`) " .
+                       "values (?,?,?,?,?)",
+                     array($member_name,$shift_arr[0],
+                           $rating,$cat{0} == 'c'?'category':'shift',$shift_arr[1]));
       }
     }
 if ($db->CompleteTrans()) { 
