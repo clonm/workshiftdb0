@@ -145,8 +145,6 @@ while ($row = $res->FetchRow()) {
     }
   }
   else {
-    $javascript_pre .= "//";
-    $javascript_pre .= $rating . "\n";
     unset($catdata[$member_name][$row['shift']]);
     $wanted_days = split(';',$row['day']);
     foreach ($wanted_days as $day) {
