@@ -363,7 +363,7 @@ function check_passwd($member_name = null, $passwd = null) {
 //if oldpasswd matches.  Called in record_prefs.php and
 //set_passwd.php.  Hashes up password so snooping administrators can't
 //find it out.
-function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag) {
+function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag = false) {
   global $db;
   if (!$officer_flag) {
     $check_res = check_passwd($member_name,$oldpasswd);
@@ -853,14 +853,15 @@ function print_help($section=null,$span=false) {
     " class='help_link print_hide'><strong><a href='" .
     ($public_utils?'../admin/':'') . "help.html#" . 
     escape_html($section?$section:script_name())  . 
-    "' target='workshift_help'>Help</a></strong> " .
-    "<a href='" .
+    "' target='workshift_help'>Help</a></strong>&nbsp;&nbsp;" .
+    "<a href='index.php'>Home</a>&nbsp;&nbsp;" .
+    "<span style='font-size: smaller'><a href='" .
     escape_html($bug_report_url) .
     "'>Submit Bug</a>&nbsp;&nbsp;<a href='" .
     escape_html($feature_request_url) .
     "'>Submit Feature Request</a>&nbsp;&nbsp;<a href='" .
     escape_html($project_url) .
-    "'>Sourceforge Project Page</a></" .
+    "'>Sourceforge Project Page</a></span></" .
     ($span?'span':'div') . ">";
 }
 
@@ -1661,7 +1662,6 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
       else {
         //not allowed to not have a password!
         if ($pass_check == -1) {
-          print 'what?';
           //we'll offer a link to get back here later.
           $_REQUEST['previous_url'] = $_SERVER['REQUEST_URI'];
           require_once("$php_includes/common/set_passwd.php");
@@ -1697,16 +1697,16 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
     return true;
   }
   //if just an officer, no more checking to be done
-  if (!$member_name || isset($officer_check_flag)) {
+  if ((!$member_name && (!is_array($require_user) || 
+                         !in_array('ok_nouser',$require_user)) || 
+       isset($officer_check_flag))) {
     require_once($php_includes . "/common/member_check.php");
     exit;
   }
   //was this an ordinary require_user, or was the page asking if the
   //user had a certain privilege?  Might have been passed in type or
   //require_user.  I'm going to get rid of type.
-  if (!$type && ($require_user == array('ok_nouser') || 
-                 $require_user === true || $require_user === false ||
-                 is_empty($require_user))) {
+  if (!$type && !needs_officer($require_user,false)) {
     return true;
   }
   if (!$type) {
@@ -1806,10 +1806,12 @@ function create_session_witness($witnesses) {
   $db->Execute("unlock tables");
 }
 
-function needs_officer($require_user) {
-  global $officer_flag;
-  if (isset($officer_flag) && $officer_flag) {
-    return true;
+function needs_officer($require_user,$use_officer_flag = true) {
+  if ($use_officer_flag) {
+    global $officer_flag;
+    if (isset($officer_flag) && $officer_flag) {
+      return true;
+    }
   }
   if (isset($_REQUEST['officer_flag']) && $_REQUEST['officer_flag']) {
     return true;
