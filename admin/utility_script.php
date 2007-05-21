@@ -24,9 +24,8 @@ else {
 */
 $php_includes = '../php_includes/';
 require_once('../php_includes/janakdb.inc.php');
-exit;
 $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
-		'kid','kng','lot','rid','she','stb','wil','wol','co');
+		'kid','kng','lot','rid','she','stb','wil','wol','co','nsc');
 #$houses = array('rid','she','stb','wil','wol','co');
 #$houses = array('hoy');
 #janak_fatal_error_reporting(0);
@@ -39,13 +38,18 @@ $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
 #                 'elections_record','current_voting_lock','voting_record','votes','points',
 #                 'elections_attribs','elections_text','userconf_data','elections_log',
 #                 'privilege_table','session_data','special_fining','static_text');
-print "<pre>";
-$houses = array('wil');
+#print "<pre>";
+#$houses = array('wil');
+require_once('../public_html/admin/create_all_tables.php');
 foreach ($houses as $house) {
   $db->debug = true;
   $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
   print "<h1>$house</h1>";
-  $res = $db->Execute("select * from elections_attribs where attrib_name = 'race_name'");
+  foreach(array('workshift','house','president') as $priv) {
+    $db->Execute("insert ignore into `officer_password_table` values(null,?,password(?))",
+                 array($house . $priv,$house . $priv));
+  }
+  continue;
   while ($row = $res->FetchRow()) {
     foreach (array('feedback','member_add','member_comments','abstain_count') as $bool_attrib) {
       $bool_row = $db->GetRow("select count(*) as `ct` from elections_attribs where election_name = ? " .
