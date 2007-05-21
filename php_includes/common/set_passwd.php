@@ -13,7 +13,7 @@ if (isset($require_user)) {
   }
 }
 else {
-  $old_require_user = false;
+  $old_require_user = null;
 }
 $require_user = false;
 require_once("$php_includes/janakdb.inc.php");
@@ -71,7 +71,8 @@ if (!isset($_REQUEST['newpasswd'])) {
   }
   ?>
 <?=$body_insert?>
-    <form action="<?=escape_html($baseurl)?>/set_passwd.php" method=POST>
+    <form action="<?=escape_html($baseurl) . 
+($secured?'/admin':'')?>/set_passwd.php" method=POST>
      <input type=hidden name='<?=$person_var?>' value='<?=escape_html($person)?>'>
     Name: <?=escape_html($person)?>&nbsp;&nbsp;
 <?php
@@ -114,7 +115,7 @@ if (!set_passwd($GLOBALS[$person_var],
   exit("<p>Couldn't change password.</p>");
 }
 $_REQUEST[($officer_flag?'officer_':'') . 'passwd'] = $_REQUEST['newpasswd'];
-$require_user = array('ok_nouser');
+$require_user = $old_require_user;
 print $body_insert;
 require_user();
 print("Success changing password");
