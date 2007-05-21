@@ -1,10 +1,4 @@
 <?php
-$require_user = 'ok_nouser';
-require_once('default.inc.php');
-
-//this is the only table created.  All others are just waiting to be
-//created, but haven't been yet.
-create_officer_password_table();
 
 function create_master_shifts () {
   global $db;
@@ -126,11 +120,9 @@ CREATETABLE
 
 function create_officer_password_table() {
   global $db,$archive;
-  static $done = false;
-  if (true) {
-    if (!table_exists("{$archive}officer_password_table")) {
-      $done = $db->Execute("CREATE TABLE IF NOT EXISTS " . 
-                   bracket("{$archive}officer_password_table") .
+  if (!table_exists("{$archive}officer_password_table")) {
+    $done = $db->Execute("CREATE TABLE IF NOT EXISTS " . 
+                         bracket("{$archive}officer_password_table") .
 <<<CREATETABLE
 (
  `autoid` int(11) NOT NULL auto_increment,
@@ -140,13 +132,10 @@ PRIMARY KEY (`autoid`),
 UNIQUE KEY (`officer_name`))
 CREATETABLE
 );
-      set_mod_date("officer_password_table");
-    }
-    else {
-      $done = true;
-    }
+    set_mod_date("officer_password_table");
+    return $done;
   }
-  return $done;
+  return true;
 }
 
 //av_0 through 6 store availability monday through sunday, encoded
