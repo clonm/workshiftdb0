@@ -1,5 +1,6 @@
 <?php
 //just display a list of people, for assign_shifts to manipulate
+$body_insert = '';
 require_once('default.inc.php');
 #$db->debug = true;
 $houselist = get_houselist();
@@ -153,7 +154,7 @@ function util_sort(mem1,mem2) {
     if (ord == 5) {
       used_hours = true;
     }
-    retval = (mem1[ord]-mem2[ord])*(sort_reverse[temp_level] ^ (ord == 3)?-1:1);
+    retval = (houselist[mem1][ord]-houselist[mem2][ord])*(sort_reverse[temp_level] ^ (ord == 3)?-1:1);
     temp_level++;
   }
   return retval;
@@ -217,9 +218,13 @@ function sort_list(shift_change_only) {
   }
   used_prio = false;
   used_hours = false;
-  houselist.sort(util_sort);
-  for (ii = 0; ii< houselist.length; ii++) {
-    container.appendChild(parent.list[houselist[ii][4]]);
+  var houselist_ind = new Array(houselist.length);
+  for (var ii = houselist.length-1; ii>= 0; ii--) {
+    houselist_ind[ii] = ii;
+  }
+  houselist_ind.sort(util_sort);
+  for (ii = 0; ii< houselist_ind.length; ii++) {
+    container.appendChild(parent.list[houselist[houselist_ind[ii]][4]]);
     //    parent.listhouse[houselist[ii][0]] = ii;
   }
   return false;
