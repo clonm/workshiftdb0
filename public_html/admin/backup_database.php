@@ -12,6 +12,7 @@
 //when this page is included, and it's too much trouble to do the
 //cases.
 $body_insert = '';
+$require_user = array('workshift','president');
 require_once('default.inc.php');
 
 //are we prompting for a backup string?
