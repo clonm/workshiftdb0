@@ -87,7 +87,7 @@ if (!$shift_prefs_style) {
     if ($ii == 1) {
       continue;
     }
-    $res = $db->Execute("select * from `{$archive}wanted_shifts` where " .
+    $res = $db->Execute("select `shift`,`floor`,`day` from `{$archive}wanted_shifts` where " .
                         '`member_name` = ? and `rating` = ?',
                         array($person,$ii));
     switch($ii) {
@@ -101,9 +101,10 @@ if (!$shift_prefs_style) {
 else {
   print "<h4>Shift Preferences:</h4>";
   $table_name = "{$archive}wanted_shifts";
-  $col_names = array('shift','rating','type');
+  $col_names = array('shift','rating','type','floor');
+  $col_sizes = array(100,0,0,0);
   $col_sortable = array('pre_process_default','pre_process_num','pre_process_default');
-  $table_edit_query = 'select `shift`,`rating`,`day` as `type` from `wanted_shifts` where ' .
+  $table_edit_query = 'select `shift`,`rating`,`day` as `type`,`floor` from `wanted_shifts` where ' .
     '(`day` = ' . $db->qstr('category') . ' or `day` = ' .
     $db->qstr('shift') . ') and `member_name` = ' . $db->qstr($person) . ' order by `type`,`shift`';
   $body_insert = ob_get_contents();
