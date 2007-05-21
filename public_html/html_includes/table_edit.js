@@ -634,8 +634,8 @@ function default_blur_handler(elt) {
   //hack to get around Firefox 2.+ bug with onchange and programmatic changes
   if (firefox_2_hack && firefox_2_hack_value != get_value(elt)) {
     //avoid calling again by accident
-    firefox_2_hack_value = get_value(elt);
     change_handler(elt);
+    firefox_2_hack_value = get_value(elt);
     //use the bug to avoid calling change_handler twice, if this change_handler
     //really would have been fired
     set_value(elt,null);
