@@ -5,10 +5,9 @@
 //usually.  And hopefully there won't be no one in a position too
 //often.
 $body_insert = '';
-$require_user = 'ok_nouser';
+$require_user = array('ok_nouser');
 $officer_flag = true;
 require_once('default.inc.php');
-
 if (!isset($officer_name) && !isset($member_name)) {
   require_once("$php_includes/common/member_check.php");
   exit;
