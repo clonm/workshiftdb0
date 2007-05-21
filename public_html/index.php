@@ -20,10 +20,6 @@ if (get_static('online_signoff',null)) {
 <a target='workshiftdb_help' href="help.html">Help using the workshift interface</a><p>
 <hr>
 <?php
-#  if ($url_name == 'stb') {
-#    print "<h2>Remember not to vote for Nick, or the zombies will eat you!</h2>";
-#  }
-#$db->debug = true;
 $week_num = get_cur_week();
 if ($week_num < 0) {
   exit("System not yet set up</body></html>");
