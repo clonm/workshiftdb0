@@ -1,3 +1,4 @@
+<html><head><title>Directory</title></head><body>
 <?php
 require_once('default.inc.php');
 
