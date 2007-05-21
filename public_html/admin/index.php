@@ -1,9 +1,11 @@
-<html><head><title>Workshift Manager's links</title></head><body>
 <?php
 #emacs comment';
 $require_user = array('workshift','house','president');
+$body_insert = '';
 require_once('default.inc.php');
 ?>
+<html><head><title>Workshift Manager's links</title></head><body>
+<?=$body_insert?>
 <h4><a href='help.html' target='help'>Read the help</a>
 for how to get started.</h4>
 <?php
