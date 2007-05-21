@@ -24,7 +24,9 @@ onchange='change_online(this.checked,"online")'
 allowed to sign off for it?  (If a shift has no end time entered, it is
 assumed to end at midnight of that day.)
 <input class='online' name='max_signoff_time' 
-value='<?=get_static('max_signoff_time',48)?>' >
+value='<?=get_static('max_signoff_time',48)?>' ><br/>
+The server thinks it is <?=user_time()?> right now.  If this is incorrect,
+<a href='tz_set.php'>set the time zone.</a>
 <br/>
 Is the verifier's password required to sign off?  Highly recommended
 to prevent fraud.
