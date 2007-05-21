@@ -89,6 +89,12 @@ if (!$archive) {
 <a href="set_passwd.php">Change your password</a><br>
 <a href="reset_user_password.php">Reset the password of a user who has
 forgotten it</a><br>
+<a href='administer_users.php'>Add/remove workshift privilege from users</a>.
+This allows a user to administer site without logging in as 
+<?=$officer_name?$officer_name:$house_name . 'workshift'?>.  You should definitely
+do this if you have multiple workshift managers, and you may find it convenient
+even if it's just you, since you don't need to log in separately to administer the site.
+
 <hr><h4>Backup/Restore</h4>
 <a href="backup_database.php">Backup database</a><br>
 <a href="view_backup_database.php">View a backup as if it were current</a><br/>
