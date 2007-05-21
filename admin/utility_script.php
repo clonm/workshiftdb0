@@ -45,10 +45,7 @@ foreach ($houses as $house) {
   $db->debug = true;
   $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
   print "<h1>$house</h1>";
-  foreach(array('workshift','house','president') as $priv) {
-    $db->Execute("insert ignore into `officer_password_table` values(null,?,password(?))",
-                 array($house . $priv,$house . $priv));
-  }
+  create_workshift_description();
   continue;
   while ($row = $res->FetchRow()) {
     foreach (array('feedback','member_add','member_comments','abstain_count') as $bool_attrib) {
