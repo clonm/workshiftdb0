@@ -1,5 +1,7 @@
 <?php
-
+//page gets user preferences.  One of the first pages I wrote.  It's
+//been redone a number of times, but it still probably has legacy
+//issues.
 if (!isset($php_start_time)) {
   $php_start_time = array_sum(split(' ',microtime()));
 }
@@ -7,6 +9,7 @@ if (!isset($php_start_time)) {
 //the main includes file, which creates the database object and initializes it.
 //No functions to call -- it just does it.
 $require_user = 'ok_nouser';
+$body_insert = '';
 require_once('default.inc.php');
 array_pop($days);
 //uncomment to view the sql statements being sent back and forth
@@ -80,17 +83,17 @@ if ($init_flag) {
   $wanted_shifts = array();
   if (!$shift_prefs_style) {
   //add in the wanted/unwanted preferences
-  foreach ($whiches as $which) {
-    $wanted_shifts[$which] = array();
+    foreach ($whiches as $which) {
+      $wanted_shifts[$which] = array();
 #    $db->debug = true;
-    $res = $db->Execute("SELECT `shift`,`day`,`floor` FROM `wanted_shifts` " .
-                        "WHERE `member_name` = ? and `rating` = ?",
-                        array($member_name,
-                              $which == 'wanted'?2:
-                              ($which == 'unwanted'?0:$which)));
-    while ($wanted_shifts[$which][] = $res->FetchRow()) ;
-    array_pop($wanted_shifts[$which]);
-  }
+      $res = $db->Execute("SELECT `shift`,`day`,`floor` FROM `wanted_shifts` " .
+                          "WHERE `member_name` = ? and `rating` = ?",
+                          array($member_name,
+                                $which == 'wanted'?2:
+                                ($which == 'unwanted'?0:$which)));
+      while ($wanted_shifts[$which][] = $res->FetchRow()) ;
+      array_pop($wanted_shifts[$which]);
+    }
   }
   else {
     $res = $db->Execute("select * from `wanted_shifts` where `member_name` = ?",
@@ -102,7 +105,7 @@ if ($init_flag) {
       else {
         $prefix = 'cat_';
       }
-      $wanted_shifts[$prefix . $row['shift']] = $row;
+      $wanted_shifts[$prefix . $row['shift']][$row['floor']] = $row;
     }
   }
 } //init_flag
@@ -198,6 +201,8 @@ function initialize() {
     if ($modifs['category']{0} == '*') {
       continue;
     }
+    //category is not a modifier
+    unset($modifs['category']);
     //have we not figured out the possible modifiers yet?
     //actually this is here because we want to treat $result as an array 
     //of arrays as much as possible, so we have to get the first row with while()
@@ -467,14 +472,23 @@ div.hidearrow {
 <!-- initialize the document -->
 <body onLoad="initialize()">
 <?php
-if (!$no_js) { if (!$shift_prefs_style) {?>
+print $body_insert;
+if (!$no_js) { if (!$shift_prefs_style) {
 
-<h3>Warning: may not work properly on Macs.  Try using Firefox, then Safari.  
+  if (browser_detection('os') === 'mac' &&
+      browser_detection('browser') !== 'moz') {
+?>
+  <h3>Warning: may not work properly on Macs.  Try using
+<a href='http://www.mozilla.com/'>Firefox</a>, then Safari.  
 IE may crash on Macs.</h3>
 <?php
+     }
+
 }
-  print("<p><a href='" . $_SERVER['REQUEST_URI'] . "?no_js=true'>Use a version of this page " .
+ $_GET['no_js'] = true; 
+  print("<p><a href='" . this_url() . "'>Use a version of this page " .
         "that does not require javascript</a></p>");
+  unset($_GET['no_js']);
 }
 else { 
 ?>
@@ -518,16 +532,19 @@ Name:<SELECT name="member_name" id="member_name">
 <?php
 foreach ($houselist as $name) {
   if ($name === $member_name) {
-    print "<option selected>" . escape_html($name) . "\n";
+    print "<option value='" . escape_html($name) . 
+    "' selected>" . escape_html($name) . "\n";
   }
   else {
-    print "<option>" . escape_html($name) . "\n";
+    print "<option value='" . escape_html($name) . 
+    "'>" . escape_html($name) . "\n";
   }
 }
 ?>
 </SELECT>
 <table>
-<tr><td>Room #:</td><td><INPUT type="text" size="3" id="room" name="room" value='<?=escape_html($room)?>'></td><td>
+<tr><td>Room #:</td>
+<td><INPUT type="text" size="3" id="room" name="room" value='<?=escape_html($room)?>'></td><td>
 Show room in directory: <input type=checkbox name='privacy_room' 
 <?=$privacy_room?' checked':''?>></td></tr><tr>
 <td>Phone Number:</td><td><INPUT type="text" size="20" id="phone" name="phone" value='<?=escape_html($phone)?>'></td><td>Show phone in directory: <input type=checkbox name='privacy_phone' 
@@ -576,8 +593,8 @@ INSTRUCTIONS
 ?>
 <br>
 To select multiple items, or to unselect an item, use the CONTROL key
-on your keyboard, or select the blank item.  If you don't specify a
-day, it is assumed that you want (or don't want) the shift for any day
+on your keyboard, or select the blank item.  If you do not specify a
+day, it is assumed that you want (or do not want) the shift for any day
 of the week.
 </p>
 <?php
@@ -634,7 +651,8 @@ $which . $ii . $attrib)?>" name="<?=escape_html($which . $ii . $attrib)?>[]">
      //list all the options for this attribute
  foreach ($vals as $val) {
    //select the ones that the user selected last time
-   if ($row && isset($row['attrib']) && array_search($val,$row[$attrib]) !== false) {
+   if ($row && isset($row[$attrib]) && 
+       in_array($val,explode(';',$row[$attrib])) !== false) {
      print "<option selected>" . escape_html($val) . "\n";
    }
    else {
@@ -654,11 +672,12 @@ $which . $ii . $attrib)?>" name="<?=escape_html($which . $ii . $attrib)?>[]">
 <input type="button" value="add another <?=$which?> shift" 
 id="<?=$which?>_button"
 onClick="addfields(<?=array_search($which,$whiches)?>)">
-</p><?php }
+</p><?php 
+}
 ?>
 <input type=hidden name='shift_prefs_style' value=0>
 <?php
-                                  }
+}
     else {
 print "<p>";
 print_static_text('preferences_shift_rating_instructions',
@@ -690,7 +709,7 @@ while ($row = $res->FetchRow()) {
   if (!$row['category']) {
     $category = null;
     if (!isset($workshifts_done[$row['workshift']])) {
-      $no_cat_shifts[] = array($row['autoid'],$row['workshift']);
+      $no_cat_shifts[] = array($row['autoid'],$row['workshift'],$row['floor']);
       $workshifts_done[$row['workshift']] = true;
     }
     continue;
@@ -703,10 +722,10 @@ while ($row = $res->FetchRow()) {
     print "<tr><td><input type=hidden name='nm_cat_" . escape_html($row['autoid']) . 
       "' value='" . escape_html($row['category']) . "'>" . 
       "<input size=3 name='cat_" . escape_html($row['autoid']) . "' ";
-    if (isset($wanted_shifts['cat_' . $row['category']])) {
-      print " value='" . $wanted_shifts['cat_' . $row['category']]['rating'] . "'";
+    if (isset($wanted_shifts['cat_' . $row['category']][null])) {
+      print " value='" . $wanted_shifts['cat_' . $row['category']][null]['rating'] . "'";
     }
-    print ">" . ucfirst(escape_html($row['category'])) . " <input type=submit value='Expand' ";
+    print ">" . ucfirst(escape_html($row['category'])) . " <input type=button value='Expand' ";
     print <<<ONCLICK
 onclick='if (this.value == "Expand") {
 document.getElementById("div_{$row['autoid']}").style.display = "";
@@ -721,12 +740,15 @@ ONCLICK
 ;
   }
   print "<input type=hidden name='nm_sft_" . escape_html($row['autoid']) . 
-      "' value='" . escape_html($row['workshift']) . "'>" . 
+      "[]' value='" . escape_html($row['workshift']) . "'>" . 
+    "<input  type=hidden name='nm_sft_" . escape_html($row['autoid']) . 
+      "[]' value='" . escape_html($row['floor']) . "'>" . 
     "<input size=3 name='sft_{$row['autoid']}' ";
-  if (isset($wanted_shifts['sft_' . $row['workshift']])) {
-    print " value='" . $wanted_shifts['sft_' . $row['workshift']]['rating'] . "'";
+  if (isset($wanted_shifts['sft_' . $row['workshift']][$row['floor']])) {
+    print " value='" . $wanted_shifts['sft_' . $row['workshift']][$row['floor']]['rating'] . "'";
   }
-  print ">" . escape_html($row['workshift']) . "<br>";
+  print ">" . escape_html($row['workshift'] . 
+  (strlen($row['floor'])?' (' . $row['floor'] . ')':'')) . "<br/>";
 }
 if ($firstflag) {
   print "</div></td></tr>";
@@ -734,12 +756,17 @@ if ($firstflag) {
 print "</table>Uncategorized shifts:<br>";
 foreach ($no_cat_shifts as $shift_data) {
   print "<input type=hidden name='nm_sft_" . escape_html($shift_data[0]) . 
-    "' value='" . escape_html($shift_data[1]) . "'>" . 
-    "<input size=3 name='sft_{$shift_data[0]}' ";
-  if (isset($wanted_shifts['sft_' . $shift_data[1]])) {
-    print " value='" . $wanted_shifts['sft_' . $shift_data[1]]['rating'] . "'";
+    "[]' value='" . escape_html($shift_data[1]) . "'>" . 
+    "<input type=hidden name='nm_sft_" . escape_html($shift_data[0]) .
+  "[]' value='" . escape_html($shift_data[2]) . "'>" .
+    "<input size=3 name='sft_" . escape_html($shift_data[0]) . "' ";
+  if (isset($wanted_shifts['sft_' . $shift_data[1]][$shift_data[2]])) {
+    print " value='" . 
+    escape_html($wanted_shifts['sft_' . $shift_data[1]][$shift_data[2]]['rating']) . "'";
   }
-  print ">" . escape_html($shift_data[1]) . "<br>";
+  print ">" . escape_html($shift_data[1] . 
+        (strlen($shift_data[2])?' (' . $shift_data[2] . ')':'')) . 
+  "<br/>";
 }
     }
 ?>
