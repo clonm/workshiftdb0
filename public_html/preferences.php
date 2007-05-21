@@ -1,4 +1,5 @@
 <?php
+
 if (!isset($php_start_time)) {
   $php_start_time = array_sum(split(' ',microtime()));
 }
