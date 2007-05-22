@@ -144,9 +144,13 @@ function make_quoting_mysqlt($irrelevant) {
   return $obj;
 }
 
+//no accidental output from janakdb.inc.php
+if (!isset($body_insert)) {
+  $body_insert = '';
+}
 //this include comes here, after we've defined the above function, so that our
 //extended class will be used instead of the default
-include_once('janakdb.inc.php');
+require_once('janakdb.inc.php');
 #$db->debug = true;
 
 $num_cols = stripformslash($_REQUEST['num_cols']);
