@@ -236,12 +236,12 @@ if ($house_name !== 'admin') {
   //So we don't get to print our nice <hr/>.  We'll live.  The output
   //buffering might also not end until the script ends.
   require_user();
+  print "<hr/>";
   if (isset($body_insert)) {
     $body_insert .= ob_get_clean();
   }
   else {
     ob_end_flush();
   }
-  print "<hr/>";
 }
 ?>
