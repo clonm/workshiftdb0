@@ -233,9 +233,9 @@ $javascript_pre .= "var weekly_hours_quota = " . get_static('owed_default',5) .
 HEREDOC;
 
 $body_insert .= <<<HOURSCOUNT
-<span id='assigned_hours'>0</span> hours have been assigned so far:<br>
-<span id='unassigned_hours'>0</span> hours are still unassigned<br>
-<span id='total_hours'>0</span> is the total number of hours of shifts<br>
+<span id='assigned_hours'>0</span> hours have been assigned so far.<br/>
+<span id='unassigned_hours'>0</span> hours are still unassigned.<br/>
+<span id='total_hours'>0</span> is the total number of hours of shifts.<br/>
 HOURSCOUNT
 ;
 #$body_insert = "<input type=submit value='Assign Shifts Automatically' onclick='autoassign()'><br>";
