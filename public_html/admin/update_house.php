@@ -8,7 +8,7 @@ require_once('default.inc.php');
 
 create_and_update_weekly_totals_data();
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if (!isset($_REQUEST['house_submitting_bool'])) {
 $name_array = get_houselist();
 ?>
 If you are re-visiting this page, you may have to reload if you have
@@ -19,6 +19,7 @@ or delete one or more members.<p>
 <h4>Upload houselist(s) from CO</h4>
 <form action='<?=escape_html($_SERVER['REQUEST_URI'])?>' method='POST'
    enctype="multipart/form-data">
+<input type=hidden name='house_submitting_bool' value=1>
 Upload the files that CO forwarded you -- male and female if you have them,
 or just one if that's what you've got.  You can email 
 <a href='mailto:housing@usca.org'>housing@usca.org</a> to get these lists.
@@ -39,6 +40,7 @@ If you're uploading just one file, do you really mean to?
 <hr>
 <h4>Rename member</h4>
 <form action='<?=$_SERVER['REQUEST_URI']?>' method='POST'>
+<input type=hidden name='house_submitting_bool' value=1>
 Change name:
 <select name="name_orig">
 <?php foreach ($name_array as $name) {
@@ -55,12 +57,14 @@ database backed up just because you're renaming this one member.</label><br/>
 <hr>
 <h4>Add members</h4>
 <form action='<?=$_SERVER['REQUEST_URI']?>' method='POST'>
+<input type=hidden name='house_submitting_bool' value=1>
 Add members ("Lastname, Firstname" [without quotes], or however you do it, one per line): <br>
 <textarea name='new_members' rows=10></textarea><br>
 <input type=submit value='Add members'></form>
 <hr>
 <h4>Delete members</h4>
 <form action='<?=$_SERVER['REQUEST_URI']?>' method='POST'>
+<input type=hidden name='house_submitting_bool' value=1>
 Delete members: <select multiple size=5 name="delete_members[]">
 <option>
 <?=implode("\n<option>",$name_array)?>
@@ -69,6 +73,7 @@ Delete members: <select multiple size=5 name="delete_members[]">
  <hr>
 <h4>Enter houselist manually</h4>
 <form action='<?=$_SERVER['REQUEST_URI']?>' method='POST'>
+<input type=hidden name='house_submitting_bool' value=1>
 Enter a complete houselist here ("Lastname, Firstname" [without quotes], 
 or however you do it, one per line).  Members who are <b>not</b> in this list
 will be deleted and any members who are on this list but already in the system
@@ -81,6 +86,7 @@ want to add a few people while keeping your current house members, see below.<br
 
 <hr>
 <form action='<?=$_SERVER['REQUEST_URI']?>' method='POST'>
+<input type=hidden name='house_submitting_bool' value=1>
 Synchronize tables.<br>  If there are users missing in some
    table which should have one row per user, like the
    weekly_totals, or house_info, click here to put them in.
@@ -223,6 +229,7 @@ if (array_key_exists('redo_house',$_REQUEST)) {
 <h3>The following members will be deleted (press &lt;ctrl&gt; and click on
 a name to prevent deletion of that name):</h3>
 <form action='<?=escape_html($_SERVER['REQUEST_URI'])?>' method='POST'>
+<input type=hidden name='house_submitting_bool' value=1>
    <select multiple size=<?=count($delete_members)?> name='delete_members[]'>
 <?php
    foreach ($delete_members as $mem) {
@@ -285,6 +292,7 @@ being added by removing their names here, or add more members by inserting them)
 <?php 
     }
 ?>
+<input type=hidden name='house_submitting_bool' value=1>
 <input type=submit value='I have reviewed/edited the changes and am ready!'>
 </form>
 </body>
@@ -416,6 +424,7 @@ You cannot rename <?=$eorg?> to
 an old member whose information still exists in the database.  You have two
 options:
 <form action=<?=this_url()?> method=post>
+<input type=hidden name='house_submitting_bool' value=1>
 <input type=hidden name='delete_members[]' value='<?=$eorg?>'>
 <input type=hidden name='new_members' value='<?=$eren?>' />
 <input type=submit
@@ -426,6 +435,7 @@ the new member will be deleted!!</strong>)
 </form>
 or
 <form action=<?=this_url()?> method=post>
+<input type=hidden name='house_submitting_bool' value=1>
 <input type=hidden name='delete_members[]' value='<?=$eren?>'>
 <input type=hidden name='delete_all_tables' value=1>
 <input type=hidden name='name_orig' value='<?=$eorg?>'>
