@@ -438,7 +438,7 @@ else {
       foreach ($categories as $cat => $rating) {
         $shift_arr = $_REQUEST['nm_' . $cat];
         if (!is_array($shift_arr)) {
-          $shift_arr = array($shift_array,null);
+          $shift_arr = array($shift_arr,null);
         }
         $db->Execute("insert into `wanted_shifts` " .
                      "(`member_name`,`shift`,`rating`,`day`,`floor`) " .
