@@ -108,7 +108,7 @@ if (count($_FILES)) {
     $field_inds = array();
     $started = false;
     while ($line = fgets($handle)) {
-      if (!$started && !preg_match('/^.* *(-+) +(-+) +(-+) +(-+) +(-+) +(-+) +(-+) *$/',
+      if (!$started && !preg_match('/^.* *(-+) +(-+) +(-+) +(-+) +(-+) +(-+) +(-+) *.*$/',
                                     $line, $field_inds,
                                     PREG_OFFSET_CAPTURE)) {
          continue;
@@ -121,11 +121,11 @@ if (count($_FILES)) {
          $started = true;
          continue;
        }
-       if ($line === "\x0c\x0a") {
+       if ($line === "\x0c\x0a" || $line === "\x0c\x0d\x0a") {
          $started = false;
          continue;
        }
-       if (preg_match('/^ *-+ *-+ *$/',$line)) {
+       if (preg_match('/^ *-+ *-+ *.?$/',$line)) {
          break;
        }
        if (strlen($line) > 1) {
