@@ -340,21 +340,21 @@ function mung_whole_row(&$row) {
         }
       }
     }
-    if ($cash_hours_auto) {
-      $cash_max = $cash_maxes[$row['member_name']];
-      $row['Total after Cash-in'] = $row['Total'];
-      if ($max_up_hours && $cash_hours > 0) {
-        $row['Fine Rebate'] = $fining_rate*min($cash_hours,$cash_max);
-        $cash_max-=$cash_hours;
-      }
-      else {
-        $row['Fine Rebate'] = 0;
-      }
-      if ($row['Total after Cash-in'] > 0 && $cash_max > 0) {
-        $rebate_hours = min(max($row['Total after Cash-in'],0),$cash_max);
-        $row['Fine Rebate'] += $fining_rate*$rebate_hours;
-        $row['Total after Cash-in'] -= $rebate_hours;
-      }
+  }
+  if ($cash_hours_auto) {
+    $cash_max = $cash_maxes[$row['member_name']];
+    $row['Total after Cash-in'] = $row['Total'];
+    if (isset($cash_hours) && $cash_hours > 0) {
+      $row['Fine Rebate'] = $fining_rate*min($cash_hours,$cash_max);
+      $cash_max-=$cash_hours;
+    }
+    else {
+      $row['Fine Rebate'] = 0;
+    }
+    if ($row['Total after Cash-in'] > 0 && $cash_max > 0) {
+      $rebate_hours = min(max($row['Total after Cash-in'],0),$cash_max);
+      $row['Fine Rebate'] += $fining_rate*$rebate_hours;
+      $row['Total after Cash-in'] -= $rebate_hours;
     }
   }
   if ($flag_notes) {
