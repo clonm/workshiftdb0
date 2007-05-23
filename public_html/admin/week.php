@@ -115,6 +115,7 @@ if (get_static('online_signoff',null)) {
 $col_sizes = array_fill(0,count($col_formats),2);
 //rows can be added/deleted
 $delete_flag = true;
+$body_insert = '';
 if (!$archive) {
   $create_date = get_mod_date($table_name . '_zz_create',true);
   $mod_date = get_mod_date($table_name,true);
@@ -164,6 +165,20 @@ BLANK_OUT_NAMES
     ;
 }
 }
+$tot_hours = $db->GetRow("select ifnull(sum(`hours`),0) as `sum` from " . 
+                         bracket($table_name));
+$ass_hours = $db->GetRow("select ifnull(sum(`hours`),0) as `sum` from " .
+                         bracket($table_name) . " where `member_name`");
+$un_hours = $db->GetRow("select ifnull(sum(`hours`),0) as `sum` from " .
+                        bracket($table_name) . " where (not `member_name` or " .
+                        "`member_name` is null)");
+$body_insert .= "<span id='week_assigned_hours'>" . 
+escape_html($ass_hours['sum']) . "</span> hours are assigned this week, " .
+"<span id='week_unassigned_hours'>" . 
+escape_html($un_hours['sum']) . "</span> hours are unassigned, and there are " .
+"<span id='week_total_hours'>" .
+escape_html($tot_hours['sum']) . "</span> total hours.<br/>";
+
 $start_date = get_static('semester_start');
 if (!strlen($start_date) == 0) {
   $start_date = explode('-',$start_date);
@@ -184,6 +199,12 @@ if (!strlen($start_date) == 0) {
       }
     }
   
+  //for running hours assigned/unassigned/totals totals
+  var prev_val;
+  var total_hours = get_elt_by_id('week_total_hours');
+  var assigned_hours = get_elt_by_id('week_assigned_hours');
+  var unassigned_hours = get_elt_by_id('week_unassigned_hours');
+
   var mydate = new Date();
   mydate.setFullYear({$start_date[0]},{$start_date[1]},{$start_date[2]});
   mydate.setDate(Number(mydate.getDate())+7*$week_num);
@@ -194,6 +215,33 @@ if (!strlen($start_date) == 0) {
       else if (elt.srcElement) elt = elt.srcElement;
     }
     var coords = get_cell(elt);
+    if (!coords) {
+      return;
+    }
+    //change something that affected hours?
+    if (coords[1] == 3 || coords[1] == 4) {
+      if (coords[1] == 3) {
+        var hrs = get_value_by_id('cell-' + coords[0] + '-4');
+        if (!prev_val.length) {
+          set_value(assigned_hours,Number(get_value(assigned_hours))+Number(hrs));
+          set_value(unassigned_hours,Number(get_value(unassigned_hours))-Number(hrs));
+        }
+        else if (!get_value(elt)) {
+          set_value(unassigned_hours,Number(get_value(assigned_hours))+Number(hrs));
+          set_value(assigned_hours,Number(get_value(unassigned_hours))+Number(hrs));
+        }
+      }
+      else {
+        var is_mem = get_value_by_id('cell-' + coords[0] + '-3');
+        var elt_to_change = unassigned_hours;
+        if (is_mem && is_mem.length) {
+          elt_to_change = assigned_hours;
+        }
+        var hrs = get_value(elt);
+        set_value(total_hours,Number(get_value(total_hours))-Number(prev_val)+Number(hrs));
+        set_value(elt_to_change,Number(get_value(elt_to_change))-Number(prev_val)+Number(hrs));
+      }
+    }     
     if (coords && coords[1] == 1 && 
         !get_value(elt.parentNode.parentNode.cells[0].firstChild)) {
       var add_val = 6;
@@ -204,6 +252,21 @@ if (!strlen($start_date) == 0) {
       temp_date.setDate(mydate.getDate()+add_val);
       change_cell(elt.parentNode.parentNode.cells[0].firstChild,(Number(1)+Number(temp_date.getMonth())) + '/' + temp_date.getDate());
     }
+  }
+  //for keeping track of hours assigned this week
+  function focus_handler(elt) {
+    if (!elt.style && elt.target) {
+      elt = elt.target;
+    }
+    else if (!elt.style && elt.srcElement) {
+      elt = elt.srcElement;
+    }
+    else if (!elt.style && !this.screen) {
+      elt = this;
+    }
+    default_focus_handler(elt);
+    //for the change handler
+    prev_val = get_value(elt);
   }
 </script>
 JAVASCRIPT_PRE
