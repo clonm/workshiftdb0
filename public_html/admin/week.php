@@ -268,6 +268,23 @@ if (!strlen($start_date) == 0) {
     //for the change handler
     prev_val = get_value(elt);
   }
+
+  function delete_row_handler(elt) {
+    var rowelt = elt.parentNode.parentNode;
+    var rownum = rowelt.rowIndex-1;
+    var is_mem = get_value_by_id('cell-' + rownum + '-3');
+    var elt_to_change = unassigned_hours;
+    if (is_mem && is_mem.length) {
+      elt_to_change = assigned_hours;
+    }
+    var hrs_val = get_value_by_id('cell-' + rownum + '-4');
+    if (elt.checked) {
+      hrs_val *= -1;
+    }
+    set_value(total_hours,Number(get_value(total_hours))+Number(hrs_val));
+    set_value(elt_to_change,Number(get_value(elt_to_change))+Number(hrs_val));
+    default_delete_row_handler(elt);
+  }
 </script>
 JAVASCRIPT_PRE
   ;
