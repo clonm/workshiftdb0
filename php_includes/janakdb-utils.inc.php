@@ -6,6 +6,7 @@ $days = array('Monday','Tuesday','Wednesday',
 $dummy_string = 'XXXXX';
 //all backups are prefixed with this string
 $archive_pre = 'zz_archive_';
+$priv_types = array('workshift','house','president');
 
 //used to safely quote strings for javascript statements like
 // var aa = <?=dbl_quote("nasty\nstring with </script> in it") ? >;
@@ -274,41 +275,10 @@ function table_exists($tbl) {
 }
 
 //Checking for global users (sysadmin, etc.)
-function check_admin_priv($member_name, $passwd, $priv=-1) {
-  //file is in the php_includes path
-  global $php_includes;
-  //if we've already checked this person, return it
-  static $rets = array();
-  if (isset($rets[$member_name])) {
-    return ($priv == -1 || $rets[$member_name] == $priv);
-  }
-  static $user_privs = null;
-  if (!isset($user_privs)) {
-    $user_privs = array();
-    //get the file in lines
-    if (file_exists("$php_includes/user_privs")) {
-      $temp_privs = explode("\n",file_get_contents("$php_includes/user_privs"));
-      //for each line, store it away
-      for ($ii = 0; $ii < count($temp_privs); $ii++) {
-        $privline = explode("c\r\t\rd",$temp_privs[$ii]);
-        $user_privs[] = $privline;
-      }
-    }
-    else {
-      $user_privs = array();
-    }
-  }
-  foreach ($user_privs as $privline) {
-    if (count($privline) < 3) {
-      break;
-    }
-    if (crypt($member_name,$privline[0]) == $privline[0] &&
-        ($passwd == false || 
-         crypt($passwd,$privline[1]) == $privline[1]) &&
-        ($priv == -1 || crypt($priv,$privline[2]) == $privline[2])) {
-      $rets[$member_name] = $priv;
-      return true;
-    }
+function check_admin_priv($priv=-1) {
+  global $officer_name;
+  if ($officer_name == 'workshiftadmin') {
+    return true;
   }
   return false;
 }
@@ -319,7 +289,7 @@ function check_admin_priv($member_name, $passwd, $priv=-1) {
 //is no set password, -4 if there is no set password but the user entered one.
 //  null is returned if the sql query has an error
 function check_passwd($member_name = null, $passwd = null) {
-  global $db, $main_db, $url_name;
+  global $db, $main_db, $url_name, $officer_name;
   if (!$member_name) {
       if (!array_key_exists('member_name',$_REQUEST)) {
         return -3;
@@ -330,7 +300,7 @@ function check_passwd($member_name = null, $passwd = null) {
       $passwd = $_REQUEST['passwd'];
     }
     //hack to let the administrator view any user page, for debugging.
-    if (check_admin_priv($member_name,$passwd)) {
+    if (check_admin_priv()) {
       return 1;
     }
     //does this member exist?
@@ -1405,14 +1375,14 @@ function authorized_user($member_name,$type) {
 
 //what are all the privileges this user has?
 function user_privileges($member_name) {
-  global $db;
+  global $db,$priv_types;
   $attribs = $db->GetRow("select `privileges` " .
                          "from `privilege_table` where " .
                          "`member_name` = ?",
                          array($member_name));
   //let the administrator into everything.
-  if (check_admin_priv($member_name,null,0)) {
-    return array('president','workshift','house');
+  if (check_admin_priv(0)) {
+    return $priv_types;
   }
   if (is_empty($attribs)) {
     return array();
@@ -1807,6 +1777,7 @@ function create_session_witness($witnesses) {
 }
 
 function needs_officer($require_user,$use_officer_flag = true) {
+  global $priv_types;
   if ($use_officer_flag) {
     global $officer_flag;
     if (isset($officer_flag) && $officer_flag) {
@@ -1826,7 +1797,7 @@ function needs_officer($require_user,$use_officer_flag = true) {
     $require_user = array($require_user);
   }
   return count(array_intersect($require_user,
-                               array('house','workshift','president')));
+                               $priv_types));
 }
 
 //just returns necessary command to make whitespace break appropriately

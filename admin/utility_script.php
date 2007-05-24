@@ -42,25 +42,24 @@ $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
 #                 'privilege_table','session_data','special_fining','static_text');
 #print "<pre>";
 #$houses = array('wil');
-require_once('../public_html/admin/create_all_tables.php');
+#require_once('../public_html/admin/create_all_tables.php');
 foreach ($houses as $house) {
   $db->debug = true;
   $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
   print "<h1>$house</h1>";
-  create_workshift_description();
   continue;
-  while ($row = $res->FetchRow()) {
-    foreach (array('feedback','member_add','member_comments','abstain_count') as $bool_attrib) {
-      $bool_row = $db->GetRow("select count(*) as `ct` from elections_attribs where election_name = ? " .
-                              "and race_name = ? and attrib_name = ?",
-                              array($row['election_name'],$row['race_name'],$bool_attrib));
-      if (!$bool_row['ct']) {
-        $db->Execute("insert into `elections_attribs` (`election_name`,`race_name`,`attrib_name`,`attrib_value`)" .
-                     " values (?,?,?,?)",
-                     array($row['election_name'],$row['race_name'],$bool_attrib,null));
-      }
-    }
-  }
+//   while ($row = $res->FetchRow()) {
+//     foreach (array('feedback','member_add','member_comments','abstain_count') as $bool_attrib) {
+//       $bool_row = $db->GetRow("select count(*) as `ct` from elections_attribs where election_name = ? " .
+//                               "and race_name = ? and attrib_name = ?",
+//                               array($row['election_name'],$row['race_name'],$bool_attrib));
+//       if (!$bool_row['ct']) {
+//         $db->Execute("insert into `elections_attribs` (`election_name`,`race_name`,`attrib_name`,`attrib_value`)" .
+//                      " values (?,?,?,?)",
+//                      array($row['election_name'],$row['race_name'],$bool_attrib,null));
+//       }
+//     }
+//   }
 #  $db->Execute("alter table `votes` modify `option_choice` longtext default null");
 #  $res = $db->Execute("select `member_name`,`race_name`,`option_choice` from `elections_attribs`, `votes` where length(`option_choice`) > 98 and `elections_attribs`.`autoid`
 #= `votes`.`option_name`");
