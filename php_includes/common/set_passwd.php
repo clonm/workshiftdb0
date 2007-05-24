@@ -116,8 +116,10 @@ if (!set_passwd($GLOBALS[$person_var],
 }
 $_REQUEST[($officer_flag?'officer_':'') . 'passwd'] = $_REQUEST['newpasswd'];
 $require_user = $old_require_user;
+ob_start();
 print $body_insert;
 require_user();
+ob_end_flush();
 print("Success changing password");
 elections_log(null,'member change','password change',null,
               $GLOBALS[$person_var]);

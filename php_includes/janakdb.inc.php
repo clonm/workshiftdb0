@@ -179,7 +179,9 @@ else {
                                                               'votes',
                                                               'voting_record',
                                                               'house_info',
-                                                              'static_data')));
+                                                              'static_data',
+                                                              'officer_password_table',
+                                                              'session_data')));
 }
 
 //many scripts can be invoked with an archive argument, which will make them
