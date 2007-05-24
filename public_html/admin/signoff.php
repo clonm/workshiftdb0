@@ -10,24 +10,25 @@ if (array_key_exists('signoff_message',$_REQUEST)) {
 $signoff_message = get_static('signoff_message');
 if (array_key_exists('cols',$_REQUEST)) {
   $cols = $_REQUEST['cols'];
-  while (!strlen(end($cols))) {
+  while (count($cols) && !strlen(end($cols))) {
     array_pop($cols);
   }  
   set_static('signoff_cols',join("\n",$cols));
 }
 if (array_key_exists('col_wids',$_REQUEST)) {
   $col_wids = $_REQUEST['col_wids'];
-  while (!strlen(end($col_wids))) {
+  while (count($col_wids) && !strlen(end($col_wids))) {
     array_pop($col_wids);
   }  
   set_static('signoff_col_wids',join("\n",$col_wids));
 }
 $cols = split("\n",get_static('signoff_cols',''));
 $col_wids = split("\n",get_static('signoff_col_wids',''));
-while (!strlen(end($cols))) {
+while (count($cols) && !strlen(end($cols))) {
   array_pop($cols);
   array_pop($col_wids);
 }
+
 //nothing entered?  Offer front page
 if (count($_GET) == 0) { ?>
 <html><head><title>Print Sign-Off Sheets</title></head><body>
