@@ -168,9 +168,9 @@ BLANK_OUT_NAMES
 $tot_hours = $db->GetRow("select ifnull(sum(`hours`),0) as `sum` from " . 
                          bracket($table_name));
 $ass_hours = $db->GetRow("select ifnull(sum(`hours`),0) as `sum` from " .
-                         bracket($table_name) . " where `member_name`");
+                         bracket($table_name) . " where length(`member_name`)");
 $un_hours = $db->GetRow("select ifnull(sum(`hours`),0) as `sum` from " .
-                        bracket($table_name) . " where (not `member_name` or " .
+                        bracket($table_name) . " where (length(`member_name`) = 0 or " .
                         "`member_name` is null)");
 $body_insert .= "<span id='week_assigned_hours'>" . 
 escape_html($ass_hours['sum']) . "</span> hours are assigned this week, " .
