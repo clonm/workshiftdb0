@@ -277,7 +277,6 @@ function table_exists($tbl) {
 //Checking for global users (sysadmin, etc.)
 function check_admin_priv($priv=-1) {
   global $officer_name;
-  return false;
   if ($officer_name == 'workshiftadmin') {
     return true;
   }
@@ -1584,7 +1583,7 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
     else {
       $officer_name = $session_officer;
     }
-    if (is_array($require_user)) {
+    if ($officer_name && is_array($require_user)) {
       if (check_admin_priv(0)) {
         $officer_skip_flag = true;
       }
