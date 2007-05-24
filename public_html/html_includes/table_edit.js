@@ -504,7 +504,7 @@ function check_changed() {
 }
 
 //mark/unmark row for deletion, called by inline handler
-function del_mark(elt) {
+function default_delete_row_handler(elt) {
   var flag = false;
   var ii;
   var rownum = elt.parentNode.parentNode.rowIndex-1;
@@ -889,6 +889,9 @@ if (!self.change_handler) {
 }
 if (!self.blur_handler) {
   self.blur_handler = default_blur_handler;
+}
+if (!self.delete_row_handler) {
+  self.delete_row_handler = default_delete_row_handler;
 }
 
 function color_rows() {

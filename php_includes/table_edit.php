@@ -509,7 +509,7 @@ while ($row =& $res->FetchRow()) {
   //tack on delete checkbox if we can delete
   if ($delete_flag) {
     echo "<td><input type=checkbox name='delete_$num_rows' " .
-    "onClick=\"del_mark(this);\" tabindex=32767></td>";
+    "onClick=\"delete_row_handler(this);\" tabindex=32767></td>";
   }
   //end of row!
   echo "</tr>\n";
