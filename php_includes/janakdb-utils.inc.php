@@ -277,6 +277,7 @@ function table_exists($tbl) {
 //Checking for global users (sysadmin, etc.)
 function check_admin_priv($priv=-1) {
   global $officer_name;
+  return false;
   if ($officer_name == 'workshiftadmin') {
     return true;
   }
@@ -1364,12 +1365,6 @@ function elections_log($election_name,$subj_name,$attrib,$oldval,$val) {
 function authorized_user($member_name,$type) {
   global $db;
   $attribs = user_privileges($member_name);
-  if ($type{0} == '*') {
-    $type = substr($type,1);
-    if (!count(users_with_privileges($type))) {
-      return true;
-    }
-  }
   return in_array($type,$attribs);
 }
 
@@ -1590,11 +1585,16 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
       $officer_name = $session_officer;
     }
     if (is_array($require_user)) {
-      //is officer authentication relevant here?
-      foreach ($require_user as $priv) {
-        if ($officer_name == $house_name . $priv) {
-          $officer_skip_flag = true;
-          break;
+      if (check_admin_priv(0)) {
+        $officer_skip_flag = true;
+      }
+      else {
+        //is officer authentication relevant here?
+        foreach ($require_user as $priv) {
+          if ($officer_name == $house_name . $priv) {
+            $officer_skip_flag = true;
+            break;
+          }
         }
       }
     }
