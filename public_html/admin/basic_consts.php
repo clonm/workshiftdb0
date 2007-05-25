@@ -1,12 +1,16 @@
+<?php
+$body_insert = '';
+require_once('default.inc.php');
+?>
 <html><head><title>Update basic numbers</title></head><body>
+<?=$body_insert?>
 <?php 
 //important page that sets lots of parameters.  Cute stuff with
 //automatic setting of parameters (and _bool flag), but otherwise not
 //a whole lot going on here in terms of programming.  There's some
 //javascript, I guess.
-require_once('default.inc.php');
-//are we posting data?  No?
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+//are we submitting this page's form?
+if (!isset($_REQUEST['basic_consts_submitting_bool'])) {
   //we really should have an option to recover system values from
   //previous academic or previous summer semester.
   ?>
@@ -16,6 +20,7 @@ if you are confused, or email <?=admin_email()?>.
 Many values should not change semester to semester.
 <hr/>
 <form action='<?=this_url()?>' method='POST'>
+<input type=hidden name='basic_consts_submitting_bool' value=1>
 This page will automatically make a backup before it makes any changes.
 Give a name for this backup (leave blank to use the date).:
 <input name='backup_ext'><br/>
