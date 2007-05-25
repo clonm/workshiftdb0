@@ -1,5 +1,3 @@
-<html><head><title>Set password</title></head>
-    <body>
 <?php 
 //change password for user -- must know old password
 $body_insert = '';
@@ -70,6 +68,8 @@ if (!isset($_REQUEST['newpasswd'])) {
     $person = $GLOBALS[$person_var];
   }
   ?>
+<html><head><title>Set password</title></head>
+    <body>
 <?=$body_insert?>
     <form action="<?=escape_html($baseurl) . 
 ($secured?'/admin':'')?>/set_passwd.php" method=POST>
@@ -117,6 +117,10 @@ if (!set_passwd($GLOBALS[$person_var],
 $_REQUEST[($officer_flag?'officer_':'') . 'passwd'] = $_REQUEST['newpasswd'];
 $require_user = $old_require_user;
 ob_start();
+?>
+<html><head><title>Set password</title></head>
+    <body>
+<?php
 print $body_insert;
 require_user();
 ob_end_flush();
