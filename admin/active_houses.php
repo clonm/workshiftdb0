@@ -4,7 +4,7 @@
 $php_includes = '../php_includes/';
 require_once('../php_includes/janakdb.inc.php');
 $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
-		'kid','kng','lot','rid','she','stb','wil','wol');
+		'kid','kng','lot','rid','she','stb','wil','wol','nsc');
 foreach ($houses as $house) {
   $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
   print "<h1>$house</h1>";

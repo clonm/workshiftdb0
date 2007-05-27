@@ -342,12 +342,14 @@ function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag = false) {
     $check_res = check_officer_passwd($member_name,$oldpasswd);
   }    
   if ($check_res == -1 || $check_res == -4 || $check_res > 0) {
-    return $db->Execute("REPLACE INTO `" . ($officer_flag?'officer_':'') . 
+    $ret = $db->Execute("REPLACE INTO `" . ($officer_flag?'officer_':'') . 
                         "password_table` " .
                         "(`" .
                         ($officer_flag?'officer':'member') .
                         "_name`,`passwd`) VALUES (?,PASSWORD(?)) ",
                         array($member_name,$newpasswd));
+    set_mod_date('password_table');
+    return $ret;
   }
   return false;
 }
@@ -624,10 +626,12 @@ function get_static($var_name, $default_value=null) {
 //set global config
 function set_static($var_name,$var_value,$dummyarchive='') {
   global $db,$archive;
-  return ($db->Execute('REPLACE INTO ' . 
-		       bracket($archive . 'static_data') . 
-		       ' (`var_name`,`var_value`) VALUES (?,?)', 
-                       array($var_name,$var_value)));
+  $ret = $db->Execute('REPLACE INTO ' . 
+                      bracket($archive . 'static_data') . 
+                      ' (`var_name`,`var_value`) VALUES (?,?)', 
+                      array($var_name,$var_value));
+  set_mod_date('static_data');
+  return $ret;
 }
 
 //return the current week, either the manually set one, or the one
@@ -1211,19 +1215,23 @@ function set_static_text($text_name,$text_value = null,
                         " where `text_name` = ?",
                         array($text_name));
     if (!is_empty($row) && strlen($row['escape_seqs'])) {
-      return $db->Execute('update ' . 
+      $ret = $db->Execute('update ' . 
                           bracket($archive . 'static_text') . 
                           ' set `text_value` = ?,`is_html` = ? where ' .
                           '`text_name` = ?',
                           array($text_value,$is_html,$text_name));
+      set_mod_date('static_text');
+      return $ret;
     }
   }
-  return $db->Execute('REPLACE INTO ' . 
+  $ret = $db->Execute('REPLACE INTO ' . 
                       bracket($archive . 'static_text') . 
                       ' (`text_name`,`text_value`,`escape_seqs`,' .
                       '`is_html`) VALUES (?,?,?,?)', 
                       array($text_name,$text_value,
                             serialize($escape_seqs),$is_html));
+  set_mod_date('static_text');
+  return $ret;
 }
 
 //utility function, since usually we'll be printing static_text out.
@@ -1323,6 +1331,7 @@ function elections_log($election_name,$subj_name,$attrib,$oldval,$val) {
     if ($last_row['election_name'] == $election_name &&
         $last_row['attrib'] == 'end_president_modif') {
       $db->Execute('delete from `elections_log` order by `autoid` desc limit 1');
+      set_mod_date('elections_log');
       return null;
     }
   }
@@ -1332,6 +1341,7 @@ function elections_log($election_name,$subj_name,$attrib,$oldval,$val) {
     if ($last_row['election_name'] == $election_name &&
         $last_row['attrib'] == 'start_president_modif') {
       $db->Execute('delete from `elections_log` order by `autoid` desc limit 1');
+      set_mod_date('elections_log');
       return null;
     }
   }
@@ -1342,12 +1352,14 @@ function elections_log($election_name,$subj_name,$attrib,$oldval,$val) {
   if (is_array($val)) {
     $val = serialize($val);
   }
-  return $db->Execute("insert into `elections_log` " .
+  $ret = $db->Execute("insert into `elections_log` " .
                       "(`time_entered`,`election_name`," .
                       "`subj_name`,`attrib`,`oldval`,`val`) " .
                       "values (now(),?,?,?,?,?)",
                       array($election_name,$subj_name,
                             $attrib,$oldval,$val));
+  set_mod_date('elections_log');
+  return $ret;
 }
 
 //////// Access and authorization functions, used mostly for elections

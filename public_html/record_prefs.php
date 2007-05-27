@@ -298,15 +298,19 @@ function update_member_info($main_arr, $workshift_arr, $member_name,$passwd) {
   $db->Execute("update `personal_info` set `submit_date` = now() " .
                "where `member_name` = ?",
                array($member_name));
-  return $db->Replace(bracket('personal_info'),$shift_arr,'member_name',true);
+  $ret = $db->Replace(bracket('personal_info'),$shift_arr,'member_name',true);
+  set_mod_date('personal_info');
+  return $ret;
 }
 
 function delete_old_prefs($member_name, $passwd) {
   global $db;
   //still pretty simple
-  return $db->Execute("DELETE FROM " . bracket('wanted_shifts') . 
+  $ret = $db->Execute("DELETE FROM " . bracket('wanted_shifts') . 
                       " WHERE " . bracket('member_name') . " = ?",
                       array($member_name));
+  set_mod_date('wanted_shifts');
+  return $ret;
 }
 
 //here's what goes to the main house info
@@ -359,36 +363,13 @@ foreach (array('room','phone','email') as $attrib) {
 }
 $db->Execute("update `house_info` set `privacy` = ? where `member_name` = ?",
              array($val,$member_name));
+set_mod_date('house_info');
 
 if (!delete_old_prefs($member_name,$passwd)) {
   fail('delete old preferences');
 }
 
 if (!isset($_REQUEST['shift_prefs_style']) || $_REQUEST['shift_prefs_style'] == 0) {
-
-//inserting is too annoying to put in a function
-if ($USE_MYSQL_FEATURES) {
-  if (!$ins_wanted = $db->Prepare('CALL ' . bracket('insert_new_prefs') . 
-				  ' (?,?,?,?,?,?)')) {
-    fail('prepare insert query for wanted_shifts');
-  }
-  foreach (array('wanted','unwanted') as $which) {
-    for ($ii = 0; $ii < count($wanted[$which]); $ii++) {
-      //insert_new_prefs procedure takes 'wanted' or 'unwanted' argument to
-      //decide which table to go into
-      if (!$db->Execute($ins_wanted,
-			array($member_name,$passwd,$which,
-			      $wanted[$which][$ii],
-			      mk_array($wanted_attribs[$which],$ii,'day'),
-			      mk_array($wanted_attribs[$which],$ii,'floor')))) {
-	fail("insert $which shift $ii, $wanted[$which][$ii]");
-      }
-    }
-  }
-}
-//no mysql features -- different requests for wanted and unwanted, but otherwise
-//pretty much the same
-else {
   foreach (array('wanted','unwanted') as $which) {
     if (!$ins_wanted = $db->Prepare("INSERT INTO " . bracket("wanted_shifts") . 
 				    " VALUES (NULL,?,?,?,?," .
@@ -431,8 +412,10 @@ else {
 	fail("insert $which shift $ii, $wanted[$which][$ii]");
       }
     }
+    if (count($wanted[$which])) {
+      set_mod_date('wanted_shifts');
+    }
   }
-}
 }
 else {
       foreach ($categories as $cat => $rating) {
@@ -445,6 +428,9 @@ else {
                        "values (?,?,?,?,?)",
                      array($member_name,$shift_arr[0],
                            $rating,$cat{0} == 'c'?'category':'shift',$shift_arr[1]));
+      }
+      if (count($categories)) {
+        set_mod_date('wanted_shifts');
       }
     }
 if ($db->CompleteTrans()) { 
