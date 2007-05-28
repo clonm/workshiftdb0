@@ -12,6 +12,10 @@ foreach ($houses as $house) {
 #  $db->debug = true;
   if (table_exists('modified_dates')) {
     $row = $db->GetRow("select * from `modified_dates` order by mod_date desc limit 1");
+    if (is_empty($row) {
+      print "No data!";
+      continue;
+    }
     if ($row['mod_date'] == 'Mon 21, May 2007, 03:58:25') {
       print "Not active";
     }
