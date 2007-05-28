@@ -2,7 +2,7 @@
 $body_insert = '';
 require_once('default.inc.php');
 ?>
-<html><head><title>Update basic numbers</title></head><body>
+<html><head><title>Update basics</title></head><body>
 <?=$body_insert?>
 <?php 
 //important page that sets lots of parameters.  Cute stuff with
@@ -237,8 +237,9 @@ name='allow_single_houselist_upload_bool'
               } 
 
 ?>
+<html><head><title>Setting basics</title></head><body>
+<?=$body_insert?>
 <?php
-
 //backup the database -- we gave the backup extension up above the
 //same name as the one backup_database uses, so we don't need to set any variables.
 
