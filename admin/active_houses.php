@@ -11,7 +11,14 @@ foreach ($houses as $house) {
   $db->SetFetchMode(ADODB_FETCH_NUM);
 #  $db->debug = true;
   if (table_exists('modified_dates')) {
-    rs2html($db->Execute("select * from `modified_dates` order by mod_date desc limit 1"));
+    $row = $db->GetRow("select * from `modified_dates` order by mod_date desc limit 1");
+    if ($row['mod_date'] == 'Mon 21, May 2007, 03:58:25') {
+      print "Not active";
+    }
+    else {
+      print escape_html($row['table_name']) . ": " . 
+        escape_html($row['mod_date']);
+    }
   }
 }
 exit;
