@@ -5,26 +5,39 @@ $php_includes = '../php_includes/';
 require_once('../php_includes/janakdb.inc.php');
 $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
 		'kid','kng','lot','rid','she','stb','wil','wol','nsc');
+$inactive_houses = array();
 foreach ($houses as $house) {
   $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
-  print "<h1>$house</h1>";
-  $db->SetFetchMode(ADODB_FETCH_NUM);
 #  $db->debug = true;
   if (table_exists('modified_dates')) {
-    $row = $db->GetRow("select * from `modified_dates` order by mod_date desc limit 1");
+    $row = $db->GetRow("select `table_name`," .
+                       "unix_timestamp(`mod_date`) as `mod` " .
+                       "from `modified_dates` order by mod_date desc limit 1");
     if (is_empty($row)) {
-      print "No data!";
+      $inactive_houses[] = $house;
       continue;
     }
-    if ($row['mod_date'] == 'Mon 21, May 2007, 03:58:25') {
-      print "Not active";
+    if ($row['mod'] <= 1179734306) {
+      $inactive_houses[] = $house;
+      continue;
     }
-    else {
-      print escape_html($row['table_name']) . ": " . 
-        escape_html($row['mod_date']);
+    print "<h1>$house</h1>";
+    print escape_html($row['table_name']) . ": ";
+    $diff = time()-$row['mod'];
+    foreach(array(array(60,'second'),array(60,'minute'),
+                  array(24,'hour'),array(7,'day'),
+                  array(30,'week'),array(12,'month'),
+                  array(10000,'year')) as $time_unit) {
+      if ($diff < $time_unit[0]) {
+        print "$diff " . $time_unit[1] . ($diff>1?'s':'');
+        break;
+      }
+      $diff = round($diff/$time_unit[0]);
     }
+    print " ago, " . escape_html(user_time($row['mod'],'l, F j, g:i:s a'));
   }
 }
+print "<h4>Inactive houses: " . join(", ", $inactive_houses) . "</h4>";
 exit;
 
 #}
