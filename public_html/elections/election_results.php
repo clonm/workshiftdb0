@@ -253,6 +253,9 @@ while ($namerow = $nameres->FetchRow()) {
     $row[$temprow['attrib_name']] = $temprow['attrib_value'];
   }
   //normalize data
+  if (!isset($row['threshold'])) {
+    $row['threshold'] = null;
+  }
   if (!$row['threshold']) {
     $row['abstain_count'] = null;
     if (!$row['num_voters']) {
