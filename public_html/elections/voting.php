@@ -368,11 +368,6 @@ if ($anon_voting) {
 //maybe internal is set, but we don't want it to be here
  unset($_GET['internal']);
  $page_name = this_url();
- //internal is always the last part.  Note that we are either getting
- //rid of a '&' or a '?'
- if (array_key_exists('internal',$_REQUEST)) {
-   $page_name = substr($page_name,0,-9);
- }
  //make an absolute url so that users can save locally  and come back
  $uri = escape_html("http" . (array_key_exists('HTTPS',$_SERVER) && 
                               $_SERVER['HTTPS'] == 'on'?'s':'') . "://" .
