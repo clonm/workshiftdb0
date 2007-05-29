@@ -529,7 +529,7 @@ $db->StartTrans();
 //that I don't think this would work with MyIsam tables, but that
 //should never happen -- we really need transactional tables.
 $db->Execute("lock tables `elections_record` write,`elections_attribs` write, " .
-             "`elections_log` write");
+             "`elections_log` write, `modified_dates` write");
 //do we have the election already?  elections_record keeps basic data
 //about elections a little more handy than elections_attribs.
 $row = $db->GetRow("select count(*) as `ct` from `elections_record` " .
