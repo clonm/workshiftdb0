@@ -259,6 +259,9 @@ while ($namerow = $nameres->FetchRow()) {
   if (!isset($row['num_voters'])) {
     $row['num_voters'] = null;
   }
+  if (!isset($row['num'])) {
+    $row['num'] = null;
+  }
   if (!$row['threshold']) {
     $row['abstain_count'] = null;
     if (!$row['num_voters']) {
