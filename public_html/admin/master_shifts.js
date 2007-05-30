@@ -500,6 +500,10 @@ function blur_handler(elt) {
 }
 
 function initialize_master_shifts() {
+  //if co, zero out houses too
+  if (parent != self && typeof(parent.zero_house_hours) != 'undefined') {
+    parent.zero_house_hours();
+  }
   //go through the whole document, updating all the shifts
   //var num_rows = rows_array.length;
   for (var ii = 0; ii < num_rows; ii++) {

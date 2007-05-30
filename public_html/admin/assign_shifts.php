@@ -306,9 +306,13 @@ var houses_array = [<?=js_array(explode(',',
 
 var houses_hours = new Array();
 
-for (var house_index in houses_array) {
-  houses_hours[houses_array[house_index]] = 0;
-}
+ function zero_house_hours() {
+   for (var house_index in houses_array) {
+     houses_hours[houses_array[house_index]] = 0;
+   }
+ }
+ zero_house_hours();
+
 <?php
     }
 //we need to pass the archive below -- it's pretty rare that we ever
