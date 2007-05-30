@@ -60,6 +60,7 @@ var week_num = $week_num;
 var tot_weeks = $tot_weeks; 
 var zero_partial = $zero_partial;
 var fining_percent_fine = $fining_percent_fine;
+var fining_rate = $fining_rate;
 HEREDOC
 ;
 
@@ -365,12 +366,26 @@ function initialize_weekly_totals_update() {
  }
 
 function change_week_hours() {
-  var week = get_value_by_id('change_week_hours_week');
-  var week_end = get_value_by_id('change_week_hours_week_end');
+  var week = parseInt(get_value_by_id('change_week_hours_week'));
+  var week_end = parseInt(get_value_by_id('change_week_hours_week_end'));
+  if (week < 0) {
+    alert(week + " is less than 0 -- not allowed.  Starting at week 0.");
+    week = 0;
+  }
+  if (week_end < 0) {
+    alert("Ending week, " + week_end + " cannot be less than 0.");
+    return;
+  }
   if (week > tot_weeks) {
     alert("Can't alter owed for week " + week + 
           " -- the semester isn't that long");
     return;
+  }
+  if (week_end > tot_weeks) {
+    alert("Can't alter owed for week " + week_end + 
+          " -- the semester isn't that long.  Just doing " + 
+          "up to " + tot_weeks);
+    week_end = tot_weeks;
   }
   var hrs = get_value_by_id('change_week_hours_value');
   var overwrite = get_value_by_id('change_week_hours_check');
@@ -402,12 +417,26 @@ function change_person_hours() {
   var mem = get_value_by_id('change_person_hours_member');
   var hrs = get_value_by_id('change_person_hours_value');
   var overwrite = get_value_by_id('change_person_hours_check');
-  var week = Number(get_value_by_id('change_week_hours_week'));
-  var week_end = Number(get_value_by_id('change_week_hours_week_end'));
+  var week = parseInt(get_value_by_id('change_week_hours_week'));
+  var week_end = parseInt(get_value_by_id('change_week_hours_week_end'));
+  if (week < 0) {
+    alert(week + " is less than 0 -- not allowed.  Starting at week 0.");
+    week = 0;
+  }
+  if (week_end < 0) {
+    alert("Ending week, " + week_end + " cannot be less than 0.");
+    return;
+  }
   if (week > tot_weeks) {
     alert("Can't alter owed for week " + week + 
           " -- the semester isn't that long");
     return;
+  }
+  if (week_end > tot_weeks) {
+    alert("Can't alter owed for week " + week_end + 
+          " -- the semester isn't that long.  Just doing " + 
+          "up to " + tot_weeks);
+    week_end = tot_weeks;
   }
   var rowlen = rows_array.length;
   //go through rows, looking for matches
