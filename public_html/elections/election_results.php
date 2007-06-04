@@ -253,6 +253,9 @@ while ($namerow = $nameres->FetchRow()) {
     $row[$temprow['attrib_name']] = $temprow['attrib_value'];
   }
   //normalize data
+  if (!isset($global_totals[$race])) {
+    $global_totals[$race] = 0;
+  }
   if (!isset($row['threshold'])) {
     $row['threshold'] = null;
   }
@@ -677,19 +680,21 @@ while ($namerow = $nameres->FetchRow()) {
           unset($choices[$loser]);
         }
       }
-      //go through votes.  Don't normalize all the ballots yet,
-      //because maybe there's no need -- just normalize the ones
-      //that definitely have to be reassigned.  Note that this is
-      //trivial for 0-vote-losers, because they weren't anyone's
-      //first choice
-      foreach ($votes as $mem => $junk) {
-        $mem_ballot =& $votes[$mem];
+      if (count($votes)) {
+        //go through votes.  Don't normalize all the ballots yet,
+        //because maybe there's no need -- just normalize the ones
+        //that definitely have to be reassigned.  Note that this is
+        //trivial for 0-vote-losers, because they weren't anyone's
+        //first choice
+        foreach ($votes as $mem => $junk) {
+          $mem_ballot =& $votes[$mem];
         //did they chose the loser?
-        if (count($mem_ballot['ballot']) && 
-            $mem_ballot['ballot'][0] == $loser) {
-          if (normalize_ballot($mem_ballot['ballot'])) {
-            //reassign
-            $choices[$mem_ballot['ballot'][0]] += $mem_ballot['weight'];
+          if (count($mem_ballot['ballot']) && 
+              $mem_ballot['ballot'][0] == $loser) {
+            if (normalize_ballot($mem_ballot['ballot'])) {
+              //reassign
+              $choices[$mem_ballot['ballot'][0]] += $mem_ballot['weight'];
+            }
           }
         }
       }
