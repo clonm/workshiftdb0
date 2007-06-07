@@ -603,6 +603,15 @@ function name_check(elt) {
 //onchange from firing.  https://bugzilla.mozilla.org/show_bug.cgi?id=355367
 var firefox_2_hack = false;
 var firefox_2_hack_is_firefox = navigator.userAgent.indexOf('Firefox');
+//Debian Firefox is called Iceweasel
+if (firefox_2_hack_is_firefox == -1) {
+  firefox_2_hack_is_firefox = navigator.userAgent.indexOf('Iceweasel');
+  //Iceweasel is longer than firefox by 2
+  if (firefox_2_hack_is_firefox != -1) {
+    firefox_2_hack_is_firefox += 2;
+  }
+}
+
 if (firefox_2_hack_is_firefox != -1) {
   //7 is length of 'Firefox'
   var firefox_2_hack_version = 
