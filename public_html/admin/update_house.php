@@ -529,7 +529,15 @@ if (array_key_exists('new_members',$_REQUEST)) {
             $new_new_members = array_map('make_arr',array_diff($new_members,$these_members));
             if (count($new_new_members)) {
               print escape_html($tbl) . " ";
-              $db->Execute('INSERT INTO ' . bracket($tbl) . 
+	      switch ($tbl) {
+	      case 'votes': case 'voting_record': 
+	      case 'password_table': case 'house_info':
+		$ins_syntax = "insert ignore";
+		break;
+	      default:
+		$ins_syntax = "insert";
+	      }
+              $db->Execute($ins_syntax . " into " . bracket($tbl) . 
                            '(' . bracket('member_name') . ') VALUES (?)',
                            $new_new_members);
               set_mod_date($tbl);
