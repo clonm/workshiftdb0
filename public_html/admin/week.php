@@ -1,8 +1,33 @@
-<?php 
-if (!array_key_exists('week',$_REQUEST)) {
+<?php
+$body_insert = '';
+require_once('default.inc.php');
+$week_num = null;
+//There are a few conditions under which we'll redo the page
+$redo_flag = true;
+//if the week wasn't inputted, show the form
+if (array_key_exists('week',$_REQUEST)) {
+  $week_num = $_REQUEST['week'];
+  //don't redo if the week is numeric, and it's a non-negative
+  //integer, or a string of digits (i.e., a non-negative integer
+  //string)
+  if (is_numeric($week_num) &&
+      ((is_integer($week_num) && $week_num >= 0) ||
+       ctype_digit($week_num))) {
+    $week_num += 0;
+    $redo_flag = false;
+  }
+}
+if ($redo_flag) {
 ?>
   <html><head><title>Get week</title></head><body>
-<form method=get action='<?=$_SERVER['REQUEST_URI']?>'>
+<?=$body_insert?>
+<?php
+     if (isset($week_num)) {
+       print "'" . escape_html($week_num) . "' is not a valid week "
+         . "number -- it must be a whole number, like 0 or 17.<br/>\n";
+     }
+?>
+<form method=get action='<?=this_url()?>'>
      <input type=submit value='Get week: '><input name='week' size=3>
 </form></body></html> 
      <?php exit;}
@@ -11,11 +36,6 @@ require_once('default.inc.php');
 //order by date, then day, then shift, then name 
 //(although the last isn't necessary)
 $order_exp = "`date`, `day`, `workshift`,`member_name`";
-//this should be in url as week=x
-$week_num = $_REQUEST['week'];
-if (!is_numeric($week_num)) {
-  janak_error("You didn't enter a numeric week number!  All weeks are numbered.");
-}
 //this could change depending on convention for naming tables
 $table_name = "${archive}week_$week_num";
 //does this table even exist?
@@ -29,6 +49,7 @@ if (!table_exists("week_$week_num")) {
   ?>
 <html><head><title>Week <?=$week_num?> does not exist yet</title></head>
 <body>
+<?=$body_insert?>
 <?php
    if (!table_exists('house_list')) {
      exit("The house list does not exist yet! Email " . admin_email() . "<p>");
