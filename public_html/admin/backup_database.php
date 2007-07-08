@@ -28,8 +28,8 @@ the string 2005_fall or something like that so that you can more easily identify
 that this is <b>the</b> archive for that semester.  For normal backups, the 
 timestamp is probably what you want.
 <br/>
-Your backup string (leave blank to use timestamp):
-  <input name='backup_ext' value=''><br/>
+Your backup string (leave blank to use timestamp; limit of 30 characters):
+  <input name='backup_ext' size=30 maxlength=30 value=''><br/>
 <input type=submit value=Backup></form>
 <?php 
 exit; 
@@ -65,8 +65,14 @@ if (!$recover) {
 $backup_ext = $temp;
 //mysql has a table length limit of 64, so be conservative about the length
 //of table names we might have to deal with
-if (strlen($backup_ext) > 35) {
-  janak_error("Please enter a backup name of 35 characters or fewer.");
+if (strlen($backup_ext) > 30) {
+  if ($ctr == 1) {
+    janak_error("Please enter a backup name of 30 characters or fewer.");
+  }
+  else {
+    janak_error("You already had a backup with this name.  Please choose a " .
+                "new name.");
+  }
 }
 //I can't handle tables with backticks -- it's just too confusing
 if (strpos($backup_ext,'`') !== false) {
