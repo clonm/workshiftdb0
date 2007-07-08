@@ -1,7 +1,9 @@
-<html><head><title>Administer election</title></head><body>
 <?php
 require_once('default.inc.php');
-print_help();
+?>
+<html><head><title>Administer election</title></head><body>
+<?=$body_insert?>
+<?php
 if (!authorized_user($member_name,'president')) {
   exit("You are not authorized to use this page.");
 }

@@ -1,7 +1,9 @@
 <?php
+$body_insert = '';
 require_once('default.inc.php');
 ?>
 <html><head><title>Change house list</title></head><body>
+<?=$body_insert?>
 <?php
 create_and_update_weekly_totals_data();
 
