@@ -23,7 +23,7 @@ Many values should not change semester to semester.
 <input type=hidden name='basic_consts_submitting_bool' value=1>
 This page will automatically make a backup before it makes any changes.
 Give a name for this backup (leave blank to use the date).:
-<input name='backup_ext'><br/>
+<input size=30 maxlength=30 name='backup_ext'><br/>
 If you're starting a new semester and you haven't yet backed up the previous
 semester, you could enter the previous semester, like "2006 summer".<p>
 <hr>
@@ -235,11 +235,6 @@ name='allow_single_houselist_upload_bool'
 <?php
               exit;
               } 
-
-?>
-<html><head><title>Setting basics</title></head><body>
-<?=$body_insert?>
-<?php
 //backup the database -- we gave the backup extension up above the
 //same name as the one backup_database uses, so we don't need to set any variables.
 
