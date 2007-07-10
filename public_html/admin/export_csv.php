@@ -88,7 +88,7 @@ while ($tbl = $showres->FetchRow()) {
   if ((is_array($table_permissions['table_allow']) && 
        !in_array($tbl,$table_permissions['table_allow'])) ||
       (is_array($table_permissions['table_deny']) &&
-       in_array($tbl,$table_permissions['table_deny'])) {
+       in_array($tbl,$table_permissions['table_deny']))) {
     continue;
   }
   fwrite($sqlhandle,"\nDROP TABLE IF EXISTS " . bracket($tbl) . ";\n");
