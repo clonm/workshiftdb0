@@ -23,8 +23,8 @@ if (file_exists($lockfile)) {
   if (!isset($_REQUEST['delete_lock'])) {
     exit("Restore directory is locked.  Did you just reload this page " .
          "before it was finished loading?" .
-         "<form action='" . this_url() . "'><input name='delete_lock' " .
-         "value='Try Again'></form>");
+         "<form action='" . this_url() . "'><input type=submit " .
+	 "name='delete_lock' value='Try Again'></form>");
   }
   //to avoid erroring if the other script removed the file on its own,
   //&& the unlink with another test for existence.  (Actually, if the
