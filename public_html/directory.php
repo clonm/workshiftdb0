@@ -1,7 +1,10 @@
-<html><head><title>Directory</title></head><body>
 <?php
+$body_insert = '';
 require_once('default.inc.php');
-
+?>
+<html><head><title>Directory</title></head><body>
+<?=$body_insert?>
+<?
 if (array_key_exists('modify_privacy',$_REQUEST)) {
   $ii = 1;
   $val = 0;
