@@ -159,13 +159,12 @@ function mung_whole_row(&$row) {
     for ($kk = 1; $kk <= 5; $kk++) {
       //when is this fining period
       $new_week = $special_fining[$row['member_name']]["fine_week_$kk"];
-      //-1 means unchanged.  Did it move, and did it move to a week
-      //that has already happened, and is it not actually just the
+      //-1 means unchanged.  Did it move, and is it not actually just the
       //usual week?
-      if ($new_week != -1 && $new_week < $week_num &&
+      if ($new_week != -1 && 
           $new_week != ($old_week = $key_weeks[$kk-1])) {
-        //was this fine not canceled altogether?
-        if (strlen($new_week)) {
+        //was this fine not canceled altogether, and not moved to the future?
+        if (strlen($new_week) && $new_week < $week_num) {
           //no, it wasn't.  Set a flag so we know this is a fine week,
           //and don't later erase it (say if the manager moves 3 to 5,
           //5 to 7, we don't want to delete the fining period at week

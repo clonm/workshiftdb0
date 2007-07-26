@@ -235,9 +235,9 @@ function mung_whole_row(&$row) {
     }
     for ($kk = 1; $kk <= count($key_weeks); $kk++) {
       $new_week = $special_fining[$row['member_name']]["fine_week_$kk"];
-      if ($new_week != -1 && $new_week < $week_num &&
+      if ($new_week != -1 && 
           $new_week != ($old_week = $key_weeks[$kk-1])) {
-        if (strlen($new_week)) {
+        if (strlen($new_week) && $new_week < $week_num) {
           $new_fine_weeks[$new_week] = $old_week;
           $fine_weeks[$new_week] = $backup_fine_weeks[$old_week];
         }
