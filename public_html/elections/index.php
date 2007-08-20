@@ -1,7 +1,9 @@
-<html><head><title>Elections Page</title></head><body>
 <?php
+$body_insert = '';
 require_once('default.inc.php');
 ?>
+<html><head><title>Elections Page</title></head><body>
+<?=$body_insert?>
 <ul>
 <li><a href='voting.php'>Vote in Elections</a>
 <li><a href='election_results.php'>View Election Results</a>
