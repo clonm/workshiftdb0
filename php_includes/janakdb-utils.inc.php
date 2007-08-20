@@ -325,7 +325,7 @@ function check_passwd($member_name = null, $passwd = null) {
       return -4;
     }
     //hash up our password -- password are stored hashed.
-    $row2 = $db->GetRow("select password(?) as pw",array($passwd));
+    $row2 = $db->GetRow("select md5(?) as pw",array($passwd));
     return make_numeric($row['passwd'] == $row2['pw']);
 }
 
@@ -346,7 +346,7 @@ function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag = false) {
                         "password_table` " .
                         "(`" .
                         ($officer_flag?'officer':'member') .
-                        "_name`,`passwd`) VALUES (?,PASSWORD(?)) ",
+                        "_name`,`passwd`) VALUES (?,md5(?)) ",
                         array($member_name,$newpasswd));
     set_mod_date('password_table');
     return $ret;
@@ -373,7 +373,7 @@ function check_officer_passwd($officer_name = null) {
   if (!strlen($row['passwd']) && !strlen($_REQUEST['officer_passwd'])) {
     return -1;
   }
-  $row2 = $db->GetRow("select password(?) as `pw`",
+  $row2 = $db->GetRow("select md5(?) as `pw`",
                       array($_REQUEST['officer_passwd']));
   return make_numeric($row['passwd'] == $row2['pw']);
 }

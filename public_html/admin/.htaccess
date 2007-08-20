@@ -1,2 +1,2 @@
-php_value zlib.output_compression 1
-php_value zlib.output_compression_level 3
+# # php_value zlib.output_compression 1
+# # php_value zlib.output_compression_level 3
