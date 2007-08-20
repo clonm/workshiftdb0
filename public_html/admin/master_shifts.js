@@ -352,16 +352,18 @@ function shift_change(oldmem,newmem,hours,workshift) {
 }
 
 //change how many hours a workshift is worth
-function hours_change(elt,workshift,prev_val) {
+function hours_change(elt,workshift,prev_val, interval_change) {
   var row = elt.parentNode.parentNode.childNodes;
   for (var ii = 0; ii < 8; ii++) {
     workshift[1] = ii;
     var temp = workshift[5];
-    if (typeof(prev_val) != 'undefined') {
-      workshift[5] = prev_val;
-    }
-    else {
-      workshift[5] = 0;
+    if (typeof(interval_change) == 'undefined') {
+      if (typeof(prev_val) != 'undefined') {
+        workshift[5] = prev_val;
+      }
+      else {
+        workshift[5] = 0;
+      }
     }
     //remove the old workshift
     assign_shift(row[ii+3].firstChild.value,workshift,false);
@@ -434,7 +436,7 @@ function change_handler(elt) {
     }
     //did we change when the shift started/ended??  check to see if everyone can
     //still do the shift
-    hours_change(elt,workshift_of(elt));
+    hours_change(elt,workshift_of(elt), null, true);
     return true;
   }
   //did we change the hours?  update the people doing the shift
