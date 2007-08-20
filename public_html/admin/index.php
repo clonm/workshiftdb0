@@ -50,12 +50,11 @@ if (!$archive) {
 <a href="basic_consts.php">Set basic parameters -- start of semester, 
 preferences due date, etc., and possibly clear out old weekly sheets</a><br>
 <a href="update_house.php">Update the house list</a><br>
-<a href="weekly_totals_consts.php<?=$archive?'?archive=' . escape_html($archive):''?>">Set buffer, floor, and
-fining rate for weekly totals</a><br>
 <a href="set_shift_descriptions.php">Give descriptions of
 workshifts</a><br>
 <a href="upload_workshift_doc.php">Upload a workshift policy
 document</a><br>
+<a href="weekly_totals_consts.php">Set buffer, floor, and fining rate for weekly totals</a><br>
 <a href="online_signoff_setup.php">Set up online signoffs, if you want
 your house to use them.</a><br/>
 <?php
