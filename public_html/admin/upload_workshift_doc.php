@@ -2,7 +2,7 @@
 <?php
 require_once('default.inc.php');
 print_help();
-if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+if (!isset($_FILES['description'])) {
   $row = $db->GetRow("select `filename` from `workshift_description`");
   if (!is_empty($row)) {
     print "<h3>Your current file is <a href='../workshift_doc.php'>" . escape_html($row['filename']) .
