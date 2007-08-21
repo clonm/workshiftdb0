@@ -169,11 +169,14 @@ else if ($mod_date == $create_date) {
 <input id='unmod_blank_week' class=pushbutton type=submit value='Make this week a temp week (blank out all member names)'
 onclick='blank_names()'>
 <script type='text/javascript'>
+  var prev_val;
+
     function blank_names(silent_flag) {
       if (!silent_flag && !confirm("Are you sure you want to erase all member names for this week?")) {
         return false;
       }
       for (var ii = rows_array.length-1; ii>=0; ii--) {
+        prev_val = get_value(rows_array[ii].cells[3].firstChild);
         set_value(rows_array[ii].cells[3].firstChild,'');
         change_handler(rows_array[ii].cells[3].firstChild);
       }
@@ -221,7 +224,6 @@ if (!strlen($start_date) == 0) {
     }
   
   //for running hours assigned/unassigned/totals totals
-  var prev_val;
   var total_hours = get_elt_by_id('week_total_hours');
   var assigned_hours = get_elt_by_id('week_assigned_hours');
   var unassigned_hours = get_elt_by_id('week_unassigned_hours');
@@ -243,7 +245,7 @@ if (!strlen($start_date) == 0) {
     if (coords[1] == 3 || coords[1] == 4) {
       if (coords[1] == 3) {
         var hrs = get_value_by_id('cell-' + coords[0] + '-4');
-        if (!prev_val.length) {
+        if (!prev_val || !prev_val.length) {
           set_value(assigned_hours,Number(get_value(assigned_hours))+Number(hrs));
           set_value(unassigned_hours,Number(get_value(unassigned_hours))-Number(hrs));
         }
