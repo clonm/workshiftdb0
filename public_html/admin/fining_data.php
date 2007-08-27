@@ -6,7 +6,7 @@
 //by doing hours, here, and have it automatically entered as a
 //workshift hours debit for the appropriate week.  That never
 //happened.
-
+$require_user = array('house', 'workshift');
 require_once('default.inc.php');
 //this page is archive-compatible.
 $table_name = "{$archive}fining_data";
