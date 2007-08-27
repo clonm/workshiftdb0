@@ -1,11 +1,15 @@
 <?php
 require_once('default.inc.php');
-$start = get_static('semester_start');
+ $start_date = explode('-', get_static('semester_start'));
 function end_date($week) {
-global $start;
-  return escape_html(date('M j',strtotime($start)+86400*6+86400*7*$week));
+  global $start_date;
+  if (count($start_date) < 2) {
+    return "(No semester start date given)";
+  }
+  return escape_html(date('M j',mktime(7*24*$week,0,0,$start_date[1],
+                                       $start_date[2],$start_date[0])));
 }
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+if (!array_key_exists('fining_rate',$_REQUEST)) {
 ?>
 <html><head><title>Update weekly totals numbers</title>
 <script type="text/javascript" 
@@ -204,7 +208,7 @@ print_help();
 #}
 ?>
 <form onsubmit='return validate_form()'
-action='<?=$_SERVER['REQUEST_URI']?>' method='POST'>
+action='<?=this_url()?>' method='POST'>
 <span id='cur_week_text'>Current week:
 <input id='cur_week' name='cur_week' value='<?=get_static("cur_week")?>'></span>
 (This is determined automatically, but if you are behind by a week, you can
