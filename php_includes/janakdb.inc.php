@@ -116,6 +116,7 @@ if (get_magic_quotes_gpc() || ini_get('magic_quotes_sybase')) {
   $_POST = stripformslash($_POST);
   $_REQUEST = stripformslash($_REQUEST);
   $_COOKIE = stripformslash($_COOKIE);
+  $_FILES = stripformslash($_FILES);
   $first_strip =false;
 }
 
