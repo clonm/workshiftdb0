@@ -42,7 +42,7 @@ if (!isset($_REQUEST['overwrite'])) {
   }
   if (count($week_exists)) {
     sort($week_exists);
-    trigger_error("Week(s) " . join(', ',$week_exists) . " already exist(s).  " .
+    janak_error("Week(s) " . join(', ',$week_exists) . " already exist(s).  " .
                   "Either <a href='delete_weeks.php'>delete the old sheets</a> " .
                   "before you create the new ones, or press back and change the" .
                   " weeks for which you want to create sheets.");
