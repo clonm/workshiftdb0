@@ -1,6 +1,4 @@
 <?php
-print date("r",1179957385);
-exit;
 /*
 if (array_key_exists('logout',$_REQUEST)) {
   setcookie('member_name',null,time()-3600);
@@ -47,6 +45,7 @@ foreach ($houses as $house) {
   $db->debug = true;
   $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
   print "<h1>$house</h1>";
+  $db->Execute("update `password_table` set `passwd` = NULL");
   continue;
 //   while ($row = $res->FetchRow()) {
 //     foreach (array('feedback','member_add','member_comments','abstain_count') as $bool_attrib) {
