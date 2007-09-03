@@ -648,7 +648,12 @@ while ($row = $res->FetchRow()) {
       break;
     case 'restore_database':
       $backup_names = unserialize($row['oldval']);
-      $backup_witnesses = unserialize($row['val']);
+      if ($row['val'] !== null) {
+        $backup_witnesses = unserialize($row['val']);
+      }
+      else {
+        $backup_witnesses = null;
+      }
       print "restore_database'>A backup was restored, overwriting newer " .
         "data</a>.</td><td>" .
         "<a href='$page_name?details=" . $row['autoid'] . "'>" .
