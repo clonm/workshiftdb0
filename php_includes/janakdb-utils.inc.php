@@ -1712,6 +1712,7 @@ function require_witnesses($num = 1) {
   global $db, $member_name, $php_includes,$officer_name;
   if (!$member_name && $officer_name) {
     $member_name = $officer_name;
+    $switch_name = true;
   }
   else {
     $switch_name = false;

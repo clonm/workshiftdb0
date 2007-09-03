@@ -77,7 +77,8 @@ if (array_key_exists('delete_election',$_REQUEST)) {
   $db->StartTrans();
   //no one else should be able to write to these tables until we're
   //done.  See create_election.php for the half-fudge that's hidden here.
-  $db->Execute("lock tables `" . join('` write, `',$tables_array) . "` write");
+  $db->Execute("lock tables `modified_dates` write, `" . 
+               join('` write, `',$tables_array) . "` write");
   foreach ($tables_array as $table) {
     $db->Execute("delete from `$table` where `election_name` = ?",
                  array($election_name));
