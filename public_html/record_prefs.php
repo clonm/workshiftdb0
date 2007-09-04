@@ -40,7 +40,9 @@ if (!function_exists('stripformslash')) {
     }
   }
 }
-stripformslash($_REQUEST);
+$first_strip = true;
+$_REQUEST = stripformslash($_REQUEST);
+$first_strip = false;
 ?>
 <html><head><title>Preferences Submission</title>
 <style>
