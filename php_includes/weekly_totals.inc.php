@@ -458,9 +458,6 @@ function table_period_name($arr) {
   return "0 as " . bracket("week " . $arr['week'] . " fines") . ", ";
 }
 
-?>
-
-<?php
 /*
   //oh god, this sucks
 #  $db->debug = true;

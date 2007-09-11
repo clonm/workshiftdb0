@@ -33,5 +33,6 @@ if (!isset($_REQUEST['download'])) {
   exit;
 }
 $col_formats['member_name'] = '';
+$col_formats['notes'] = '';
 export_csv_file('House Fines',$table_edit_query,$col_formats,$mung_whole_row);
 ?>
