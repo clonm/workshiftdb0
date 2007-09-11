@@ -1513,7 +1513,7 @@ function set_session($member_name,$officer = false,$delete_session = false) {
     //expires 1 hour from now
     $db->Execute("insert into `session_data` " .
                  "(`member_name`,`session_id`,`expiration`) values " .
-                 "(?,?,addtime(now(),'01:00:00'))",
+                 "(?,?,addtime(now(),'05:00:00'))",
                  array($member_name,$session_id));
   }
   else {
@@ -1532,7 +1532,7 @@ function set_session($member_name,$officer = false,$delete_session = false) {
   }
   if (!$delete_session) {
     setcookie(($officer?'officer_':'') . 'session_id',
-              $session_id,time()+3600,"/");
+              $session_id,null,"/");
   }
   $db->CompleteTrans();
   $db->Execute("unlock tables");
