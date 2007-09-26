@@ -35,6 +35,7 @@ if (count($_GET) == 0) { ?>
 <?php
    print $body_insert;
  print_help(); 
+ print "<pre>";
 ?>
 <form action='<?=this_url()?>' method=get id='signoff_form'>
    <input size=3 name='week_num' value='<?=($cur_week = get_cur_week())>-1?$cur_week:''?>'>
@@ -200,27 +201,6 @@ SCRIPT
 $javascript_pre .="return true;\n}\n</script>\n";
 }
 
-if ($use_colors && isset($table_name)) {
-  function calculate_color($person,$defperson,$special) {
-    if (!$defperson) {
-      if ($special) {
-        return "yellow";
-      }
-      else {
-        return 'rgb(0, 255, 0)';
-      }
-    }
-    else if (!$person) {
-      return "yellow";
-    }
-    else if ($person !== $defperson) {
-      return 'rgb(255, 70, 70)';
-    }
-    else {
-      return "transparent";
-    }
-  }
-}
 
 if (array_key_exists('gridformat',$_REQUEST)) {
 $title_page = 'Sign-Off Sheet';
@@ -243,8 +223,29 @@ $col_names = array_merge(array('workshift'),array_map('date_maybe',$days),
      $db->qstr($dummy_string) . " order by `workshift`";
  }
  else {
-   $table_edit_query = "select * from `$table_name` where " .
-     "`day` = '" . join("' or `day` = '",$days) . "' order by `shift_id`,`workshift` ";
+   $table_edit_query = "select `master_shifts`.`start_time`, "
+     . "`master_shifts`.`end_time`, `master_shifts`.`category`, "
+     . "`master_shifts`.`Monday` as `Monday_default`, "
+     . "`master_shifts`.`Tuesday` as `Tuesday_default`, "
+     . "`master_shifts`.`Wednesday` as `Wednesday_default`, "
+     . "`master_shifts`.`Thursday` as `Thursday_default`, "
+     . "`master_shifts`.`Friday` as `Friday_default`, "
+     . "`master_shifts`.`Saturday` as `Saturday_default`, "
+     . "`master_shifts`.`Sunday` as `Sunday_default`, "
+     . "`$table_name`.`workshift`, "
+     . "`$table_name`.`hours`, "
+     . "GROUP_CONCAT(IFNULL(`$table_name`.`member_name`,'') ORDER BY "
+     . "`$table_name`.`autoid` SEPARATOR '\0') AS `member_name`, "
+     . "GROUP_CONCAT(`$table_name`.`day` ORDER BY `$table_name`.`autoid` "
+     . "SEPARATOR '\0') AS `day` "
+     . "FROM `$table_name` left join `master_shifts` "
+     . "on `$table_name`.`shift_id` = `master_shifts`.`autoid` where "
+     . "`$table_name`.`day` = 'Monday' OR `$table_name`.`day` = 'Tuesday' OR " 
+     . "`$table_name`.`day` = 'Wednesday' OR "
+     . "`$table_name`.`day` = 'Thursday' OR `$table_name`.`day` = 'Friday' OR "
+     . "`$table_name`.`day` = 'Saturday' OR `$table_name`.`day` = 'Sunday' "
+     . "GROUP BY `$table_name`.`workshift`, `$table_name`.`hours` "
+     . "ORDER BY `$table_name`.`workshift`";
  }
 $col_sortable = array();
 $col_sortable[0] = 'pre_process_default';
@@ -253,116 +254,85 @@ $col_sortable[9] = 'pre_process_time';
 
 $dummy_string = get_static('dummy_string','XXXXX');
 
-$blank_color = 'rgb(0, 255, 0)';
+ function calculate_color($person,$defperson,$special) {
+   global $dummy_string, $use_colors;
+   if ($person === $dummy_string) {
+     return "grey";
+   }
+   if (!$use_colors) {
+     return "transparent";
+   }
+   if (!$defperson) {
+     if ($special) {
+       return "yellow";
+     }
+     else {
+       return 'rgb(0, 255, 0)';
+     }
+   }
+   else if (!$person) {
+     return "yellow";
+   }
+   else if ($person !== $defperson) {
+     return 'rgb(255, 70, 70)';
+   }
+   else {
+     return "transparent";
+   }
+ }
+
+ function inner_mung_row(&$row) {
+   global $use_colors, $colorcell, $days, $dummy_string;
+   if ($row['category'] && substr($row['category'],0,2) == '**') {
+     $row = null;
+     return;
+   }
+   $colorcell = array();
+   for ($ii = 0; $ii < count($days); $ii++) {
+     $colorcell[$ii+1] = calculate_color($row[$days[$ii]],
+                                         $row[$days[$ii] . "_default"],
+                                         $row['category'] &&
+                                         substr($row['category'],0,1) == '*');
+   }
+ }
 
  if (!isset($table_name)) {
    function mung_whole_row(&$row) {
-     global $colorcell,$days,$use_colors;
-     if ($row['category'] && substr($row['category'],0,2) == '**') {
-       $row = null;
-       return;
+     global $use_colors, $colorcell, $days, $dummy_string;
+     foreach ($days as $day) {
+       $row[$day . "_default"] = $row[$day];
      }
-     $colorcell = array();
-     if ($use_colors) {
-       if ($row['category'] && $row['category']{0} == '*') {
-         $blank_color = 'yellow';
-       }
-       else {
-         $blank_color = 'rgb(0, 255, 0)';
-       }
-       for ($ii = 0; $ii < count($days); $ii++) {
-         if (!$row[$days[$ii]]) {
-           $colorcell[$ii+1] = $blank_color;
-         }
-       }
-     }
-     $row['workshift'] = format_shift($row['workshift'],$row['hours'],$row['floor']);
+     inner_mung_row($row);
    }
  }
  else {
-   $cur_shiftid = 'no_shift_id';
-   $people = array();
-   $shift_name = null;
-   $start_time = null;
-   $end_time = null;
-   $mung_colors = array();
-   $skipping_rows = false;
    function mung_whole_row(&$row) {
-     global $db,$res,$days,$num_rows,$people,$shift_name,$cur_shiftid,$colorcell, $dummy_string,
-       $use_colors,$skipping_rows;
-     $colorcell = array();
-     if ($res->EOF) {
-       if ($cur_shiftid === $row['shift_id']) {
-         $people[$row['day']] = $row['member_name'];
-         $cur_shiftid .= ' ';
-       }
-       else {
-         $res->Move($num_rows);
-       }
+     global $use_colors, $colorcell, $days, $dummy_string;
+     if ($row['day']) {
+       $shift_days = explode("\0",$row['day']);
+       $shift_people = explode("\0",$row['member_name']);
      }
-     $retflag = false;
-     if ($cur_shiftid !== $row['shift_id']) {
-       if (count($people)) {
-         $colorcell = array();
-         for ($ii = 0; $ii < count($days); $ii++) {
-           if (isset($people[$days[$ii]])) {
-             $row[$days[$ii]] = $people[$days[$ii]];
-           }
-           else {
-             $row[$days[$ii]] = null;
-             $colorcell[$ii+1] = 'grey';
-           }
-         }
-         $shiftdbrow = $db->GetRow("select `" . join('`,`',array_keys($people)) .
-                                    "`,`start_time`,`end_time`,`category` from `master_shifts` " .
-                                    "where `autoid` = ? limit 1",
-                                    array($cur_shiftid));
-         if (!is_empty($shiftdbrow)) {
-           if ($shiftdbrow['category'] && 
-               substr($shiftdbrow['category'],0,2) == '**') {
-             $skipping_rows = true;
-             $row = null;
-             return;
-           }
-           else {
-             $skipping_rows = false;
-           }
-           $row['start_time'] = $shiftdbrow['start_time'];
-           $row['end_time'] = $shiftdbrow['end_time'];
-           $special = $shiftdbrow['category'] && $shiftdbrow['category']{0} == '*';
-           $jj = 1;
-           if ($use_colors) {
-             foreach ($days as $day) {
-               if (array_key_exists($day,$people) && $use_colors) {
-                 $colorcell[$jj] = calculate_color($people[$day],$shiftdbrow[$day],$special);
-               }
-               $jj++;
-             }
-           }
-         }
-         else if ($use_colors) {
-           for ($ii = 0; $ii < count($days); $ii++) {
-             $colorcell[$ii] = 'rgb(255, 70, 70)';
-           }
-         }
-         $retflag = true;
-         $people = array();
-       }
-       if ($skipping_rows) {
-         $row = null;
-         return;
-       }
-       $cur_shiftid = $row['shift_id'];
-       $temp = $shift_name;
-       $shift_name = format_shift($row['workshift'],$row['hours']);
-       $row['workshift'] = $temp;
-     }
-     $people[$row['day']] = $row['member_name'];
-     if (!$retflag) {
+     else {
        $row = null;
+       return;
      }
+     if (count($shift_days) !== count($shift_people)) {
+       print_r($shift_days);
+       print_r($shift_people);
+       janak_error("Error getting/concatenating signoff.");
+     }
+     for ($ii = 0; $ii < count($shift_days); $ii++) {
+       $row[$shift_days[$ii]] = $shift_people[$ii];
+     }
+     foreach ($days as $day) {
+       if (!isset($row[$day])) {
+         $row[$day] = $dummy_string;
+       }
+     }
+     $row['floor'] = null;
+     inner_mung_row($row);
    }
- }       
+ }
 
  $mung_whole_row = 'mung_whole_row';
  if (isset($_REQUEST['Verifier'])) {
