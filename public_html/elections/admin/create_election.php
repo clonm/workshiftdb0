@@ -599,7 +599,9 @@ function set_election_attrib($attrib,$val) {
                         array($election_name,$race_name,$attrib,$val));
   }
   //uh-oh, we're modifying, maybe
-  else if ($oldval['attrib_value'] != $val) {
+  else if ($oldval['attrib_value'] != $val || 
+           ($val === null && $oldval['attrib_value'] !== null) ||
+           ($oldval['attrib_value'] === null && $val !== null)) {
     elections_log($election_name,$race_name,$attrib,$oldval['attrib_value'],$val);
     return $db->Execute("update `elections_attribs` set `attrib_value` = ? " .
                         "where `election_name` = ? and `race_name` = ? " .
@@ -667,7 +669,6 @@ if ($modify) {
 
 //this is used to make sure we don't have any duplicate race names
 $all_race_names = array();
-
 //this is how many races we think we have.  As a matter of fact, there
 //may be fewer, because some of them may have been deleted.
 print("Number of races input: " . $num_races . "<br/>\n");
