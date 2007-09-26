@@ -92,22 +92,10 @@ for ($ii = $start_week; $ii <= $end_week; $ii++) {
                     '`verifier` varchar(50) default null)')) {
     trigger_error("Error creating $tbl: " . $db->ErrorMsg(),E_USER_ERROR);
   }
-  if ($USE_MYSQL_50) {
-    $check_view = $db->Execute("SHOW TABLES LIKE ?",array("week\_{$ii}\_totals"));
-    if (is_empty($check_view)) {
-      $db->Execute('CREATE OR REPLACE VIEW ' . bracket("week_{$ii}_totals") .
-                   'AS SELECT member_name, SUM(GREATEST(0,hours)) AS ' . 
-                   bracket("done $ii") . ', SUM(LEAST(0,hours)) AS ' .
-                   bracket("blown $ii") . ', GREATEST(SUM(hours),0) AS ' .
-                   bracket("week $ii") . ' FROM ' . bracket("week_$ii") . 
-                   ' GROUP BY ' . bracket('member_name'));
-    }
-  }
   //just paranoia here
   $db->Execute('LOCK TABLES ' . bracket($tbl) . ' WRITE, ' . 
                bracket('master_shifts') . 
-               ' READ, ' . bracket('master_week') . " READ" .
-               ($USE_MYSQL_50 ? ", `{$tbl}_totals` WRITE":""));
+               ' READ, ' . bracket('master_week') . " READ");
   $db->StartTrans();
   $db->Execute("delete from `$tbl`");
   $db->Execute('INSERT INTO ' . bracket($tbl) . 
@@ -196,63 +184,6 @@ for (; $ii <= max($final_week,get_static('tot_weeks',18)); $ii++) {
                bracket("owed $ii") . ' = ?',array($owed_default));
 }
 
-if ($USE_MYSQL_50) {
-  $db->SetFetchMode(ADODB_FETCH_NUM); 
-  $check_tables = $db->Execute("SHOW TABLES LIKE ?",array("week\_%\_totals"));
-  $db->SetFetchMode(ADODB_FETCH_ASSOC); 
-  $view_tables = array();
-  while ($tbl = $check_tables->FetchRow()) {
-    $ii = substr($tbl[0],5,-7);
-    $view_tables[$ii] = 1;
-  }
-  for ($ii = 0; $ii <= $final_week; $ii++) {
-    if (array_key_exists($ii,$view_tables)) {
-      continue;
-    }
-    $db->Execute('CREATE OR REPLACE VIEW ' . bracket("week_{$ii}_totals") .
-                 'AS SELECT member_name, SUM(GREATEST(0,hours)) AS ' . 
-                 bracket("done $ii") . ', SUM(LEAST(0,hours)) AS ' .
-                 bracket("blown $ii") . ', GREATEST(SUM(hours),0) AS ' .
-                 bracket("week $ii") . ' FROM ' . bracket("week_$ii") . 
-                 ' GROUP BY ' . bracket('member_name'));
-  }
-  
-  //also check to see if we need to regenerate the whole big view
-  $check_tots = $db->Execute('SHOW TABLES LIKE "weekly_totals"');
-  $ii = -1;
-  if (!$check_tots->EOF) {
-    $check_tots = $db->Execute('SHOW COLUMNS FROM ' . bracket('weekly_totals') . 
-                               ' LIKE "owed %"');
-    //count columns
-    $ii = 0;
-    while ($check_tots->FetchRow()) {
-      $ii++;
-    }
-  }
-  //not enough columns or too many columns -- we need to regenerate it
-  if ($ii != $final_week+1) {
-    $query_fields = 'CREATE OR REPLACE VIEW ' . bracket('weekly_totals') . 
-      ' AS (SELECT ' . bracket('weekly_totals_data') . '.' . bracket('autoid') . 
-      ', ' . bracket('weekly_totals_data') . '.' . bracket('member_name') . 
-      ' AS ' . bracket('Name') . ', ';
-    //loop and build up select query
-    $query_tables = ' ';
-    for ($ii = 0; $ii <= $final_week; $ii++) {
-      $query_fields .= bracket("done $ii") . ', ' . bracket("blown $ii") . 
-        ', ' . bracket("week $ii") . ', ' . bracket("owed $ii") . ', ';
-      $query_tables .= 'LEFT JOIN ' . bracket("week_{$ii}_totals") . ' ON ' .
-        bracket('weekly_totals_data') . '.' . bracket('member_name') . ' = ' .
-        bracket("week_{$ii}_totals") . '.' . bracket('member_name') . ' ';
-    }
-    $query = $query_fields  . ' ' . 
-      bracket('weekly_totals_data') . '.' . bracket('notes') . ' FROM ' . 
-      bracket('weekly_totals_data') . $query_tables . ' ORDER BY ' . 
-      bracket('weekly_totals_data') . '.' . bracket('member_name') . ')';
-    $db->Execute($query);
-    $db->Execute("GRANT SELECT ON " . bracket('weekly_totals') . " TO ?@?",
-                 array($house_member,$member_loc));
-  }
-}
 if (!isset($suppress_output)) {
   if ($start_week == $end_week) {
   ?>
