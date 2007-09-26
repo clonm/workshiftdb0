@@ -153,15 +153,15 @@ if (!isset($body_insert)) {
 require_once('janakdb.inc.php');
 #$db->debug = true;
 
-$num_cols = stripformslash($_REQUEST['num_cols']);
-$num_rows = stripformslash($_REQUEST['num_rows']);
-$table_name = stripformslash($_REQUEST['table_name']);
+$num_cols = $_REQUEST['num_cols'];
+$num_rows = $_REQUEST['num_rows'];
+$table_name = $_REQUEST['table_name'];
 
 if (!access_table($table_name)) {
   exit("You cannot update table $table_name");
 }
  
-$col_names = array_map('stripformslash',$_REQUEST['col_names']);
+$col_names = $_REQUEST['col_names'];
 //some problems with unset variables
 $data = array();
 $temp = array();
@@ -169,7 +169,7 @@ $temp = array();
 for ($ii = 0; $ii < $num_rows; $ii++) {
   for ($jj = 0; $jj < $num_cols; $jj++) {
     if (array_key_exists("cell-{$ii}-{$jj}",$_REQUEST)) {
-      $temp[] = stripformslash($_REQUEST["cell-{$ii}-{$jj}"]);
+      $temp[] = $_REQUEST["cell-{$ii}-{$jj}"];
     }
     else {
       $temp[] = null;
@@ -182,7 +182,7 @@ $autoid = array();
 //get the autoids -- there has to be an autoid for updatable tables
 for ($ii = 0; $ii < $num_rows; $ii++) {
   if (array_key_exists("autoid-$ii",$_REQUEST)) {
-    $autoid[$ii] = stripformslash($_REQUEST["autoid-$ii"]);
+    $autoid[$ii] = $_REQUEST["autoid-$ii"];
   }
 }
 #do the virtual column thing
