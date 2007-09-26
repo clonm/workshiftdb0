@@ -71,7 +71,6 @@ $pmap = array();
 while ($special_row = $special_res->FetchRow()) {
   $pmap[$special_row['member_name']] = $special_row;
 }
-
 $res = $db->Execute($sql_begin . $sql_mid . $sql_end . " order by `member_name`");
 }
 else {
