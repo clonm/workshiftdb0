@@ -354,17 +354,6 @@ if ($descript_file) {
     escape_html($election_name) . "'>File with more info on election " .
     "(what's in the frame above)</a></p>";
 }
-if ($votable) {
-?>
-<?=escape_html($member_name)?><br>
-<?php
-if ($anon_voting) {
-  print("Voting is anonymous.  You can only vote once.<p>");
-}
- else {
-   print("Voting is not anonymous.  You may re-vote as many times as " .
-         "you like.<p>");
- }
 //maybe internal is set, but we don't want it to be here
  unset($_GET['internal']);
  $page_name = this_url();
@@ -374,8 +363,20 @@ if ($anon_voting) {
                     $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT']) . 
                     $page_name;
 ?>
-<form action="<?=$uri?>" 
-method='POST'>
+<?=escape_html($member_name)?><br>
+<form action="<?=$uri?>" method='POST'>
+<?php
+if ($votable) {
+?>
+<?php
+if ($anon_voting) {
+  print("Voting is anonymous.  You can only vote once.<p>");
+}
+ else {
+   print("Voting is not anonymous.  You may re-vote as many times as " .
+         "you like.<p>");
+ }
+?>
 <input type='hidden' name='page_type' id='page_type' value='review_vote'>
 <input type='hidden' name='election_name'
    value='<?=escape_html($election_name)?>'>
@@ -698,6 +699,7 @@ if ($votable) {
 <?php
    }
 ?>
+</form>
 </body>
 </html>
 <?php
