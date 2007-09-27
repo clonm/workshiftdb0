@@ -20,7 +20,12 @@ else {
   $grants = array();
 }
 if ($officer_name) {
-  $grants[] = substr($officer_name,strlen($house_name));
+  if ($officer_name == 'workshiftadmin') {
+    $grants = array('workshift','house','president','nonvoter');
+  }
+  else {
+    $grants[] = substr($officer_name,strlen($house_name));
+  }
 }
 //don't want this anymore, because we've added superusers
 #//if no one has this privilege, everyone can grant it

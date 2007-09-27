@@ -1369,10 +1369,7 @@ function elections_log($election_name,$subj_name,$attrib,$oldval,$val) {
 //can't vote -- that's the only effect of their "privilege."
 //Privileges are stored as a comma-separated list, indexed by member.
 
-//is this user of this type?  One wrinkle -- if the first character of
-//the type is '*', then if there are no users of that type, return
-//true.  Meant to be used at the beginning of the semester, when old
-//members may no longer be active and new members haven't been added.
+//is this user of this type?
 function authorized_user($member_name,$type) {
   global $db;
   $attribs = user_privileges($member_name);
@@ -1386,10 +1383,6 @@ function user_privileges($member_name) {
                          "from `privilege_table` where " .
                          "`member_name` = ?",
                          array($member_name));
-  //let the administrator into everything.
-  if (check_admin_priv(0)) {
-    return $priv_types;
-  }
   if (is_empty($attribs)) {
     return array();
   }
