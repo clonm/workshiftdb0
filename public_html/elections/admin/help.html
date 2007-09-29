@@ -1,3 +1,448 @@
-Help coming soon -- email 
-<a href='mailto:janak@berkeley.edu'>janak@berkeley.edu</a> in the
-meantime.
+<html><head><title>Presidents</title></head><body>
+
+<p>
+Per-page help should be available by clicking the "Help" link on each
+page.  To see all the features of the elections you can make, look at
+the page for <a href='#create_election'>creating elections</a>.
+</p>
+
+<p>The first thing you should do in this system is <a
+href="../../admin/set_passwd.php">set the president's password</a>.
+By default, it is &lt;house-code&gt;president (that's the user name
+too), but your previous president may have changed it.  Go do that
+now, then come back here.
+</p>
+
+<ul>
+<li><h3>Pages in the system</h3>
+
+<ul><li><a name='create_election' href='create_election.php'>Creating
+elections</a> is the biggest part of the system, and probably also the
+most confusing part.  For most things, though, leaving it at the
+default value should do the right thing.
+
+<ul>
+<li><b>Name of election</b>.  Enter the name of the election.  You can
+say "Manager VOCs" or "party theme" or whatever.  Make sure the
+semester entered is right -- it should be.
+
+<li><b>Is it anonymous?</b>.  Check the box if the election is
+anonymous.  If an election is not anonymous, members can vote as many
+times as they want -- their newest vote always erases the previous
+one.  If the election is anonymous, voters will be given a "voter id,"
+which they can use at the end of the election to check that their vote
+was counted correctly.
+
+<li><b>Can people view partial results</b>.  You have to decide if
+people should be able to view election results before the election is
+over.  For non-anonymous elections, this often isn't a problem -- it
+can be fun for people to see which t-shirt choice is winning, and get
+their friends to vote, etc.  For anonymous elections, viewing partial
+results might be problematic, so you probably want to turn off partial
+results for that, but it's your choice.  The default is no partial
+results for anonymous elections, yes partial results for
+non-anonymous.
+
+<li><b>Ending date</b>.  Enter the date you wish the election to end.
+People will not be able to vote after this date.  Note that by
+default, the election ends at midnight on this day, and midnight is
+the <b>start</b> of the day.  So if you want the election to run
+through Friday, September 28th, 2007, and finish at midnight, then you
+should enter <b>Saturday</b>'s date, i.e. 29-09-2007, because Friday
+at midnight is actually the beginning of Saturday.  Please also make
+sure to enter the date properly, in the form DD-MM-YYYY.</p>
+
+<p>If you want the election to end at a non-midnight time, then enter
+it below.  This might be useful if you want to end the voting right
+before a meeting, or something like that.  Make sure that the server's
+time is the same as yours.  If it isn't, then click on the link to <a
+href="../../admin/tz_set.php">set the time zone</a>.
+</p>
+
+<li><b>Text at top of voter's page</b>.  If you want to put some
+instructions about the election, or other description, you can enter
+it into this box.  Note that you can enter text that will show up for
+each race (see below), so you may not have that much to enter
+here.</p>
+
+<p>Normally, whatever you enter will be treated as plain text.
+However, if you want to put fancy stuff in (like fonts and bold-face,
+etc.), then you may want to check the box to treat it as HTML.  You
+should know what you're doing if you do that, since otherwise things
+like line breaks may disappear.</p>
+
+<li><b>Upload file</b>.  In addition to (or instead of) having text at
+the top of the page, you can upload a file with whatever you want in
+it.  This file can be very useful if you have, for instance, a file
+with all the candidate t-shirt images, or a file with the updated
+bylaws (that you don't want to bother typing into the text box above).
+Users will be shown the file if they can view it, and otherwise
+they'll be prompted to download it.
+
+<li><b>Races</b>.  This is the hard part.  Each election has one or
+more races.  "Race" here is pretty general -- it can be a VOC or a
+yes/no vote on a bylaw change or a ten-candidate race for house
+manager.  Please see below for some <a href='#example_races'>example
+races that your house might use</a>.
+
+<ul>
+<li><b>Make it Yes/No</b>.  The two buttons at the top of each race
+setup allow you to quickly set up two kinds of races -- all you have
+to do is enter the name of the race.  Yes/No is an election with two
+options -- yes and no.  If at least 50.1% of the voters don't vote
+yes, then no wins.  Approved/Not Approved is the same idea, but
+intended more for bylaw changes, so at least 66.6% of the house needs
+to vote for Approved for it to win.  Note that you can set these types
+of elections up yourself -- these buttons are just a guide to help at
+first.
+
+<li><b>Race name</b>.  Enter the name of the race, like "VOC House
+Manager" or "T-shirt front design."  Try to keep it short.
+
+<li><b>Description of race</b>.  Enter a description of this race, if
+you think one is needed.  For instance, you could give a description
+of the duties of the house manager here if people are voting on a VOC
+for the house manager.  Note that this is treated as plain text, not
+HTML, so no fancy formatting.
+
+<li><b>Feedback</b>.  If this is a VOC in which your house is
+commenting on the performance of a manager, then you want to have a
+feedback race.  Each voter will have a text box into which she can
+enter feedback, and this feedback will be displayed in the <a
+href='../election_results.php'>results page</a>.  There are no
+"candidates" and no "winner" and so all the other options are
+irrelevant.  Note that if your VOC has both a section for feedback on
+the performance of a manager and also a question of whether the
+manager should get her comp, then you need to have two races -- one
+for the feedback, and one for the question of comp.
+
+<li><b>Candidates</b>.  Enter here the options in the race.  These
+options could be the people running for the position, or Yes and No
+for a ballot question, or the possible dates for a party, etc.  Note
+that "Abstain" is not necessary -- the system will automatically
+display an abstain option for voters if needed.
+
+<li><b>Number of spots</b>.  This is usually one.  If there are
+multiple spots to be filled (Cloyne has 3 Board Reps, so there are
+going to be 3 winners in the election for Board Rep), then put how
+many winners there can be in here.
+
+<li><b>Options</b>.  This section is about how votes are counted.
+"Nothing Special" means that this election is just like a normal
+government election -- people vote for their favorite choice.  This is
+great if you have exactly two options.  With more than two options,
+there are problems with two candidates splitting the vote, and so on
+(think Bush v. Gore v. Nader).  Thus, if your bylaws allow, you might
+want to use "Instant Runoff" for those elections.  With instant
+runoff, voters rank as many candidates as they like.  If no candidate
+has enough votes to win, the candidate who has the fewest votes is
+eliminated, and his/her/its voters are given to their next choice.
+This keeps on going until a candidate is elected.  The results page
+for instant runoff races shows exactly what is happening.  Finally,
+Unranked Preferences is a system in which voters just say what choices
+they like, and the system counts up those choices.  If you were trying
+to decide when to have Special Dinner, and you wanted the greatest
+number of people to be able to make it, you could have an Unranked
+Preferences election in which you gave the possible dates, and
+everyone checked off all the dates that they could make.  Then the
+system would see which date had the most people who could make it.
+
+<p>For those who care -- the election results page will also calculate
+the winner for Condorcet and Borda forms of voting.  If one of those
+is what your house uses, then choose the "Instant Runoff" option.  The
+winner will be displayed for your method too, although the "announced"
+winner may be incorrect.</p>
+
+<li><b>Threshold issues</b>.
+<ul>
+<li>Sometimes, it's not enough to win -- you have
+to win big.  Is this race like that?  "None" means no, whoever has the
+most votes wins.  "At least __% of the vote is required" means that
+for someone to win, they have to get at least whatever percentage of
+the vote to win.  For instance, to terminate someone from the USCA
+(now BSC), the house must vote yes by a 2/3 vote.  2/3 is a little more
+than 66.6%, so you should say that at least 66.6% of the vote is
+required.  "___ votes are required" means that there is an absolute
+threshold before someone can win -- perhaps your house requires that
+for a bylaw change, 2/3 of the house must vote for it, not just 2/3
+of the voters.  Then you should put however many people 2/3 of the
+house is in this spot.  Thus, if Stebbins has 64 people, and 2/3 of
+the house needs to vote for a bylaw change, then at least 43 people
+have to vote for it (42 isn't enough).  So the Stebbins president
+should put 43 in this spot (assuming that's the rule at Stebbins).
+
+<li><b>Will abstentions count</b>.  Depending on your house's rules,
+if someone abstains in an election, that may be the same as not having
+voted at all, or it might count as a vote for threshold purposes.  For
+instance, suppose your house requires a 3/4 vote for a bylaw change,
+and 40 people vote.  Since 3/4 was required, you put "At least 75% of
+the vote is required" in for the threshold.  If 30 people vote for the
+change and 10 against, then it passes, since 30 out of 40 is 75%.  Now
+suppose 41 people vote, with 30 people for, 10 against, and 1
+abstention.  Does it still pass?  If the answer is yes, since there
+were 30 yes votes and 10 no votes, so 40 people expressed an opinion,
+then abstentions do <b>not</b> count as votes.  If the answer is no,
+because out of 41 voters, only 30, or less than 3/4, voted yes, then
+abstentions <b>do</b> count as votes.
+
+<li><b>Minimum number of votes</b>.  This number is like "quorum" for
+an election.  Stebbins, for instance, requires that in a bylaw change
+election, at least 2/3 of the house votes for the election to be valid
+at all.  Thus, the Stebbins president would put 43 in there, since the
+house size is 64.  Note that this number is not about who voted for or
+against anything, it is just about who voted at all.  If your house
+doesn't have anything like that, you can ignore it.
+
+<li><b>Default</b>.  If you have any of the thresholds above
+(percentage, number of votes, number of voters), it's possible that
+nobody will reach the required threshold.  If that happens, what is
+the choice?  You can leave this blank, in which case there will be no
+winner, or you can enter one of the candidates.  For instance, with a
+bylaw change, the two options are usually Approved and Not Approved.
+If Approved doesn't get the required number of votes, then the bylaw
+change is not approved, so Not Approved is the default winner.
+</ul>
+
+<li><b>Voter choices</b>.  This is more fun than the boring stuff up
+there.  For some elections, you would like voters to be able to add
+their own choices.  For instance, if you're voting on party themes,
+voters should be able to suggest their own themes and vote for them.
+If you check this box, there will be an option on the ballots for
+voters to enter their own candidates.  Note that if the election is
+anonymous, then people can't go back and change their votes, and so if
+someone suggests a new candidate late in the election, not everyone
+will get to choose it.  Thus, it's probably a good idea to get all the
+candidates settled before you hold an anonymous election, but you can
+still have this option if you want.  Note that, if you're doing
+instant runoff, there's no real harm in having lots and lots of silly
+choices -- they just won't get many votes, and will be eliminated
+right away.
+
+<li><b>Voter comments</b>.  This allows voters to make comments as
+they're voting that all the other voters can see, so that your house
+can have a discussion on each race even though they're not all in a
+meeting together.  If the election is anonymous, then the comments
+will be anonymous.  They'll also show up on the results page.  Note
+that this isn't a great idea for VOC's -- it's more intended for
+friendly discussion about things like party themes, or interpretations
+of bylaw changes.  If voter comments are enabled and you come back to
+this page to modify the election, you'll see a text box with all the
+voter comments.  If there are some inappropriate ones, you can delete
+them, but please exercise restraint in this, so that the house doesn't
+feel stifled.  Note that editing the comments will be <a
+href="#elections_log">logged</a>, so that the house can see that you
+edited the comments (although not what you changed).
+</ul>
+
+<h4><a name='example_races'>Example races</a></h4>
+
+<p>
+Since the above can get very confusing, let's look at some concrete
+examples.  Suppose we're having an election for house manager and
+social manager.  You might want to call the election "Manager
+Elections" (remember, its name will actually be 2007-fall_Manager
+Elections), so put "Manager Elections" in for the name of the
+election.  This election is probably anonymous, so check that box.
+</p>
+
+<p>
+The first race can be called "House Manager", so that's what goes in
+the race name.  Suppose Alexa, Bob, and Carmen are running.  Then the
+candidates field would look like 
+<pre>
+Alexa
+Bob
+Carmen
+</pre>
+Let's say you've decided not to use instant runoff for this election.
+Then you'd put "nothing special" in for the options.  Also, assume
+your house doesn't have any requirements about how many votes someone
+needs to get.  Then the Threshold would be "none".  You probably don't
+want to let voters suggest new candidates after nominations are over,
+and you probably don't want voters talking about the candidates on the
+page, so don't check either of those checkboxes.  There!  Done with
+that race.
+</p>
+
+<p>The second race is for social manager, so let's call it "Social
+Manager".  Suppose that in this race, Davesh is running unopposed.
+Also suppose that your house has a requirement that if someone is
+running unopposed, then at least 2/3 of the house needs to vote for
+him in order for him to be elected.  Then in "Candidates," you would
+just put "Davesh".  Options would still be "nothing special," but for
+the threshold, you would put "At least 66.6% of the vote is required."
+Everything else would be left as it is.
+</p>
+
+<p>
+Now, let's look at a different example.  Suppose we have an election
+for the house t-shirt.  You'll want to either post the images on
+another site and link to them, or create a file (like a Word document
+or a PDF) with all the images, and upload them.  If you letter the
+options A,B,C, and so on, then put those in the "candidates" field,
+like so:
+<pre>
+A
+B
+C
+</pre>
+For this election, you probably want to use instant runoff -- people
+should be able to vote for a less popular choice without feeling like
+they're throwing their vote away.  So choose instant runoff.  You
+probably don't have any threshold requirements for t-shirt voting.
+Voters shouldn't be able to add choices themselves, because they
+can't show the other voters their design, but they should be able to
+comment on the designs, so you should check that box.
+</p>
+
+<p>
+Let's do a VOC now.  Suppose that your house is holding a VOC on all
+the managers.  There will be a lot of races.  If we look at just the
+ones about the house manager, you might have two races: one that
+allows members to give feedback to the maintenance manager, and one
+that lets them vote on whether she should get her comp or not.  You
+could name those races "Maintenance Manager Feedback" and "Maintenance
+Manager Comp Release".  For the first race, just check the feedback
+check box.  Look how all the other options go away!  There's only one
+option left, which is to allow voter comments.  If you check that box,
+then voters can give feedback to the Maintenance Manager, but also
+make a comment that every other voter will see when they're voting.
+You probably don't want that to happen, so leave that box unchecked.
+</p>
+
+<p>The second race is the question of whether the maintenance
+manager's comp should be released.  The description can be "Should the
+maintenance manager's comp be released?"  The candidates will be Yes
+and No, so you should enter them in the "candidates" box like
+<pre>
+Yes
+No
+</pre>
+Your house might require that 2/3 of the house vote Yes in order to
+release her comp, so you should put 66.6 in for the percentage
+threshold, and leave everything else blank.
+
+</ul>
+
+<li><a href='administer_election.php'
+name='administer_election>Administer elections</a>.  Administering
+elections can be kind of fun.  When you go to the election's page,
+you'll see a few things, depending on what stage the election is in.
+At the top of the page is a list of everyone who has voted so far.  It
+has their name, and also whether they were "manually entered."  This
+last column is because the system allows people to turn in paper
+ballots to you, the president.  All you have to do when they turn in a
+ballot is enter their name as having voted so that they don't also try
+to vote online.  Below that is a list of names and email addresses (if
+they're entered) of people who haven't voted yet.  The list is handily
+formatted so that you can just copy and paste it into an email to
+these people to remind them to vote before it's too late.  Below that
+will be a few links that depend on what stage the election is at.
+
+<ul>
+<li><b>Modify election</b> allows you to do just that, modify the
+election.  You can change anything about it, except its name and
+whether or not it's anonymous.  You can add and delete candidates,
+edit member comments, change threshold rules, and do everything else
+that you can do when you <a href='#create_election'>create an
+election</a>.  However, try not to do this.  It's very suspicious to
+change an election after you've created it, and any changes you make
+will be <a href='#elections_log'>logged</a> so that people can make
+sure you're not cheating.
+
+<li><b>Enter a paper ballot</b>.  This option only shows up after the
+election has ended.  Once it has ended, you can take any paper ballots
+you've gotten from voters and enter them into the system using this
+link.  Note that, since you could potentially cheat here, the system
+will require two things: that you sign in, so that it knows who you
+are, and that you have two witnesses also enter their names and
+passwords, so that it knows you're not alone in your room, entering
+fake ballots.  Ideally, you should do this in a public part of the
+house.
+
+<li><b>Finalize the election</b>.  After you're all done entering
+paper ballots, you can click on this button to make the election
+results final.  The only effect this has is that if the election was
+set up to not show partial results, then only after you have clicked
+this will anyone be able to see the results of the election.</p>
+
+<p>If you finalized the election too early, and it turns out that you
+have more ballots to enter, don't despair.  Click on the "Modify
+election" link, change the end date to a day after today, and submit.
+Then go back and change the end date back to the original.  Now you
+can keep on entering ballots.</p>
+
+<li><b>Delete election</b>.  After an election is finished, and its
+results don't matter anymore, you should probably delete it.
+(Otherwise your administration page will be a nightmare).  To delete
+an election, check the Delete election? box, and click on the Delete
+election button.  Since deleting an election is pretty serious (it
+removes all record of it), you'll need witnesses to do this too.  Note
+that once you have witnesses sign in, you can keep doing things for a
+little while, so you can go through and delete several old elections
+at a time.
+
+</ul>
+
+<h3>Notes about the system</h3>
+
+<p>
+Everyone in your house should be in the workshift system, so that they
+can all vote.  That will definitely be true if your workshift manager
+used the CO house list.  However, some workshift managers entered the
+house list manually, and so comped managers might not be on it.  You
+should check with them, and get them to enter everyone in the house
+in.
+</p>
+
+<p>There may be people in your house, like boarders, who are in the
+workshift system but who shouldn't be allowed to vote.  You can make
+them "nonvoters" who can't vote, by going to <a
+href='../../admin/administer_users.php'>administer_users.php</a>.
+</p>
+
+<p>If your house is not ready to switch completely over to this
+system, then that's fine.  You can run an election with paper ballots
+as well as online ballots -- just follow the procedure above in
+administering the election to enter people's names into the system as
+they vote on paper.  Once the election is over, you can enter all the
+paper ballots, and the system will tabulate the results as usual.
+
+<h4>Security</h4>
+
+Security is an important feature of this system.  Here are the major
+security features that are built in:
+
+<ul>
+<li>If an election is anonymous, who cast which ballot is not stored
+anywhere in the system, so nobody can access that information.
+Instead, each ballot has a "voter id."  That voter id is displayed to
+the member when she votes, and also emailed to her (unless she
+requests that it not be).  When the election is over, the ballots are
+all displayed on the results page, along with the corresponding voter
+ids.  Thus, anyone can look at that page and confirm that her vote was
+counted properly.  However, nobody else knows how she voted, since she
+is the only one who knows her voter id.
+
+<li>Every time a vote is cast, the vote is emailed to the voter's
+email address on file.  They can choose not to receive that email when
+they vote.  If they do that, or if they have no email address on file,
+then that will be logged, since there is a potential for fraud if no
+email is sent.
+
+<li>Every action that anyone in the system takes that could be
+suspicious is logged, and is available for everyone to see at <a
+href='../elections_log.php'>elections_log.php</a>.  The following
+actions are logged: you make a change to an election, someone changes
+their password, someone changes their email, someone votes and asks
+that their vote not be emailed, someone votes without an email, the
+workshift manager changes the house list, the workshift manager resets
+someone's password, the workshift manager restores a backup.  Of
+course, you should trust your house members, but this allows people to
+be more confident in the system.
+
+<li>For actions you need to take that might be suspicious, you need to
+have witnesses.  Thus, you need to have witnesses to enter paper
+ballots into the system and to delete an election.
+
+</ul>
