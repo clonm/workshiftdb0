@@ -25,6 +25,9 @@ if ($officer_name) {
   }
   else {
     $grants[] = substr($officer_name,strlen($house_name));
+    if ($grants[0] == 'president') {
+      $grants[] = 'nonvoter';
+    }
   }
 }
 //don't want this anymore, because we've added superusers

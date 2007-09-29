@@ -11,10 +11,14 @@ function init_yesno(ii) {
    document.getElementById('candidates_' + ii).value="yes\nno";
    document.getElementById('num_' + ii).value = 1;
    document.getElementById('runoff_' + ii + '_none').checked = true;
-   document.getElementById('threshold_' + ii + '_num_percent').value = 50;
+   document.getElementById('threshold_' + ii + '_num_percent').value = 50.1;
    document.getElementById('threshold_' + ii + '_percent').checked = true;
    document.getElementById('abstain_count_' + ii).checked = true;;
    document.getElementById('def_val_' + ii).value = 'no';
+   document.getElementById('abstain_count_' + ii).disabled = false;
+   document.getElementById('abstain_count_span_' + ii).style.color = '';
+   document.getElementById('def_val_' + ii).disabled = false;
+   document.getElementById('def_val_span_' + ii).style.color = '';
    return false;
 }
 
@@ -25,7 +29,9 @@ function init_approved(ii) {
    document.getElementById('threshold_' + ii + '_num_percent').value = 66.6;
    document.getElementById('threshold_' + ii + '_percent').checked = true;
    document.getElementById('abstain_count_' + ii).checked = true;;
-   document.getElementById('def_val_' + ii).value = 'Not Approved';
+   document.getElementById('abstain_count_span_' + ii).style.color = '';
+   document.getElementById('def_val_' + ii).disabled = false;
+   document.getElementById('def_val_span_' + ii).style.color = '';
    return false;
 }
 

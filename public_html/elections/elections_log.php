@@ -546,6 +546,10 @@ while ($row = $res->FetchRow()) {
           "A voter voted without an email address on file</a></td><td>" .
           escape_html($row['val']);
         break;
+      case 'voter_request_no_email':
+	print "voter_request_no_email'>" .
+	  "A voter requested that their vote not be emailed to them</a></td><td>"
+	  . escape_html($row['val']);
       default:
         print "unknown'>The action " . escape_html($row['attrib']) . 
           " was taken</td><td><a href='$page_name?details=" . $row['autoid'] . 
@@ -616,7 +620,7 @@ while ($row = $res->FetchRow()) {
       $mem = escape_html($row['attrib']);
       if ($val == 'nonvoter') {
         print "nonvoter_privilege'>$mem was made a ";
-        if (in_array($val,$oldval)) {
+        if (!in_array($val,$oldval)) {
           print 'nonvoter';
         }
         else {
@@ -634,7 +638,7 @@ while ($row = $res->FetchRow()) {
           break;
         }
         print "_privilege'>$mem was ";
-        if (count($oldval)) {
+        if (!in_array($val,$oldval)) {
           print "given";
         }
         else {

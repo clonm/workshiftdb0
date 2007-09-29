@@ -642,7 +642,7 @@ foreach ($fine_exists as $key => $val) {
 print "</tr></table>";
 print "(Negative numbers are credits)<br><br>\n";
 //were there any fines total?
-if (array_sum($fine_exists)) {
+if (in_array(true,$fine_exists)) {
   ob_end_flush();
 }
 else {

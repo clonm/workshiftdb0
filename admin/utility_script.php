@@ -39,13 +39,13 @@ $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
 #                 'elections_attribs','elections_text','userconf_data','elections_log',
 #                 'privilege_table','session_data','special_fining','static_text');
 #print "<pre>";
-$houses = array('clo');
+#$houses = array('clo');
 #require_once('../public_html/admin/create_all_tables.php');
 foreach ($houses as $house) {
   $db->debug = true;
   $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
   print "<h1>$house</h1>";
-  $db->Execute("alter table `house_info` add column `privacy` int default null");
+  $db->Execute("update `officer_password_table` set `passwd` = where `officer_name` = 'workshiftadmin'");
   continue;
 //   while ($row = $res->FetchRow()) {
 //     foreach (array('feedback','member_add','member_comments','abstain_count') as $bool_attrib) {

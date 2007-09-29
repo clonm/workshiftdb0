@@ -211,7 +211,7 @@ different time here, in which case it will end later, at this time.
 <option value=1 <?=!$elect_row || $elect_row['end_ampm'] == 'pm'?' selected':''?>>pm
 </select><br>
 The server thinks it is <?=user_time()?> right now.  If this is incorrect,
-<a href='../../common/tz_set.php'>set the time zone</a>.
+<a href='../../admin/tz_set.php'>set the time zone</a>.
 <hr>
 You can put some text that will appear at the top of the voter's page here.
 Check here to treat it

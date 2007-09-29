@@ -1182,6 +1182,10 @@ You can view the election results so far</a>.
       elections_log($election_name,null,'voter_no_email',null,$member_name);
     }
   }
+  else if ($anon_voting) {
+    elections_log($election_name,null,'voter_request_no_email',null,
+		  $member_name);
+  }
   exit;
 }
  exit("I don't know what you're trying to do on this page.  Please email " .
