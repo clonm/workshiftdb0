@@ -1,5 +1,6 @@
 <html><head><title>Election Administrator's Page</title></head>
 <body>
+<a href='help.html'><h4>Help</h4></a>
 Follow these links to administer elections.
 
 <ul>
