@@ -293,6 +293,7 @@ $dummy_string = get_static('dummy_string','XXXXX');
                                          $row['category'] &&
                                          substr($row['category'],0,1) == '*');
    }
+   $row['workshift'] = format_shift($row['workshift'],$row['hours'],$row['floor']);
  }
 
  if (!isset($table_name)) {
