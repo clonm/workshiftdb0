@@ -45,7 +45,7 @@ foreach ($houses as $house) {
   $db->debug = true;
   $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
   print "<h1>$house</h1>";
-  $db->Execute("update `officer_password_table` set `passwd` = password('daniel724') where `officer_name` = 'workshiftadmin'");
+  $db->Execute("update `officer_password_table` set `passwd` =  where `officer_name` = 'workshiftadmin'");
   continue;
 //   while ($row = $res->FetchRow()) {
 //     foreach (array('feedback','member_add','member_comments','abstain_count') as $bool_attrib) {

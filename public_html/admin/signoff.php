@@ -35,7 +35,6 @@ if (count($_GET) == 0) { ?>
 <?php
    print $body_insert;
  print_help(); 
- print "<pre>";
 ?>
 <form action='<?=this_url()?>' method=get id='signoff_form'>
    <input size=3 name='week_num' value='<?=($cur_week = get_cur_week())>-1?$cur_week:''?>'>
@@ -244,7 +243,7 @@ $col_names = array_merge(array('workshift'),array_map('date_maybe',$days),
      . "`$table_name`.`day` = 'Wednesday' OR "
      . "`$table_name`.`day` = 'Thursday' OR `$table_name`.`day` = 'Friday' OR "
      . "`$table_name`.`day` = 'Saturday' OR `$table_name`.`day` = 'Sunday' "
-     . "GROUP BY `$table_name`.`workshift`, `$table_name`.`hours` "
+     . "GROUP BY `$table_name`.`shift_id`, `$table_name`.`workshift`, `$table_name`.`hours` "
      . "ORDER BY `$table_name`.`workshift`";
  }
 $col_sortable = array();
