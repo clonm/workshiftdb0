@@ -588,7 +588,7 @@ function set_election_attrib($attrib,$val) {
                           array($election_name, $race_name,$attrib));
   }
   if (!$modify || is_empty($oldval)) {
-    //only log if we're modifying
+    //only log if we're modifying a race
     if ($modify && $val !== null) {
       elections_log($election_name,$race_name,$attrib,
                     null,$val);

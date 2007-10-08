@@ -346,7 +346,7 @@ print $body_insert;
 $description = get_election_attrib('descript',null,false);
 //if not html, escape it and pre-space it
 if (!get_election_attrib('descript_html',null,false)) {
-  $description = "<div style='white-space: pre'>" . 
+  $description = "<div style='" . white_space_css() . "'>" . 
     escape_html($description) . "</div>";
 }
 if ($descript_file) {
@@ -470,7 +470,7 @@ while ($namerow = $nameres->FetchRow()) {
     //option exists in code for html description, but not in
     //create_election.php.  Wouldn't be much work to put it in.
     if (!isset($row['descript_html']) || !$row['descript_html']) {
-      print " style='white-space: pre'>" . 
+      print " style='" . white_space_css() . "'>" . 
         escape_html($row['race_descript']) . "</div>\n";
     }
     else {
