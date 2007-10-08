@@ -340,7 +340,10 @@ function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag = false) {
   }
   else {
     $check_res = check_officer_passwd($member_name,$oldpasswd);
-  }    
+  }
+  if ($newpasswd == "") {
+    exit("You cannot set your password to be blank.  Press back and try again.");
+  }
   if ($check_res == -1 || $check_res == -4 || $check_res > 0) {
     $ret = $db->Execute("REPLACE INTO `" . ($officer_flag?'officer_':'') . 
                         "password_table` " .
@@ -1638,6 +1641,8 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
         if ($pass_check == -1) {
           //we'll offer a link to get back here later.
           $_REQUEST['previous_url'] = $_SERVER['REQUEST_URI'];
+	  //delete any old session
+	  set_session(null,null,true);
           require_once("$php_includes/common/set_passwd.php");
           exit;
         }
