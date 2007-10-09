@@ -206,9 +206,9 @@ different time here, in which case it will end later, at this time.
 <input type=text name=end_time_mn size=2
 <?=$elect_row?'value="' . escape_html($elect_row['end_minute']) .
                                  '"':''?>>&nbsp;<select name=end_time_ampm>
-<option value=0
+<option
 <?=$elect_row && $elect_row['end_ampm'] == 'am'?' selected':''?>>am
-<option value=1 <?=!$elect_row || $elect_row['end_ampm'] == 'pm'?' selected':''?>>pm
+<option <?=!$elect_row || $elect_row['end_ampm'] == 'pm'?' selected':''?>>pm
 </select><br>
 The server thinks it is <?=user_time()?> right now.  If this is incorrect,
 <a href='../../admin/tz_set.php'>set the time zone</a>.
