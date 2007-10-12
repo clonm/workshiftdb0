@@ -1131,7 +1131,7 @@ You can view the election results so far</a>.
   //do email
   if (!$manual_entry && 
       (($anon_voting && get_static('email_voters_anon',true)) ||
-      (!$anon_voting && get_static('email_voters_not_anon',true) &&
+      (!$anon_voting && get_static('email_voters_not_anon',true))) &&
        isset($_REQUEST['email_voter_voterid'])))) {
     $user_email = get_email($member_name);
     if ($user_email) {
@@ -1182,7 +1182,8 @@ You can view the election results so far</a>.
       elections_log($election_name,null,'voter_no_email',null,$member_name);
     }
   }
-  else if ($anon_voting) {
+  else if (!$manual_entry && $anon_voting &&
+       	   get_static('email_voters_anon',true)) {
     elections_log($election_name,null,'voter_request_no_email',null,
 		  $member_name);
   }
