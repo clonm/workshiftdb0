@@ -1130,9 +1130,9 @@ You can view the election results so far</a>.
   }
   //do email
   if (!$manual_entry && 
-      (($anon_voting && get_static('email_voters_anon',true)) ||
+      ((($anon_voting && get_static('email_voters_anon',true)) ||
       (!$anon_voting && get_static('email_voters_not_anon',true))) &&
-       isset($_REQUEST['email_voter_voterid'])))) {
+       isset($_REQUEST['email_voter_voterid']))) {
     $user_email = get_email($member_name);
     if ($user_email) {
       $email_body = "If you did not vote in this election, " .
