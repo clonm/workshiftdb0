@@ -219,7 +219,7 @@ Check here to treat it
 as HTML (otherwise it will be treated as plain text):
 <input type=checkbox name='descript_html'
 <?=$elect_row && $elect_row['descript_html']?' checked':''?>>
-<textarea name='descript' rows=8 cols=60>
+<textarea name='descript' rows=8 cols=60 wrap=soft>
 <?=$elect_row?escape_html($elect_row['descript']):''?>
 </textarea>
 <?php
@@ -288,7 +288,7 @@ id='display_name_<?=$ii?>'
   //this description can't be html -- that might be useful to add
 ?>
 <label>Description of race (if necessary):</label>
-<textarea name='race_descript_<?=$ii?>' rows=5 cols=60 wrap='off'>
+<textarea name='race_descript_<?=$ii?>' rows=5 cols=60 wrap='soft'>
 <?=$attribs?escape_html($attribs['race_descript']):''?>
 </textarea>
 <hr>
@@ -386,22 +386,23 @@ onchange='get_elt_by_id("threshold_<?=$ii?>_number").click()'
   <?=$radio < 0?' value="' . escape_html(-$radio) . '"':''?>><label
 for='threshold_<?=$ii?>_number'>votes are required</label></span>.</span>
 <br/>
+<?php
+  $def_val_disable = (!$radio && (!$attribs || !strlen($attribs['num_voters'])));
+  $abstain_count_disable = ($radio != 1 && (!$attribs || !strlen($attribs['num_voters'])));
+?>
 <span id='abstain_count_span_<?=$ii?>'
-  <?=$radio?'':'style="color: gray"'?>
+  <?=$abstain_count_disable?'style="color: gray"':''?>
 > Will abstentions count as votes for threshold purposes?
 <input type=checkbox name='abstain_count_<?=$ii?>' id='abstain_count_<?=$ii?>'
 <?=$attribs && $attribs['abstain_count']?' checked':''?> value=1
-  <?=$radio?'':'disabled=true'?> ></span><br/>
+  <?=$abstain_count_disable?'disabled=true':''?> ></span><br/>
 <span id='num_voters_span_<?=$ii?>'
 >Is there a minimum number of votes that must be cast in order for this race to be decided at all
   (perhaps two-thirds of your house must vote on a bylaw change, however they vote, for
    it to have any chance of passing)?
 <input name='num_voters_<?=$ii?>' id='num_voters_<?=$ii?>' size=3 <?=$attribs && $attribs['num_voters']?' value="' . 
-  escape_html($attribs['num_voters']) . '"':''?> onchange='num_voters_change(this)'></span>
+  escape_html($attribs['num_voters']) . '"':''?> onchange='abstain_count_def_val_fix(<?=$ii?>)'></span>
 <br/>
-<?php
-  $def_val_disable = (!$radio && (!$attribs || !strlen($attribs['num_voters'])));
-?>
 <span id='def_val_span_<?=$ii?>'
   <?=$def_val_disable?'style="color: gray"':''?>
 >What is the default if one of the above thresholds is not met?</span> <input size=20 name='def_val_<?=$ii?>'

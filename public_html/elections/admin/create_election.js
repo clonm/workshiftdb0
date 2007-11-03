@@ -35,44 +35,44 @@ function init_approved(ii) {
    return false;
 }
 
-function threshold_change(race_num,ind) {
-  get_elt_by_id('abstain_count_span_' + race_num).style.color = 
-    (ind != 1?'gray':'');
-  get_elt_by_id('abstain_count_' + race_num).disabled = (ind != 1);
-  if (ind) {
-    if (ind == 1) {
-      set_value_by_id('threshold_' + race_num + '_num_absolute','');    
-    }
-    else {
-      set_value_by_id('threshold_' + race_num + '_num_percent','');
-    }    
-    document.getElementById('def_val_span_' + race_num).style.color = '';
-    document.getElementById('def_val_' + race_num).disabled = false;
+function abstain_count_def_val_fix(race_num) {
+  var num_flag = get_value_by_id('num_voters_' + race_num).length;
+  var threshold_flag;
+  if (get_elt_by_id('threshold_' + race_num + '_none').checked) {
+    threshold_flag = 0;
   }
-  else {
+  else if (get_elt_by_id('threshold_' + race_num + '_percent').checked) {
+    threshold_flag = 1;
+  }
+  else if (get_elt_by_id('threshold_' + race_num + '_number').checked) {
+    threshold_flag = 2;
+  }
+  var abstain_enable = num_flag || threshold_flag == 1;
+  var def_val_enable = num_flag || threshold_flag;
+  get_elt_by_id('abstain_count_span_' + race_num).style.color = 
+      (abstain_enable?'':'gray');
+  get_elt_by_id('abstain_count_' + race_num).disabled = (!abstain_enable);
+  get_elt_by_id('def_val_span_' + race_num).style.color =
+      (def_val_enable?'':'gray');
+  get_elt_by_id('def_val_' + race_num).disabled = (!def_val_enable);
+}
+
+function threshold_change(race_num,ind) {
+  if (ind == 0) {
     set_value_by_id('threshold_' + race_num + '_num_percent','');
     set_value_by_id('threshold_' + race_num + '_num_absolute','');    
-    var eltval = get_value_by_id('num_voters_' + race_num);
-    if (!eltval.length) {
-      document.getElementById('def_val_span_' + race_num).style.color = 'gray';
-      document.getElementById('def_val_' + race_num).disabled = true;
-    }
   }
+  else if (ind != 1) {
+    set_value_by_id('threshold_' + race_num + '_num_percent','');
+  }
+  else {
+    set_value_by_id('threshold_' + race_num + '_num_absolute','');
+  }
+  abstain_count_def_val_fix(race_num);
 }
 
 function num_voters_change(elt) {
-  var race_num = elt.name.substr(11);
-  var eltval = get_value(elt);
-  if (eltval.length) {
-    document.getElementById('def_val_span_' + race_num).style.color = '';
-    document.getElementById('def_val_' + race_num).disabled = false;
-  }
-  else {
-    if (document.getElementById('threshold_' + race_num + '_none').checked) {
-      document.getElementById('def_val_span_' + race_num).style.color = 'gray';
-      document.getElementById('def_val_' + race_num).disabled = true;
-    }
-  }
+  abstain_count_def_val_fix(elt.name.substr(11));
 }
 
 function feedback_change(elt) {
@@ -122,6 +122,7 @@ function add_race() {
   elt.setAttribute('id','race_descript_' + num_races);
   elt.setAttribute('rows',5);
   elt.setAttribute('cols',60);
+  elt.setAttribute('wrap','soft');
   lab = document.createElement('label');
   lab.appendChild(document.createTextNode("Description of race (if necessary): "));
   par.appendChild(lab);
@@ -300,7 +301,7 @@ function add_race() {
   elt.setAttribute('name','num_voters_' + num_races);
   elt.setAttribute('id','num_voters_' + num_races);
   elt.setAttribute('size',3);
-  elt.setAttribute('onchange','num_voters_change(this)');
+  elt.setAttribute('onchange','abstain_count_def_val_fix(' + num_races + ')');
   spanelt.appendChild(elt);
   divelt.appendChild(spanelt);
   divelt.appendChild(document.createElement('br'));
