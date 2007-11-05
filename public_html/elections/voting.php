@@ -555,8 +555,8 @@ while ($namerow = $nameres->FetchRow()) {
       print("At least " . escape_html(-$row['threshold']) . 
             " votes are required for " . $opt . "<br>");
     }
-    if (!$row['abstain_count']) {
-      print("  Abstentions do not count towards the total, so if you wish " .
+    if (!$row['abstain_count'] && $row['threshold']) {
+      print("  Abstentions do not count towards the threshold, so if you wish " .
             "to abstain, you may, by choosing the abstain option.<br>");
     }
     else if ($row['threshold'] > 0) {
