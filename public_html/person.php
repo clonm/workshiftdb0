@@ -400,7 +400,7 @@ for ($ii = 0; $ii <= $week_num; $ii++) {
         //take out the part we already fined for
         $fin_doublefloor -= $fin_floor;
         //add in another fine of the remainder
-        $fine += ($temptotal-$fin_doublefloor)*$fin_rate;
+        $fine += max($temptotal-$fin_doublefloor,0)*$fin_rate;
       }
     }
     else {
