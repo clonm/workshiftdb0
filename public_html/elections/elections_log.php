@@ -550,6 +550,7 @@ while ($row = $res->FetchRow()) {
 	print "voter_request_no_email'>" .
 	  "A voter requested that their vote not be emailed to them</a></td><td>"
 	  . escape_html($row['val']);
+	break;
       default:
         print "unknown'>The action " . escape_html($row['attrib']) . 
           " was taken</td><td><a href='$page_name?details=" . $row['autoid'] . 
