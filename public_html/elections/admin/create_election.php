@@ -388,7 +388,7 @@ for='threshold_<?=$ii?>_number'>votes are required</label></span>.</span>
 <br/>
 <?php
   $def_val_disable = (!$radio && (!$attribs || !strlen($attribs['num_voters'])));
-  $abstain_count_disable = ($radio != 1 && (!$attribs || !strlen($attribs['num_voters'])));
+  $abstain_count_disable = ($radio > 0 && (!$attribs || !strlen($attribs['num_voters'])));
 ?>
 <span id='abstain_count_span_<?=$ii?>'
   <?=$abstain_count_disable?'style="color: gray"':''?>
