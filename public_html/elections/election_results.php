@@ -1098,7 +1098,7 @@ function borda_choice($choices,&$votes,$loser = null,$new = null) {
   }
   foreach ($borda as $choice => $num) {
     //not in the set?  skip
-    if (!array_key_exists($choice,$choices)) {
+    if (!in_array($choice,$choices)) {
       continue;
     }
     //haven't found one yet, or this one is better?
