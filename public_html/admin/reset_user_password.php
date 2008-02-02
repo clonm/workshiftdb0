@@ -1,5 +1,6 @@
 <?php 
 //reset password for user so they can set it themselves
+$require_user = array('workshift','president');
 require_once('default.inc.php');
 if (!array_key_exists('member_name_reset',$_REQUEST)) {
   $houselist = get_houselist();
