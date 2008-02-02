@@ -130,6 +130,10 @@ if (count($_FILES)) {
          $started = false;
          continue;
        }
+       if (substr($line,0,6) == "Advent") {
+         $started = false;
+         continue;
+       }
        if (preg_match('/^ *-+ *-+ *.?$/',$line)) {
          break;
        }
