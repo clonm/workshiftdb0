@@ -144,6 +144,8 @@ function add_race() {
   elt.setAttribute('name','candidates_' + num_races);
   elt.setAttribute('id','candidates_' + num_races);
   elt.setAttribute('rows',5);
+    elt.setAttribute('cols',40);
+    elt.setAttribute('wrap','off');
   lab = document.createElement('label');
   lab.appendChild(document.createTextNode("Candidates (one per line): "));
   spanelt = document.createElement('span');

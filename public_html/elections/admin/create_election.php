@@ -306,7 +306,7 @@ feedback, like perhaps a VOC)?
 >
 <span id='candidates_span_<?=$ii?>'><label>Candidates
 (one per line):</label><textarea name='candidates_<?=$ii?>'
-rows=5 wrap="off" id='candidates_<?=$ii?>'>
+rows=5 wrap="off" id='candidates_<?=$ii?>' cols=40>
 <?=$attribs?escape_html($attribs['candidates']):''?>
 </textarea></span><br>
 <span id='num_span_<?=$ii?>'>Number of spots
