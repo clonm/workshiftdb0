@@ -18,6 +18,8 @@ pretty much do everything you can do to an election.
 <li><a href='../../admin/set_passwd.php'>Change the president
 password</a>.
 
+<li><a href='../../admin/reset_user_password.php'>Reset the password of a user who has forgotten it.</a>
+
 <li><a
 href='../../admin/administer_users.php'>administer_users.php</a> lets
 you add/remove user privileges.  You should use this to make boarders
