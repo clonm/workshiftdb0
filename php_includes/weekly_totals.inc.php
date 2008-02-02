@@ -63,7 +63,6 @@ for ($ii = 0; $ii < $week_num; $ii++) {
 }
 $col_formats['Total'] = '';
 $col_styles[$ctr++] = '';
-
 $fining_rate = get_static('fining_rate',12);
 
 $fining_buffer = get_static('fining_buffer',0,$archive);
@@ -110,7 +109,7 @@ foreach ($backup_fine_weeks as $week => $junk) {
 }
 
 if ($nonzeroed_total = get_static('nonzeroed_total_hours',null,$archive)) {
-  $col_names[] = 'Nonzeroed Total';
+  $col_formats['Nonzeroed Total'] = '';
   $col_styles[$ctr++] = '';
 }
 if ($cash_hours_auto = get_static('cash_hours_auto',false,$archive)) {
@@ -262,7 +261,7 @@ function mung_whole_row(&$row) {
       $zero_partial = 0;
     }
     if ($nonzeroed_total) {
-      $row['Nonzeroed Total'] += $row["week $ii"];
+      $row['Nonzeroed Total'] += $row["week $ii"]-$row["owed $ii"];
       if ($max_up_hours && $row['Nonzeroed Total'] > $max_up_hours) {
         $row['Nonzeroed Total'] = $max_up_hours;
       }
