@@ -5,7 +5,22 @@ require_once('default.inc.php');
 <?=$body_insert?>
 <?php
 
+$show_choices = false;
 if (!array_key_exists('election_name',$_REQUEST)) {
+  $show_choices = true;
+}
+else {
+  $election_name = $_REQUEST['election_name'];  
+  $num = $db->GetRow("select count(*) as ct from `elections_record` " .
+		     "where `election_name` = ?",array($election_name));
+  if ($num['ct'] == 0) {
+    print "<h4>Election \"" . escape_html($election_name)
+      . "\" does not exist.  Please choose an election:</h4>";
+    $show_choices = true;
+  }
+}
+
+if ($show_choices) {
   $elections = array();
   $res = $db->Execute('SELECT ' . bracket('election_name') . ' FROM ' .
                       bracket('elections_record'));
@@ -17,7 +32,7 @@ if (!array_key_exists('election_name',$_REQUEST)) {
          "Go <a href='create_election.php'>create one</a>.");
   }
     ?>
-<form method='GET' action='<?=$_SERVER['REQUEST_URI']?>'>
+<form method='GET' action='<?=this_url()?>'>
    <?php 
    $ii = 0;
    foreach ($elections as $election) {
@@ -33,7 +48,6 @@ if (!array_key_exists('election_name',$_REQUEST)) {
     <?php 
    exit; 
 }
-$election_name = $_REQUEST['election_name'];  
 
 if (array_key_exists('finalize_election',$_REQUEST)) {
   $row = $db->GetRow("select count(*) as ct from `elections_record` " .
@@ -168,7 +182,7 @@ escape_html(rawurlencode($_REQUEST['election_name']))?>'
 >Enter a paper ballot</a><p>
 If all votes have been input and you're ready to make the results
 public, <form action='<?=this_url()?>' method='post'>
-<input type=hidden name='election_name' value='<?=$_REQUEST['election_name']?>'>
+<input type=hidden name='election_name' value='<?=escape_html($_REQUEST['election_name'])?>'>
 <input type=hidden name='finalize_election' value=1>
 <input type=submit value='Finalize the election'>
 </form>
