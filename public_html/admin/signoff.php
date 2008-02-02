@@ -104,7 +104,7 @@ $body_insert = "<div style='" . white_space_css() . "'>" . $signoff_message . "<
      function date_maybe($str) {
        global $start_date,$week_num,$days;
        return $str . " " . 
-         date('n/j',mktime(7*24*$week_num+array_search($str,$days),0,0,
+         date('n/j',mktime(7*24*$week_num+24*array_search($str,$days),0,0,
                            $start_date[1],$start_date[2],$start_date[0]));
      }
    }
