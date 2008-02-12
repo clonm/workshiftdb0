@@ -9,17 +9,69 @@
 $body_insert = '';
 require_once('default.inc.php');
 
-//are we submitting this form?
-if (!array_key_exists('election_name',$_REQUEST) || 
-    (array_key_exists('modify_election',$_REQUEST) &&
-     !array_key_exists('election_name_full',$_REQUEST))) { 
-  //nope
+$page_status = null;
+//post should override get, since get might be from an earlier page
+if (array_key_exists('page_status',$_POST)) {
+  $_REQUEST['page_status'] = $_POST['page_status'];
+}
+
+//initialize page status variable
+if (!array_key_exists('page_status',$_REQUEST)) {
+  if (array_key_exists('modify_election',$_REQUEST)) {
+    $page_status = 'modify';
+  }
+  else {
+    $page_status = 'initial';
+  }
+}
+else {
+  $page_status = $_REQUEST['page_status'];
+}
+
+if ($page_status == 'initial') {
+?>
+  <html><head><title>Create Election: clone from old one?</title></head><body>
+  Do you want your new election to be based on an old one?  If so, choose
+    which one.  You'll customize the election in the next step.
+
+<?php
+//'
+  $elections = array();
+  $res = $db->Execute("SELECT `election_name` FROM `elections_record`");
+  while ($row = $res->FetchRow()) {
+    $elections[] = $row['election_name'];
+  }
+  if (!count($elections)) {
+    exit("No elections to administer!  " .
+         "Go <a href='create_election.php'>create one</a>.");
+  }
+    ?>
+<form method='GET' action='<?=this_url()?>'>
+<input type=hidden name='page_status' value='user entry'>
+   <input type=radio name='clone_election_name' value='' id='0'><label for='0'>(Do not clone from an old election)</label><br/>
+   <?php 
+
+   $ii = 1;
+   foreach ($elections as $election) {
+     $election = escape_html($election);
+     ?>
+     <input type=radio name='clone_election_name' value='<?=$election?>'
+        id='<?=$ii?>'><label for='<?=$ii++?>'><?=$election?></label><br/>
+     <?php 
+   }
+  ?>
+<input type='submit' value='Next Step'>
+</form></body></html>
+
+<?php
+   exit;
+}
+if ($page_status == 'modify' || $page_status == 'user entry') {
   ?>
  
  <html><head><title><?=array_key_exists('modify_election',$_REQUEST)?'Modify ':'Create '?>
 election</title>
 <?php
-    ;
  //The label style is so the "Candidates" line is at the top of the textarea,
  //not the bottom.
 ?>
@@ -53,22 +105,26 @@ election</title>
 ?>
 <form method='POST' enctype='multipart/form-data'
 action="<?=this_url()?>" onsubmit='return validate_election_form()'>
+<input type=hidden name='page_status' value='data'>
 <?php
    ;
  //are we modifying, as opposed to creating a new one?
- if (array_key_exists('modify_election',$_REQUEST)) {
+ if ($page_status == 'modify' || array_key_exists('clone_election_name',$_REQUEST) && strlen($_REQUEST['clone_election_name'])) {
+   $data_election_name = $_REQUEST[$page_status == 'modify'?'election_name':'clone_election_name'];
    $elect_row = $db->GetRow("select `election_name`,`anon_voting`, `end_date` " .
                             "from `elections_record` where `election_name` = ? ",
-                            array($_REQUEST['election_name']));
+                            array($data_election_name));
    if (is_empty($elect_row)) {
      exit("The election you're trying to modify, " . 
-          escape_html($_REQUEST['election_name']) . " doesn't exist!");
+          escape_html($data_election_name) . " doesn't exist!");
    }
    $name_full = explode('_',$elect_row['election_name'],3);
    //keep this as a flag so when we submit we know what's going on.
    //It already has the semester, etc., appended.
-   print "<input type=hidden name='election_name_full' value='" . 
-     escape_html($elect_row['election_name']) . "'>\n";
+   if ($page_status == 'modify') {
+     print "<input type=hidden name='election_name_full' value='" . 
+       escape_html($elect_row['election_name']) . "'>\n";
+   }
    //get the date.  It's stored as a timestamp, and has to be
    //translated to the user's time zone, which is what user_time does
    $full_date = explode(' ',user_time($elect_row['end_date'],'Y-m-d H:i:s'));
@@ -125,20 +181,31 @@ action="<?=this_url()?>" onsubmit='return validate_election_form()'>
      $race_attribs[$ii] = $attribs;
      $race_attribs[$ii++]['race_name'] = $race_name;
    }
-   //user can't modify the election name, or if the election is anonymous
-   print "<h4>" . escape_html($elect_row['election_name']) . "</h4>\n";
-   print "Voting is " . ($elect_row['anon_voting']?'':'not ') . "anonymous.<br>\n";
-   print "<hr>";
+   if ($page_status == 'modify') {
+     //user can't modify the election name, or if the election is anonymous
+     print "<h4>" . escape_html($elect_row['election_name']) . "</h4>\n";
+     print "Voting is " . ($elect_row['anon_voting']?'':'not ') . "anonymous.<br>\n";
+     print "<hr>";
+   }
  }
  //if it's a new election, start things off (with the parameters that
  //modify can't change
  else {
    $elect_row = null;
    $race_attribs = null;
+ }
+ if ($page_status != 'modify') {
+   if ($elect_row) {
+     print "<p>Your new election has been based on " .
+       escape_html($_REQUEST['clone_election_name']) . ".  Please enter the " .
+       "election name, and make sure all other values are right.  You will " .
+       "probably want to change the <b>ending date</b>, and if any of the races have " .
+       "visible <b>voter comments</b>, you probably want to delete those.</p>";
+       }
    //38 is so that we can prepend year_{fall,spring,summer}_
 ?>
 <span id='election_name_span'>Name of election.  The year and semester will be added automatically.  
-You can enter at most 38 characters:
+You can enter at most 38 characters:<br/>
   <input type=text id='election_name'
    name='election_name' maxlength=38></span>&nbsp;&nbsp;&nbsp;&nbsp;
 <?php
@@ -161,7 +228,7 @@ Current semester: <select name='semester'>
 <option <?=$fall?>>fall
 </select>
 <hr>
-Is it anonymous? <input type=checkbox name=anon><br>
+   Is it anonymous? <input type=checkbox name=anon <?=$elect_row && $elect_row['anon_voting']?'checked':''?>><br/>
 <?php
   //end of create-specific options.  
              }
@@ -180,6 +247,8 @@ if ($elect_row) {
 }
 else {
   $radio_val = 'sync';
+}
+if ($page_status != 'modify') {
 ?>
 <label for='interim_results_sync'><input type=radio
 name='interim_results' id='interim_results_sync' value='sync'
