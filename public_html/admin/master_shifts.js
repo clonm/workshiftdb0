@@ -275,9 +275,11 @@ function can_do(member,workshift,listing,silent) {
   //round hours up
   var hours = Math.ceil(workshift[5]);
   if (hours > (nd-st)) {
-    alert("The system cannot calculate busy times for " + workshift[0] +
-          ", since the start time of " + start_time + " and end time of " +
-          end_time + " are so close together.");
+    if (!listing && !silent) {
+      alert("The system cannot calculate busy times for " + workshift[0] +
+            ", since the start time of " + start_time + " and end time of " +
+            end_time + " are so close together.");
+    }
     return [st,nd];
   }
   for (var tryct = 0; tryct < 2; tryct++) {
@@ -323,7 +325,7 @@ function can_do(member,workshift,listing,silent) {
         nd = 16;
       }
     }
-    var startii = -1;
+    var startii = st;
     //try shifting the start time of the workshift over until it matches a free
     //time slot in the member's schedule.  Do this while the shift still hasn't
     //hit the end time
@@ -335,7 +337,7 @@ function can_do(member,workshift,listing,silent) {
       if (startii == -1) {
         startii = ii;
       }
-      if (ii-startii >= hours) {
+      if (ii+1-startii >= hours) {
         if (msg) {
           alert(msg);
         }
