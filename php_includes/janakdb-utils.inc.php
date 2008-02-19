@@ -1048,18 +1048,15 @@ function janak_errhandler($errno,$errstr,$errfile,
   $old_rep = janak_error_reporting(0);
   $old_fat = janak_fatal_error_reporting(0);
   ob_start();
-  print "error: ";
-  var_dump($errstr);
-  print "\npage: " . this_url() . "\nerrno: ";
-  var_dump($errno);
+  print "error: " . $errstr;
+  print "\npage: " . $_SERVER['REQUEST_URI'] . " (this_url: " . this_url() . ")\nerrno: ";
+  print $errno;
   if (isset($str)) {
     print "\nDebug backtrace:";
     print($str);
   }
-  print "\nerrfile: ";
-  var_dump($errfile);
-  print "\nerrcontext: ";
-  var_dump($errcontext);
+  print "\nerrfile: " . $errfile . "\nerrcontext: ";
+  print_r($errcontext);
   print "Globals:\n";
   print_r($GLOBALS);
   print "\nEND GLOBALS\n";

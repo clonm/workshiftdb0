@@ -199,6 +199,9 @@ if (!isset($archive)) {
   }
 }
 
+//give nicer messages for mysql connection errors that are not my fault
+set_error_handler('janak_mysqlerr');
+
 //this is THE connection to the database.  The 't' is for transactions.
 $db = ADONewConnection('mysqlt');
 //turn on debugging?
@@ -216,6 +219,7 @@ if ($house_name !== 'admin') {
   $db->Connect($url_array['server'], $url_array['user'], 
                $url_array['pwd'], $url_array['db']);
   
+  set_error_handler('janak_errhandler');
   // Return associative arrays
   $db->SetFetchMode(ADODB_FETCH_ASSOC); 
   
@@ -246,5 +250,14 @@ if ($house_name !== 'admin') {
   else {
     ob_end_flush();
   }
+}
+
+function janak_mysqlerr($errno,$errstr,$errfile,
+                          $errline,$errcontext) {
+  if (substr($errstr,-strlen("Too many connections")) == "Too many connections") {
+    exit("Sorry, the BSC shares its server with other accounts, and they're "
+         . "hogging the server.  Try connecting again in a minute.");
+  }
+  janak_errhandler($errno,$errstr,$errfile,$errline,$errcontext);
 }
 ?>

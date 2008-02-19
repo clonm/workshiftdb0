@@ -1154,28 +1154,8 @@ You can view the election results so far</a>.
         $email_body .= "\n\n";
         }
       }
-      //get the president's email for the from: line.  email is in
-      //house_info.  line in privilege_table might have more than just
-      //president, hence the locate function.
-      $president_email = 
-        $db->GetRow("select `house_info`.`member_name`, " .
-                    "`email` from `house_info`," .
-                    "`privilege_table` where " .
-                    "`house_info`.`member_name` = " .
-                    "`privilege_table`.`member_name` " .
-                    "and " . 
-                    "locate('president',`privilege_table`.`privileges`) != 0" .
-                    " and length(`email`) limit 1");
-      if (is_empty($president_email)) {
-        $president_email = "Janak (Workshift Site Administrator) " .
-          "<janak@berkeley.edu>";
-      }
-      else {
-        $president_email = dbl_quote($president_email['member_name']) . ' <' . 
-        $president_email['email'] . ">";
-      }
       mail($user_email,"You have voted in $election_name",$email_body,
-           "From: $president_email");
+           "From: ${house}hp1@usca.coop";
     }
     //log if we couldn't email someone and it's an anonymous election
     else if ($anon_voting) {
