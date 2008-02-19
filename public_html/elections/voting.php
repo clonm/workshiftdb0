@@ -1155,7 +1155,7 @@ You can view the election results so far</a>.
         }
       }
       mail($user_email,"You have voted in $election_name",$email_body,
-           "From: ${house}hp1@usca.coop";
+           "From: ${house}hp1@usca.coop");
     }
     //log if we couldn't email someone and it's an anonymous election
     else if ($anon_voting) {
