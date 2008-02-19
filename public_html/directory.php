@@ -19,7 +19,8 @@ if (array_key_exists('modify_privacy',$_REQUEST)) {
 }
 $privacy = $db->GetRow("select `privacy` from `house_info` where `member_name` = ?",
                    array($member_name));
-$privacy = $privacy['privacy'];
+if (array_key_exists('privacy',$privacy)) {
+  $privacy = $privacy['privacy'];
 ?>
 To modify what info of yours appears in the directory, check/uncheck the buttons and submit.
 <form action='<?=this_url()?>' method=post><input type=hidden name='modify_privacy'>
@@ -28,6 +29,7 @@ Email: <input type=checkbox name='email' <?=$privacy & 2?'checked':''?>>,
 Phone: <input type=checkbox name='phone' <?=$privacy & 4?'checked':''?>>
 <input class=button type=submit value='Submit changes'></form>
 <?php
+  }
 $res = $db->Execute("select `house_list`.`member_name`, if(`privacy` & 1,`room`,null) as `room`, " .
                     "if (`privacy` & 2,`phone`,null) as `phone`, " .
                     "if (`privacy` & 4,`email`,null) as `email` " .
