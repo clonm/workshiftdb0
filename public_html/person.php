@@ -1,6 +1,8 @@
 <?php 
 //include everything
-$body_insert = '';
+if (!isset($body_insert)) {
+  $body_insert = '';
+}
 require_once('default.inc.php');
 //view a member's personal page, with lots of goodies used by members
 //as their primary access point, and by workshift managers to see
