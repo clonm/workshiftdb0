@@ -208,7 +208,7 @@ action="<?=this_url()?>" onsubmit='return validate_election_form()'>
 <span id='election_name_span'>Name of election.  The year and semester will be added automatically.  
 You can enter at most 38 characters:<br/>
   <input type=text id='election_name'
-   name='election_name' maxlength=38></span>&nbsp;&nbsp;&nbsp;&nbsp;
+   name='election_name' maxlength=38 size=38></span>&nbsp;&nbsp;&nbsp;&nbsp;
 <?php
     //logic to figure out the semester, for default choice in the select box
    $spring = $summer = $fall = ''; 
@@ -353,7 +353,7 @@ onclick='event.preventDefault(); init_yesno(<?=$ii?>); init_approved(<?=$ii?>)'>
 (like President, or VOC Maintenance): <input name='display_name_<?=$ii?>'
 id='display_name_<?=$ii?>'
 <?=$attribs?'value="' . escape_html($attribs['race_name']) . '"':''?>
-></span><br/>
+ maxlength=50 size=51></span><br/>
 <?php
   //this description can't be html -- that might be useful to add
 ?>
