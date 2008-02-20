@@ -3,9 +3,18 @@ $php_start_time = array_sum(split(' ',microtime()));
 $require_user = false;
 require_once('default.inc.php');
 ?>
-<html><head><title>Front page</title></head><body>
+<html><head><title>Front page</title>
+<style>
+TD.first { vertical-align: top; padding-right: 3em}
+TH { vertical-align: top; text-align: left; padding-right: 3em}
+</style>
+</head><body>
+<h3>First Things First</h3>
 Fill out your <a href="preferences.php">preference form</a>.<p>
 <a href="person.php">Your personal page</a><p>
+<hr>
+<table style='border: 0px solid;'><thead><tr><th>Workshift links</th><th>Online Voting Links</th><th>Other Links</th></tr></thead>
+<tbody><tr><td class="first">
 <?php
 if (get_static('online_signoff',null)) {
   print "<a href='online_signoff.php'>Sign off of a shift online</a><p>\n";
@@ -15,9 +24,12 @@ if (get_static('online_signoff',null)) {
 <a href="public_utils/shifts_by_name.php">Workshifts by name</a><p>
 <a href="shift_descriptions.php">Descriptions of workshifts</a><p>
 <a href="workshift_doc.php">Workshift policy document</a><p>
-<a href="elections/voting.php">Vote in elections</a><p>
+</td><td class="first">
+<a href="elections/voting.php">Vote in elections</a></p><p>
 <a href="elections/election_results.php">Election results</a><p>
-<a target='workshiftdb_help' href="help.html">Help using the workshift interface</a><p>
+</td><td class="first">
+<a href="directory.php">House directory</a></p><p>
+</td></tr></tbody></table>
 <hr>
 <?php
 $week_num = get_cur_week();
@@ -151,6 +163,6 @@ while ($row = $res->FetchRow()) {
 <p id="phptime" style='font-size: 10px'>
 PHP generated this page in 
 <?=escape_html(round(array_sum(split(' ',microtime()))-$php_start_time,2))?>
-seconds.
+ seconds.
 </body>
 </html>
