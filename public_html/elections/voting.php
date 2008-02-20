@@ -31,7 +31,8 @@ function list_elections($bad_election = null,$manual_entry = false) {
   if ($manual_entry) {
     $res = $db->Execute('select `election_name` ' .
                         "from `elections_record` where " .
-                        '`end_date` <= unix_timestamp() and anon_voting < 2');
+                        '`end_date` <= unix_timestamp() and anon_voting < 2 ' .
+                        'order by `election_name` desc');
   }
   else {
     $res = $db->Execute('SELECT ' . bracket('election_name') . ' FROM ' .
@@ -59,7 +60,7 @@ function list_elections($bad_election = null,$manual_entry = false) {
 <label for='<?=$ii?>' >
 <input type=radio name='election_name' id='<?=$ii++?>'
 value='<?=$election?>'
-checked><?=$election?></label><br>
+   <?=($ii==1)?'checked':''?>><?=$election?></label><br>
 <?php 
 }
 ?>

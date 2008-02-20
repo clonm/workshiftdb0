@@ -37,7 +37,8 @@ if ($page_status == 'initial') {
 <?php
 //';
   $elections = array();
-  $res = $db->Execute("SELECT `election_name` FROM `elections_record`");
+  $res = $db->Execute("SELECT `election_name` FROM `elections_record` "
+                      . "order by `election_name` desc");
   while ($row = $res->FetchRow()) {
     $elections[] = $row['election_name'];
   }

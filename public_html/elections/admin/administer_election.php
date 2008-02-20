@@ -22,8 +22,8 @@ else {
 
 if ($show_choices) {
   $elections = array();
-  $res = $db->Execute('SELECT ' . bracket('election_name') . ' FROM ' .
-                      bracket('elections_record'));
+  $res = $db->Execute('SELECT `election_name` FROM `elections_record` ' .
+                      'order by `election_name` desc');
   while ($row = $res->FetchRow()) {
     $elections[] = $row['election_name'];
   }
@@ -39,7 +39,7 @@ if ($show_choices) {
      $election = escape_html($election);
      ?>
      <input type=radio name='election_name' value='<?=$election?>'
-        id='<?=$ii?>'><label for='<?=$ii++?>'><?=$election?></label><br/>
+        id='<?=$ii?>' <?=($ii==0)?'checked':''?>><label for='<?=$ii++?>'><?=$election?></label><br/>
      <?php 
    }
   ?>
