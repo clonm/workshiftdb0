@@ -6,8 +6,8 @@ function end_date($week) {
   if (count($start_date) < 2) {
     return "(No semester start date given)";
   }
-  return escape_html(date('M j',mktime(7*24*$week,0,0,$start_date[1],
-                                       $start_date[2],$start_date[0])));
+  return escape_html(date('M j',mktime(7*24*$week+12,0,0,$start_date[1],
+                                       $start_date[2]+6,$start_date[0])));
 }
 if (!array_key_exists('fining_rate',$_REQUEST)) {
 ?>
