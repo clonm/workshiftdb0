@@ -132,7 +132,8 @@ foreach ($backup_arr as $backup) {
   $res = $db->Execute("show tables like ?",
                       array(quote_mysqlreg("$archive_pre$backup") . '_%'));
   if (is_empty($res)) {
-    janak_error("Backup " . escape_html($backup) . " does not exist.");
+    print("<h4>Backup " . escape_html($backup) . " does not exist.</h4>");
+    continue;
   }
   //we want to delete as much as possible, not dying ever
   janak_fatal_error_reporting(0);
@@ -177,10 +178,10 @@ function get_dbs_to_delete() {
     $db_props = array();
     $db_props['archive'] = $archive;
     //did the user not name this him/herself (conforms to autoname scheme)?
-    if ($db_props['autobackup'] = preg_match('/^([0-9]{4,4})_' .
+    if ($db_props['autobackup'] = preg_match('/^' . $archive_pre . '([0-9]{4,4})_' .
                                              '([0-9]{2,2})_([0-9]{2,2})_' .
                                              '([0-9]{2,2})_([0-9]{2,2})_' .
-                                             '([0-9]{2,2})_house_list$/',
+                                             '([0-9]{2,2})_$/',
                                              $archive,$matches)) {
       //here's the timestamp
       $db_props['time'] = mktime($matches[3],$matches[4],$matches[5],
@@ -225,10 +226,16 @@ function get_dbs_to_delete() {
     else {
       $db_props['semester'] = null;
     }
-    $db_props['week'] = get_cur_week();
+    if (table_exists('static_data')) {
+      $db_props['week'] = get_cur_week();
+    }
+    else {
+      $corrupt[] = substr($db_props['archive'],strlen($archive_pre),-1);
+      continue;
+    }
     if (!strlen($db_props['semester']) || !strlen($db_props['mod_date']) ||
         !strlen($db_props['master'])) {
-      $corrupt[] = $db_props['archive'];
+      $corrupt[] = substr($db_props['archive'],strlen($archive_pre),-1);
       continue;
     }
     else {
@@ -256,6 +263,7 @@ function get_dbs_to_delete() {
   }
   $to_delete = array();
   //ok, time to find databases we can delete
+  print "<pre>";
   foreach ($backups as $sem => $backupsems) {
     //don't delete anything from the current semester
     if ($sem == $sem_start) {
@@ -270,6 +278,8 @@ function get_dbs_to_delete() {
     usort($backupsems,'comp_backup_dbs');
     $curct = $ct;
     for ($ii = 0; $ii < $ct; $ii++) {
+/*       print "doing \n"; */
+/*       print_r($backupsems[$ii]); */
       //always leave at least 2 backups per semester
       if ($curct <= 2) {
         break;
@@ -285,9 +295,12 @@ function get_dbs_to_delete() {
       //check for redundancies.  Go backwards, because it's likely
       //that later archive will make redundant.
       for ($jj = $ct-1; $jj > $ii; $jj--) {
+/*         print "comparing \n"; */
+/*         print_r($backupsems[$jj]); */
+/*         var_dump(comp_backup_dbs($backupsems[$ii],$backupsems[$jj])); */
         //is this backup less than later one?
         if (comp_backup_dbs($backupsems[$ii],$backupsems[$jj]) < 0) {
-          $to_delete[] = $backupsems[$ii]['archive'];
+          $to_delete[] = substr($backupsems[$ii]['archive'],strlen($archive_pre),-1);
           $curct--;
           break;
         }
