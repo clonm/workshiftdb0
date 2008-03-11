@@ -263,7 +263,7 @@ function get_dbs_to_delete() {
   }
   $to_delete = array();
   //ok, time to find databases we can delete
-  print "<pre>";
+/*   print "<pre>"; */
   foreach ($backups as $sem => $backupsems) {
     //don't delete anything from the current semester
     if ($sem == $sem_start) {
