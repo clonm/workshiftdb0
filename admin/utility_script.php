@@ -24,12 +24,13 @@ else {
 */
 $php_includes = '../php_includes/';
 require_once('../php_includes/janakdb.inc.php');
+
 $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
-		'kid','kng','lot','rid','she','stb','wil','wol','co','nsc');
+		'kid','kng','lot','rid','she','stb','wil','wol','co','nsc','co');
 #$houses = array('rid','she','stb','wil','wol','co');
 #$houses = array('hoy');
 #janak_fatal_error_reporting(0);
-#$db->SetFetchMode(ADODB_FETCH_NUM);
+$db->SetFetchMode(ADODB_FETCH_NUM);
 #$houses = array('kng');
 #require_once('../public_html/admin/create_all_tables.php');
 #$creates = array('master_shifts','wanted_shifts','house_list','password_table','personal_info',
@@ -45,7 +46,13 @@ foreach ($houses as $house) {
   $db->debug = true;
   $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
   print "<h1>$house</h1>";
-  $db->Execute("update `officer_password_table` set `passwd` =  where `officer_name` = 'workshiftadmin'");
+  $res = $db->Execute("show tables");
+  while ($row = $res->FetchRow()) {
+    $inforow = $db->GetRow("show table status like '" . $row[0] . "'");
+    if ($inforow[1] != 'InnoDB') {
+      $db->Execute("alter table `" . $row[0] . "` engine = innodb;");
+    }
+  }
   continue;
 //   while ($row = $res->FetchRow()) {
 //     foreach (array('feedback','member_add','member_comments','abstain_count') as $bool_attrib) {

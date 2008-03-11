@@ -128,7 +128,6 @@ if (!is_array($backup_arr)) {
 foreach ($backup_arr as $backup) {
   $ret = true;
   print "<h4>Deleting " . escape_html($backup) . "</h4>\n";
-  $db->debug = true;
   //quote whatever funky name they gave us to avoid mysql regular expressions
   $res = $db->Execute("show tables like ?",
                       array(quote_mysqlreg("$archive_pre$backup") . '_%'));

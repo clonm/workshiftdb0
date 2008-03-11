@@ -582,6 +582,7 @@ else {
 $end_date = explode('-',$end_date);
 $end_date = user_timestamp(0,$end_minute,$end_hour,
                            $end_date[2],$end_date[1],$end_date[0]);
+#$db->debug = true;
 //Don't want half an election to be created.
 $db->StartTrans();
 //the elections_log is not that well-equipped to handle the data we're
@@ -604,6 +605,7 @@ $db->StartTrans();
 //should never happen -- we really need transactional tables.
 $db->Execute("lock tables `elections_record` write,`elections_attribs` write, " .
              "`elections_log` write, `modified_dates` write");
+
 //do we have the election already?  elections_record keeps basic data
 //about elections a little more handy than elections_attribs.
 $row = $db->GetRow("select count(*) as `ct` from `elections_record` " .
@@ -739,7 +741,6 @@ if ($modify) {
     $old_races[] = $row['race_name'];
   }
 }
-
 
 //this is used to make sure we don't have any duplicate race names
 $all_race_names = array();
@@ -909,7 +910,7 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
       break;
     case 'num_voters':
       if (strlen($val) && (!$val || !ctype_digit($val))) {
-        exit("<h2>" . escape_html($val) . 
+          exit("<h2>" . escape_html($val) . 
              " is not a valid minimum number of voters.</h2>");
       }
       if (strlen($val)) {
