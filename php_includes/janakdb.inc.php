@@ -258,6 +258,11 @@ function janak_mysqlerr($errno,$errstr,$errfile,
     exit("Sorry, the BSC shares its server with other accounts, and they're "
          . "hogging the server.  Try connecting again in a minute.");
   }
+  if (substr($errstr,0,strlen("mysql_connect()")) == "mysql_connect()") {
+    exit("Sorry, there was an error connecting to the workshift database.  Try"
+         . " again in a minute and everything should be ok.  Otherwise, "
+         . "email " . admin_email() . ".");
+  }
   janak_errhandler($errno,$errstr,$errfile,$errline,$errcontext);
 }
 ?>
