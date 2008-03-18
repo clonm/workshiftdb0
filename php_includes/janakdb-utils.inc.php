@@ -333,16 +333,22 @@ function check_passwd($member_name = null, $passwd = null) {
 //if oldpasswd matches.  Called in record_prefs.php and
 //set_passwd.php.  Hashes up password so snooping administrators can't
 //find it out.
-function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag = false) {
+function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag = false,
+                    $override = false) {
   global $db;
-  if (!$officer_flag) {
-    $check_res = check_passwd($member_name,$oldpasswd);
+  if (!$override) {
+    if (!$officer_flag) {
+      $check_res = check_passwd($member_name,$oldpasswd);
+    }
+    else {
+      $check_res = check_officer_passwd($member_name,$oldpasswd);
+    }
+    if ($newpasswd == "") {
+      exit("You cannot set your password to be blank.  Press back and try again.");
+    }
   }
   else {
-    $check_res = check_officer_passwd($member_name,$oldpasswd);
-  }
-  if ($newpasswd == "") {
-    exit("You cannot set your password to be blank.  Press back and try again.");
+    $check_res = 1;
   }
   if ($check_res == -1 || $check_res == -4 || $check_res > 0) {
     $ret = $db->Execute("REPLACE INTO `" . ($officer_flag?'officer_':'') . 
@@ -351,7 +357,7 @@ function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag = false) {
                         ($officer_flag?'officer':'member') .
                         "_name`,`passwd`) VALUES (?,md5(?)) ",
                         array($member_name,$newpasswd));
-    set_mod_date('password_table');
+    set_mod_date(($officer_flag?'officer_':'') . 'password_table');
     return $ret;
   }
   return false;
