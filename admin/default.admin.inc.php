@@ -31,5 +31,5 @@ if (!isset($delay_include)) {
   include_once("$php_includes/janakdb.inc.php");
 }
 $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
-		'kid','kng','lot','rid','she','stb','wil','wol');
+		'kid','kng','lot','rid','she','stb','wil','wol','co');
 ?>
