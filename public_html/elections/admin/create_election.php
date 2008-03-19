@@ -42,10 +42,6 @@ if ($page_status == 'initial') {
   while ($row = $res->FetchRow()) {
     $elections[] = $row['election_name'];
   }
-  if (!count($elections)) {
-    exit("No elections to administer!  " .
-         "Go <a href='create_election.php'>create one</a>.");
-  }
   ?>
 <form method='GET' action='<?=this_url()?>'>
 <input type=hidden name='page_status' value='user entry'>
