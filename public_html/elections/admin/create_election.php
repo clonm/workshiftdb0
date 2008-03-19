@@ -29,12 +29,6 @@ else {
 }
 
 if ($page_status == 'initial') {
-?>
-  <html><head><title>Create Election: clone from old one?</title></head><body>
-    Do you want your new election to be based on an old one?  If so, choose
-    which one.  You'll customize the election in the next step.
-
-<?php
 //';
   $elections = array();
   $res = $db->Execute("SELECT `election_name` FROM `elections_record` "
@@ -42,7 +36,18 @@ if ($page_status == 'initial') {
   while ($row = $res->FetchRow()) {
     $elections[] = $row['election_name'];
   }
+  if (!count($elections)) {
+    $page_status = 'user entry';
+    $_REQUEST['clone_election_name'] = null;
+  }
+}
+
+if ($page_status == 'initial') {
   ?>
+  <html><head><title>Create Election: clone from old one?</title></head><body>
+    Do you want your new election to be based on an old one?  If so, choose
+    which one.  You'll customize the election in the next step.
+
 <form method='GET' action='<?=this_url()?>'>
 <input type=hidden name='page_status' value='user entry'>
    <input type=radio name='clone_election_name' value='' id='0'><label for='0'>(Do not clone from an old election)</label><br/>
@@ -63,6 +68,7 @@ if ($page_status == 'initial') {
 <?php
    exit;
 }
+
 if ($page_status == 'modify' || $page_status == 'user entry') {
   ?>
  
