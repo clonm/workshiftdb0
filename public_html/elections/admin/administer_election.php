@@ -106,7 +106,7 @@ if (array_key_exists('delete_election',$_REQUEST)) {
 $res = $db->Execute("select `member_name`, `manual_entry` from voting_record " .
                    "where election_name = ? order by `member_name`",
                     array($election_name));
-echo "List of voters for $election_name:<p>";
+echo "<h4>List of voters for $election_name:</h4>";
 ?>
 <table border=1>
 <tr><td>Member name</td><td>Manually entered?</td></tr>
