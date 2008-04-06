@@ -124,7 +124,8 @@ while ($row = $res->FetchRow()) {
 ?>
 </table>
 (<?=$ii?> voters so far)<p>
-Email addresses and room numbers of members who haven't voted:<br>
+<hr>
+<h4>Email addresses and room numbers of members who haven't voted:</h4>
 <?php
 #';
 $res = $db->Execute("select `member_name`, `room`, `email` " .
@@ -148,7 +149,8 @@ $elect_row = $db->GetRow("select * from `elections_record` where " .
                          array($election_name));
 if ($elect_row['anon_voting']%2) {
 ?>
- Enter a member who voted manually (so they can't vote online as well):
+<hr>
+<h4>Enter a member who voted manually (so they can't vote online as well):</h4>
 <form action='<?=$_SERVER['REQUEST_URI']?>' method='post'>
 <select name='voter_name'>
 <option>
