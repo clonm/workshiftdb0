@@ -525,6 +525,11 @@ print $body_insert;
 if ($page_status != "data") {
   janak_error("A submit error occurred -- please email the workshift site administrator.");
 }
+?>
+<h4>If an error occurs, write it down, and then press the Back button on your
+browser.  If you know how to fix the problem, then do it and resubmit.
+                                                        Otherwise, contact the administrator, at <?=admin_email()?>.</h4>
+<?php
 //new election, whose name we have to mangle?
 if (!array_key_exists('election_name_full',$_REQUEST)) {
   //if name is too long, screw user -- they're trying to do it.
