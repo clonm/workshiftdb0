@@ -9,7 +9,6 @@ if (!isset($_REQUEST['house']) || !isset($_REQUEST['officer'])) {
 <option>
 <?php
    $houses[] = 'nsc';
-  print_r($houses);
     foreach ($houses as $house) {
     print "<option value='" . escape_html($house) . "'>" . escape_html($house) . "\n";
   }
