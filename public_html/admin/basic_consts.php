@@ -240,6 +240,10 @@ name='allow_single_houselist_upload_bool'
 
 require_once('backup_database.php');
 print "<hr>";
+echo "<input type=submit value='View parameters you set' " .
+  "onclick=\"document.getElementById('" .
+  "parameter_messages').style.display = '';\"><br/>";
+print "<div id='parameter_messages' style='display: none'>";
 //It's too hard to manually set each setting.  Just loop through $_REQUEST
 //checkboxes have to be dealt with separately, since they aren't present
 //in $_REQUEST if they're not checked
@@ -296,7 +300,6 @@ foreach ($_REQUEST as $key => $val) {
   print("Set " . escape_html($key) . " to <div style='" . white_space_css() . 
         "'>" . escape_html($val,true) . "</div>\n");
 }
-
 //not using ratings, but that just means we're rating out of 2, with default 1
 if (!$shift_flag) {
   print("<h4>Setting shift preference style to " . 
@@ -306,6 +309,7 @@ if (!$shift_flag) {
   set_static('min_wanted_rating',2);
   set_static('default_rating',1);
 }
+print "</div>";
 
 //set up the owed table.  It will be modified as needed if the default number
 //of hours changes, the house list changes, etc.
@@ -313,6 +317,15 @@ create_and_update_weekly_totals_data();
 //we're about to delete all the data accumulated over the semester
 //we call delete_weeks.php to do it.
 if (array_key_exists('reset_middle_bool',$_REQUEST)) {
+  print "<h4>About to reset owed hours . . .</h4>";
+  $res = $db->Execute("show columns from `weekly_totals_data` like 'owed%'");
+  $query = "update `weekly_totals_data` set ";
+  $owed_default = get_static('owed_default',5);
+  while ($row = $res->FetchRow()) {
+    $query .= "`" . $row['Field'] . "` = $owed_default, ";
+  }
+  $query = substr($query,0,-2);
+  $db->Execute($query);
    print ("<h4>About to delete old fines . . .</h4>");
    //we can't have transactions (with rollbacks) when we're deleting
    //tables, but now that that's been done, we can use it.  Probably
@@ -328,7 +341,7 @@ if (array_key_exists('reset_middle_bool',$_REQUEST)) {
    }
    else {
      exit("<h3>Resetting of fines failed!  " .
-       "Changes were not made Please email " .
+          "Changes were not made Please email " .
        "the administrator (" . admin_email() . ")</h3>");
    }
    print("<h4>About to delete old weeks . . .</h4>");
