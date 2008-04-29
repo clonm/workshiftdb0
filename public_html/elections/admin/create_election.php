@@ -321,6 +321,11 @@ Remove this file</label>
 <input type="file" name="descript_file" size="40"><br/>
 <?php
                ;
+if ($race_attribs) {
+  print '<p><a href="reorder_races.php?election_name=' . 
+    escape_html(rawurlencode($elect_row['election_name'])) . 
+    '">Reorder races</a>&nbsp;<it style="color: red">New!</it></p>' . "\n";
+}
 //we've finished the preamble, and now start with the races.  By
 //default there are 3.
 ?>
