@@ -66,7 +66,7 @@ The current order of races is given below.  Renumber the races and submit to cha
 <?php
 $res = $db->Execute('select `race_name`,`attrib_value` ' .
                     'from `elections_attribs` where `election_name` = ? ' .
-                    'and `attrib_name` = "race_name" order by `attrib_value`+0',
+                    'and `attrib_name` = "race_name" order by (`attrib_value`+0)',
                     array($election_name));
 $ii = 1;
 while ($row = $res->FetchRow()) {
@@ -89,16 +89,16 @@ while ($row = $res->FetchRow()) {
 $db->StartTrans();
 $db->Execute("lock tables `elections_attribs` write");
 
-$res = $db->Execute('select `attrib_value` ' .
+$res = $db->Execute('select `race_name`, `attrib_value` ' .
                     'from `elections_attribs` where `election_name` = ? ' .
-                    'and `attrib_name` = "race_name" order by `attrib_value`+0',
+                    'and `attrib_name` = "race_name" order by (`attrib_value`+0)',
                     array($election_name));
 $races = array();
 while ($row = $res->FetchRow()) {
-  $races[] = $row['attrib_value'];
+  $races[$row['race_name']] = $row['attrib_value'];
 }
 $done_order = array();
-foreach ($races as $junk => $attrib_value) {
+foreach ($races as $race_name => $attrib_value) {
   $ind = $_REQUEST['J' . $attrib_value];
   if (isset($done_order[$ind])) {
     exit("Error!  You put two races in spot " . $ind . ".  Please go back " .
@@ -107,8 +107,8 @@ foreach ($races as $junk => $attrib_value) {
   $done_order[$ind] = 1;
   $db->Execute('update `elections_attribs` set `attrib_value` = ? where ' .
                '`election_name` = ? and `attrib_name` = "race_name" and ' .
-               '`attrib_value` = ?',
-               array($ind,$election_name,$attrib_value));
+               '`race_name` = ?',
+               array($ind,$election_name,$race_name));
 }
 $db->CompleteTrans();
 $db->Execute("unlock tables");
