@@ -38,8 +38,8 @@ if ($show_choices) {
    foreach ($elections as $election) {
      $election = escape_html($election);
      ?>
-     <input type=radio name='election_name' value='<?=escape_html($election)?>'
-        id='<?=$ii?>' <?=($ii==0)?'checked':''?>><label for='<?=$ii++?>'><?=escape_html($election)?></label><br/>
+     <input type=radio name='election_name' value='<?=$election?>'
+        id='<?=$ii?>' <?=($ii==0)?'checked':''?>><label for='<?=$ii++?>'><?=$election?></label><br/>
      <?php 
    }
   ?>

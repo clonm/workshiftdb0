@@ -66,7 +66,7 @@ The current order of races is given below.  Renumber the races and submit to cha
 <?php
 $res = $db->Execute('select `race_name`,`attrib_value` ' .
                     'from `elections_attribs` where `election_name` = ? ' .
-                    'and `attrib_name` = "race_name" order by `attrib_value`',
+                    'and `attrib_name` = "race_name" order by `attrib_value`+0',
                     array($election_name));
 $ii = 1;
 while ($row = $res->FetchRow()) {
@@ -91,14 +91,14 @@ $db->Execute("lock tables `elections_attribs` write");
 
 $res = $db->Execute('select `attrib_value` ' .
                     'from `elections_attribs` where `election_name` = ? ' .
-                    'and `attrib_name` = "race_name" order by `attrib_value`',
+                    'and `attrib_name` = "race_name" order by `attrib_value`+0',
                     array($election_name));
 $races = array();
 while ($row = $res->FetchRow()) {
   $races[] = $row['attrib_value'];
 }
 $done_order = array();
-foreach ($races as $attrib_value) {
+foreach ($races as $junk => $attrib_value) {
   $ind = $_REQUEST['J' . $attrib_value];
   if (isset($done_order[$ind])) {
     exit("Error!  You put two races in spot " . $ind . ".  Please go back " .
