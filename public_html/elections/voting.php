@@ -994,6 +994,8 @@ if ($_REQUEST['page_type'] == 'register_vote') {
   }
   $election_name = $_REQUEST['election_name'];
   $anon_voting = false;
+  print "<h3>Please wait until the page has finished loading "
+    . "to make sure your vote was counted.</h3>\n";
   //we don't want half a vote to be committed.
   $db->StartTrans();
   //nobody else can vote while we are, to avoid any possible problems.

@@ -38,8 +38,8 @@ if ($show_choices) {
    foreach ($elections as $election) {
      $election = escape_html($election);
      ?>
-     <input type=radio name='election_name' value='<?=$election?>'
-        id='<?=$ii?>' <?=($ii==0)?'checked':''?>><label for='<?=$ii++?>'><?=$election?></label><br/>
+     <input type=radio name='election_name' value='<?=escape_html($election)?>'
+        id='<?=$ii?>' <?=($ii==0)?'checked':''?>><label for='<?=$ii++?>'><?=escape_html($election)?></label><br/>
      <?php 
    }
   ?>
@@ -115,7 +115,7 @@ $ii = 0;
 $houselist = array_flip(get_houselist());
 while ($row = $res->FetchRow()) {
 ?>
- <tr><td><?=$row['member_name']?></td>
+  <tr><td><?=escape_html($row['member_name'])?></td>
     <td><?=$row['manual_entry']?'yes':'no'?></td></tr>
 <?php
     unset($houselist[$row['member_name'] ]);
@@ -151,7 +151,7 @@ if ($elect_row['anon_voting']%2) {
 ?>
 <hr>
 <h4>Enter a member who voted manually (so they can't vote online as well):</h4>
-<form action='<?=$_SERVER['REQUEST_URI']?>' method='post'>
+<form action='<?=this_url()?>' method='post'>
 <select name='voter_name'>
 <option>
 <?php
@@ -161,7 +161,7 @@ print "<option>" . escape_html($person) . "\n";
 ?>
 </select><br/>
 <input type=hidden name='count_voter' value=1><br>
-<input type=hidden name='election_name' value='<?=$_REQUEST['election_name']?>'>
+<input type=hidden name='election_name' value='<?=escape_html($election_name)?>'>
 <input type=submit value='Record voter'>
 </form><p>
 <?php 
