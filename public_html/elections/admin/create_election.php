@@ -870,8 +870,8 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
         exit("<h2>There was an error reading your options.  " .
              "Please go back and check them.</h2>");
       }
-      if (isset($_REQUEST[$attrib . '_' . $ii . '_num'])) {
-          $val = $_REQUEST[$attrib . '_' . $ii . '_num'];
+      if (isset($_REQUEST[$attrib . '_' . $ii . '_num']) &&
+          strlen($val = $_REQUEST[$attrib . '_' . $ii . '_num'])) {
           if (!ctype_digit($val) || !$val) {
           exit("<h2>" . escape_html($val) . 
                " is not a valid number of choices to specify.</h2>");
