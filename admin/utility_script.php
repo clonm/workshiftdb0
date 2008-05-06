@@ -24,6 +24,13 @@ else {
 */
 $php_includes = '../php_includes/';
 require_once('../php_includes/janakdb.inc.php');
+$db->Connect('localhost',"usca_janakcaz","workshift","usca_janakcaz");
+
+var_dump(is_empty($db->GetRow("select `attrib_value` from `elections_attribs` " .
+                     "where `election_name` = ? and `race_name` = ? " .
+                     "and `attrib_name` = ?",
+                              array("2008-spring_Summer 2008", "Czar of Hearth (Kitchen Manager)","race_descript"))));
+exit;
 
 $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
 		'kid','kng','lot','rid','she','stb','wil','wol','co','nsc','co');
