@@ -878,6 +878,7 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
           }        
           print "<li>Users will specify " . escape_html($numval) . 
             " unranked choices.</li>";
+         $val = $numval;
       }
       break;
     case 'threshold':
