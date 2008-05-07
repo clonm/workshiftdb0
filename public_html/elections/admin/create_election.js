@@ -113,6 +113,8 @@ function add_race() {
   elt = document.createElement('input');
   elt.setAttribute('name','display_name_' + num_races);
   elt.setAttribute('id','display_name_' + num_races);
+    elt.setAttribute('maxlength',50);
+    elt.setAttribute('size',51);
   spanelt.appendChild(elt);
   par.appendChild(spanelt);
   par.appendChild(document.createElement('br'));

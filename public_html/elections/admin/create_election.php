@@ -864,22 +864,22 @@ for ($ii = 1, $ii_real = 0, $ii_old = 0; $ii <= $num_races; $ii++) {
       break;
     case 'runoff': 
       switch ($val) {
-        case 0: break;
-        case 1: print "<li>Instant runoff will be used.</li>"; break;
+        case 0: break ;
+        case 1: print "<li>Instant runoff will be used.</li>"; break ;
       default: 
         exit("<h2>There was an error reading your options.  " .
              "Please go back and check them.</h2>");
       }
       if (isset($_REQUEST[$attrib . '_' . $ii . '_num']) &&
-          strlen($val = $_REQUEST[$attrib . '_' . $ii . '_num'])) {
-          if (!ctype_digit($val) || !$val) {
-          exit("<h2>" . escape_html($val) . 
+          strlen($numval = $_REQUEST[$attrib . '_' . $ii . '_num'])) {
+          if (!ctype_digit($numval) || !$numval) {
+          exit("<h2>" . escape_html($numval) . 
                " is not a valid number of choices to specify.</h2>");
           }        
-          print "<li>Users will specify " . escape_html($val) . 
+          print "<li>Users will specify " . escape_html($numval) . 
             " unranked choices.</li>";
-          break;
-        }
+      }
+      break;
     case 'threshold':
       switch ($val) {
       case '': break 2;
