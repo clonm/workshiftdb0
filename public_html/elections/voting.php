@@ -944,8 +944,6 @@ array_walk($_REQUEST,'race_num');
    $user_email = get_email($member_name);
    if ($user_email) {
   ?>
-<p>The fact that you have voted will be emailed to you.
-<?php
    if ($anon_voting) {
 ?>
 On the next screen, your voter id will appear.  When the
