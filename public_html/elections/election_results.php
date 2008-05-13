@@ -624,7 +624,7 @@ while ($namerow = $nameres->FetchRow()) {
             if (!is_array($loser)) { 
               if ($choices[$loser]) {
                 print "Using the Condorcet method to break a tie " .
-                  "and eliminate a candidate.";
+                  "and eliminate a candidate.<br/>\n";
               }
             }
             else {

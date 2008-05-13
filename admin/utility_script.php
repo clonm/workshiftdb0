@@ -24,12 +24,21 @@ else {
 */
 $php_includes = '../php_includes/';
 require_once('../php_includes/janakdb.inc.php');
-$db->Connect('localhost',"usca_janakcaz","workshift","usca_janakcaz");
+$db->Connect('localhost',"usca_janakclo","workshift","usca_janakclo");
+$res = $db->Execute("select `autoid`,`option_choice` from `votes` " .
+                    "where `election_name` = ? and `option_name` = 3474",
+                    array('2008-spring_Fall 2008 Managers'));
+$val_array = array();
+print "<pre>";
+while ($row = $res->FetchRow()) {
+  $val_array[$row['autoid']] = str_replace('Davis Hampian','David Hampian',$row['option_choice']);
+}
+foreach ($val_array as $key => $val) {
+  $db->Execute("update `votes` set `option_choice` = ? where `autoid` = ?",
+               array($val,$key));
+}
 
-var_dump(is_empty($db->GetRow("select `attrib_value` from `elections_attribs` " .
-                     "where `election_name` = ? and `race_name` = ? " .
-                     "and `attrib_name` = ?",
-                              array("2008-spring_Summer 2008", "Czar of Hearth (Kitchen Manager)","race_descript"))));
+print count($val_array);
 exit;
 
 $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
