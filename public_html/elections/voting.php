@@ -943,7 +943,6 @@ array_walk($_REQUEST,'race_num');
      (!$anon_voting && get_static('email_voters_not_anon',true)))) {
    $user_email = get_email($member_name);
    if ($user_email) {
-  ?>
    if ($anon_voting) {
 ?>
 On the next screen, your voter id will appear.  When the
