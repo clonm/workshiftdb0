@@ -49,7 +49,7 @@ if (!$archive) {
 switch (date('n')) {
 case 1: case 5: case 6: case 8: case 9:
 ?>
-<a href="initial_setup.php">Change semesters, from last one to this one.  Set up semester-specific settings, backup old database, clear out old data.<br/>
+<a href="initial_setup.php">Change semesters, from last one to this one.  Set up semester-specific settings, backup old database, clear out old data.  (Warning -- may take some time to load.  Please be patient.)<br/>
 <?php
 default:
 }
@@ -109,7 +109,8 @@ even if it's just you, since you don't need to log in separately to administer t
 <a href="recover_backup_database.php">If you screwed up and need to
 recover a backed-up database, do it here.</a><br>
 <a href="delete_backup_database.php">Delete a backup if you don't need
-it anymore and are running out of space</a><br>
+it anymore and are running out of space</a>.  (Warning -- may take some time to load.
+Please be patient.)<br/>
 <!--
 <a href="weekly_totals_update.php?getarchive">Update hours owed and
 notes for the weekly totals of a backed-up database</a><br>
