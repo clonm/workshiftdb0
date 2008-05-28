@@ -102,7 +102,7 @@ function js_array($arr) {
     return implode(', ',array_map('dbl_quote',$arr));
 }
 
-//makes a javascript associative array.  Unlike the above function, prints 
+//makes a javascript associative array.  Unlike the above function, prints
 //out the full javascript, since it consists of multiple statements.  It should
 //be rewritten to just return the string.
 function js_assoc_array($js_var,$arr) {
@@ -162,7 +162,7 @@ function get_real_table_columns() {
   $res = $db->Execute("SHOW COLUMNS FROM " . bracket($table_name));
   //each column in the table is real -- any others are not
   if (is_empty($res)) {
-    trigger_error("No table " . 
+    trigger_error("No table " .
                   escape_html($table_name) . " in get_real_table_columns",
                   E_USER_ERROR);
   }
@@ -264,14 +264,15 @@ function format_shift($shift,$hours,$floor='') {
 
 //input can be recordset or 2-d array
 function is_empty($res) {
-  return !($res && ((is_object($res) && !$res->EOF) || 
+  return !($res && ((is_object($res) && !$res->EOF) ||
 		    (is_array($res) && count($res))));
 }
 
 function table_exists($tbl) {
   global $db,$archive;
-  return (!is_empty($db->GetRow("show tables like '" . 
-                                quote_mysqlreg($archive . $tbl) . "'")));
+  $res = $db->_Execute("show tables like '" .
+                       quote_mysqlreg($archive . $tbl) . "'");
+  return !$res->EOF ;
 }
 
 //Checking for global users (sysadmin, etc.)
@@ -314,7 +315,7 @@ function check_passwd($member_name = null, $passwd = null) {
     if (make_numeric($row['res']) <= 0) {
       return -2;
     }
-    $row = $db->GetRow("SELECT `passwd` FROM `password_table` " . 
+    $row = $db->GetRow("SELECT `passwd` FROM `password_table` " .
                        "WHERE `member_name` = ?",
                        array($member_name));
     //no password set AND user didn't enter a password this time?
@@ -351,7 +352,7 @@ function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag = false,
     $check_res = 1;
   }
   if ($check_res == -1 || $check_res == -4 || $check_res > 0) {
-    $ret = $db->Execute("REPLACE INTO `" . ($officer_flag?'officer_':'') . 
+    $ret = $db->Execute("REPLACE INTO `" . ($officer_flag?'officer_':'') .
                         "password_table` " .
                         "(`" .
                         ($officer_flag?'officer':'member') .
@@ -426,23 +427,23 @@ function create_and_update_weekly_totals_data() {
         $cols .= "`owed $ii` float not null default $owed_default, ";
       }
       $done = $db->Execute("CREATE TABLE if not exists $this_tbl " .
-                           '(`autoid` INT(11) AUTO_INCREMENT, ' . 
+                           '(`autoid` INT(11) AUTO_INCREMENT, ' .
                            '`member_name` VARCHAR(50) not null, ' .
-                           $cols . 
+                           $cols .
                            '`notes` LONGTEXT default null, ' .
                            'PRIMARY KEY (`autoid`), ' .
                            'UNIQUE KEY `member_name` (`member_name`))');
       set_mod_date('weekly_totals_data');
     }
     else {
-      //does the table have the right number of columns?
-      $res = $db->Execute("show columns from $this_tbl");
-      $ii = -3;
       //I forget where, but we must get called somewhere while we're
       //in ADODB_FETCH_NUM mode, meaning that the columns are
       //numerically indexed, not by name
-      $oldfetch = $db->fetchMode;
-      $db->SetFetchMode(ADODB_FETCH_ASSOC);
+      $oldfetch = $db->SetFetchMode(ADODB_FETCH_ASSOC);
+      //does the table have the right number of columns?
+      $res = $db->Execute("show columns from $this_tbl");
+      $db->SetFetchMode($oldfetch);
+      $ii = -3;
       $alter_cols = '';
       //look at all the columns we currently have, and see if any have
       //the wrong defaults.  This won't change anyone's currrently
@@ -450,6 +451,7 @@ function create_and_update_weekly_totals_data() {
       $firstflag = true;
       while ($row = $res->FetchRow()) {
         $ii++;
+        var_dump($row);
         switch ($row['Field']) {
         case 'autoid': case 'member_name': case 'notes':
           continue;
@@ -479,7 +481,7 @@ function create_and_update_weekly_totals_data() {
         $add_cols = 'add column (' . $add_cols . ')';
       }
       if ($add_cols || $alter_cols) {
-        $done = $db->Execute("alter table $this_tbl " . 
+        $done = $db->Execute("alter table $this_tbl " .
                              $alter_cols . $add_cols);
         set_mod_date('weekly_totals_data');
       }
@@ -504,9 +506,9 @@ function create_and_update_week_totals($ii) {
   //we don't want get_mod_date to set the mod_date of the totals table
   //to now, we want it to return 0, meaning never modified, because
   //that means the table is missing, and we need to create it
-  if (get_mod_date("week_$ii",false) > 
+  if (get_mod_date("week_$ii",false) >
       get_mod_date("week_$ii" . "_totals",true) ||
-      get_mod_date("house_list",false) > 
+      get_mod_date("house_list",false) >
       get_mod_date("week_$ii" . "_totals",true)) {
     $tot_tbl = bracket("{$archive}weekly_totals_data");
     $wk_tbl = bracket("{$archive}week_$ii");
@@ -546,7 +548,7 @@ CREATETABLE
 function create_and_update_fining_data_totals() {
   global $db,$archive;
   $done = true;
-  if (get_mod_date("fining_data",false) > 
+  if (get_mod_date("fining_data",false) >
       get_mod_date("fining_data_totals",true)) {
     $done &= create_and_update_weekly_totals_data();
     $this_tbl = bracket($archive . 'fining_data_totals');
@@ -570,12 +572,12 @@ function create_and_update_fining_data_totals() {
 function update_master_week() {
   global $db,$days,$archive;
   //the <= is because master_week should be younget
-  if (get_mod_date('master_week') <= 
+  if (get_mod_date('master_week') <=
       get_mod_date('master_shifts')) {
     $this_tbl = bracket($archive . 'master_week');
     $db->Execute("delete from $this_tbl");
     foreach ($days as $day) {
-      $db->Execute("insert into $this_tbl " . 
+      $db->Execute("insert into $this_tbl " .
                    query_day($day,null));
     }
   }
@@ -600,14 +602,14 @@ function query_day($day,$week_date = null) {
     }
   }
   return "SELECT " .
-    ($week_date ? 
+    ($week_date ?
      "null as `autoid`, " .
      "ADDDATE('$week_date',interval $num day) as `date`, ":"") .
     "'$day' AS `day`, " .
     "concat(`workshift`,if(`floor`,concat(' ',`floor`),'')) " .
     "AS `workshift`, `$day` AS  `member_name`, `hours` AS `hours`, " .
     "`autoid` as `shift_id`, `start_time`, `end_time` " .
-    "FROM " . bracket("${archive}master_shifts") .  
+    "FROM " . bracket("${archive}master_shifts") .
     " WHERE not (`$day` <=> '$dummy_string')";
 }
 
@@ -619,25 +621,28 @@ function query_day($day,$week_date = null) {
 //just acts on the active database
 function get_static($var_name, $default_value=null) {
   global $db,$archive;
-  $row = $db->GetRow('SELECT `var_value` FROM ' . 
+  $oldfetch = $db->SetFetchMode(ADODB_FETCH_NUM);
+  $res = $db->Execute('SELECT `var_value` FROM ' .
 		     bracket($archive . 'static_data') .
-		     ' WHERE `var_name` = ?', 
+		     ' WHERE `var_name` = ?',
 		     array($var_name));
+  $db->SetFetchMode($oldfetch);
+  $row = $res->fields;
   if (is_empty($row)) {
     if ($default_value !== null) {
       set_static($var_name,$default_value,$archive);
     }
     return $default_value;
   }
-  return ($db->fetchMode == ADODB_FETCH_ASSOC?$row['var_value']:$row[0]);
+  return $row[0];
 }
 
 //set global config
 function set_static($var_name,$var_value,$dummyarchive='') {
   global $db,$archive;
-  $ret = $db->Execute('REPLACE INTO ' . 
-                      bracket($archive . 'static_data') . 
-                      ' (`var_name`,`var_value`) VALUES (?,?)', 
+  $ret = $db->Execute('REPLACE INTO ' .
+                      bracket($archive . 'static_data') .
+                      ' (`var_name`,`var_value`) VALUES (?,?)',
                       array($var_name,$var_value));
   set_mod_date('static_data');
   return $ret;
@@ -655,7 +660,7 @@ function get_cur_week() {
   //has the week been set manually?
   $week_num = get_static('cur_week');
   if (!is_numeric($week_num)) {
-    //current week is time now - time of semester start, divided by 
+    //current week is time now - time of semester start, divided by
     //seconds in a week, rounded down. strtotime takes a string and
     //turns it into a timestamp
     $sem_start = get_static('semester_start');
@@ -684,7 +689,7 @@ function get_cur_week() {
 //get a houselist
 function get_houselist() {
   global $db, $archive;
-  $res = $db->Execute('SELECT `member_name` FROM ' . 
+  $res = $db->Execute('SELECT `member_name` FROM ' .
                       bracket($archive . 'house_list'));
   $houselist = array();
   while ($row = $res->FetchRow()) {
@@ -699,14 +704,16 @@ function get_backup_dbs() {
   global $db,$archive_pre;
   //"show tables like " gives awful column names, so we go numeric
   $oldfetch = $db->fetchMode;
-  $db->SetFetchMode(ADODB_FETCH_NUM); 
-  //every backup should have a house list 
+  $db->SetFetchMode(ADODB_FETCH_NUM);
+  //every backup should have a house list
   $res = $db->Execute("show tables like ?",array('%\_house\_list'));
-  $dbnames = array();
   //get the names without the archive prefix or the house_list
-  while ($row = $res->FetchRow()) {
-    $dbnames[] = substr($row[0],strlen($archive_pre),
-                        -1*strlen('_house_list'));
+  $archive_pre_length = strlen($archive_pre);
+  $house_list_length = -1*strlen('_house_list');
+  $dbnames = array();
+  while ($row = $res->FetchRow()) { 
+    $dbnames[] = substr($row[0],$archive_pre_length, 
+                        $house_list_length); 
   }
   $db->SetFetchMode($oldfetch);
   return $dbnames;
@@ -1030,7 +1037,7 @@ function janak_errhandler($errno,$errstr,$errfile,
         escape_html($bug_report_url) .
         "'>submit a bug report</a>.  You can also email the administrator (" .
         admin_email() . ") with the url of the page you're at, (in the " .
-        "address bar) and the following message.  </h3><p>");
+        "address bar) and the following message.  </h3><p>\n");
   if ($errno & janak_error_reporting()) {
     //the error string is printed out, but the full backtrace is
     //hidden from the users, unless they view source
