@@ -451,7 +451,6 @@ function create_and_update_weekly_totals_data() {
       $firstflag = true;
       while ($row = $res->FetchRow()) {
         $ii++;
-        var_dump($row);
         switch ($row['Field']) {
         case 'autoid': case 'member_name': case 'notes':
           continue;
