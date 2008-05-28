@@ -16,7 +16,6 @@ $oldfetch = $db->fetchMode;
 //use numbered columns because columns have database name in them
 $db->SetFetchMode(ADODB_FETCH_NUM); 
 if (!array_key_exists('backup_name',$_REQUEST)) {
-  $delete_dbs = get_dbs_to_delete();
   ?>
  If you are running low on space, or if you want to clean up very old backups,
 you can delete old backup sets here.  There is no particular reason to do this,
@@ -25,7 +24,6 @@ so unless you have some good reason to, why do it?<p>
 The backed-up databases are backed up by date -- 
 year_month_day_hour_minute_second.
 You should probably delete the oldest one, if you are just saving space.
-                                                    
 <form action='<?=this_url()?>' method=POST>
 <select id='backup_name' name='backup_name[]' multiple
 title='double-click to view archive in a new window'>
@@ -38,6 +36,30 @@ title='double-click to view archive in a new window'>
 ?>
 </select><br>
 <input type=submit value='Delete backup database(s)'></form>
+<hr/>
+<?php
+    if (count($dbnames) > 40) {
+if (isset($_REQUEST['start_db_index'])) {
+  $start_db_index = $_REQUEST['start_db_index'];
+}
+else {
+  $start_db_index = 0;
+}
+?>
+Due to the large number of backups, the buttons below will only work on 40
+backups in the list above.  Delete some backups and the selections will
+extend to later backups.<br/>
+You can also enter a number here and submit, so that the system will skip
+the first so many backups, and look for redundant ones after that.<br/>
+<form action=<?=this_url()?> method=get>
+<input name='start_db_index' value='<?=escape_html($start_db_index)?>'
+size=3>
+<input type=submit value='Start looking for redundant databases here'/>
+</form>
+<?php
+$dbnames = array_slice($dbnames,$start_db_index,40+$start_db_index);
+    }
+?>
 <input id='button_redund' type=submit value='Select all redundant backups' 
 onclick='select_redundant()'><br/>
 (Pressing this button will select backups which seem to just be intermediate
@@ -59,7 +81,8 @@ var redund_flag = false;
 var corrupt_flag = false;
  sel_elt.ondblclick = show_backup;
 <?php
-    //get redundant backups
+    $delete_dbs = get_dbs_to_delete();
+ //get redundant backups
 $redunds = array_flip($delete_dbs[0]);
 //we're about to output a javascript array, and the javascript code
 //will test for value's.  Everything will be nonzero except for the
@@ -162,12 +185,13 @@ echo "<h3>All done!\n</h3>";
 
 //workhorse -- finds dbs that shouldn't be useful anymore
 function get_dbs_to_delete() {
-  global $db, $archive,$dummy_string,$days,$archive_pre;
+  global $db, $archive,$dummy_string,$days,$archive_pre,$dbnames;
   $corrupt = array();
   //get all archives
-  $backupdbs = get_backup_dbs();
   //go through and get info on each backup
-  foreach ($backupdbs as $backup) {
+  //don't want to delete things from current semester
+  $sem_start = get_static('semester_start');
+  foreach ($dbnames as $backup) {
     //the fact that we're setting the $archive variable means that all
     //$archive-dependent functions will now be accessing the archive,
     //not the current db
@@ -177,6 +201,14 @@ function get_dbs_to_delete() {
     //this array has all salient information
     $db_props = array();
     $db_props['archive'] = $archive;
+    if (!table_exists('static_data')) {
+      $corrupt[] = substr($db_props['archive'],strlen($archive_pre),-1);
+      continue;
+    }
+    $db_props['semester'] = get_static('semester_start');
+    if ($db_props['semester'] == $sem_start) {
+      continue;
+    }
     //did the user not name this him/herself (conforms to autoname scheme)?
     if ($db_props['autobackup'] = preg_match('/^' . $archive_pre . '([0-9]{4,4})_' .
                                              '([0-9]{2,2})_([0-9]{2,2})_' .
@@ -192,17 +224,17 @@ function get_dbs_to_delete() {
     }
     //the archive was set above, so this is the archive's modified date
     if (table_exists('modified_dates')) {
-      $mod_row = $db->GetRow("select unix_timestamp(max(`mod_date`)) " .
+      $mod_row = $db->_Execute("select unix_timestamp(max(`mod_date`)) " .
                              "from " . bracket($archive . 'modified_dates'));
-      $db_props['mod_date'] = $mod_row[0];
+      $db_props['mod_date'] = $mod_row->fields[0];
     }
     else {
       $db_props['mod_date'] = null;
     }
     if (table_exists('wanted_shifts')) {
-      $wanted_row = $db->GetRow("select count(*) from " .
+      $wanted_row = $db->_Execute("select count(*) from " .
                                 bracket($archive . 'wanted_shifts'));
-      $db_props['wanted'] = $wanted_row[0];
+      $db_props['wanted'] = $wanted_row->fields[0];
     }
     else {
       $db_props['wanted'] = -1;
@@ -220,19 +252,7 @@ function get_dbs_to_delete() {
     else {
       $db_props['master'] = null;
     }
-    if (table_exists('static_data')) {
-      $db_props['semester'] = get_static('semester_start');
-    }
-    else {
-      $db_props['semester'] = null;
-    }
-    if (table_exists('static_data')) {
-      $db_props['week'] = get_cur_week();
-    }
-    else {
-      $corrupt[] = substr($db_props['archive'],strlen($archive_pre),-1);
-      continue;
-    }
+    $db_props['week'] = get_cur_week();
     if (!strlen($db_props['semester']) || !strlen($db_props['mod_date']) ||
         !strlen($db_props['master'])) {
       $corrupt[] = substr($db_props['archive'],strlen($archive_pre),-1);
@@ -255,8 +275,6 @@ function get_dbs_to_delete() {
   $archive = '';
   //sort by semester (the key)
   ksort($backups);
-  //don't want to delete things from current semester
-  $sem_start = get_static('semester_start');
   if (!strlen($sem_start)) {
     $bkeys = array_keys($backups);
     $sem_start = end($bkeys);
