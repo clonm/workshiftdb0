@@ -46,9 +46,16 @@ a specific member</a><br>
 <li><h3>Beginning of semester</h3>
 <?php
 if (!$archive) {
+switch (date('n')) {
+case 1: case 5: case 6: case 8: case 9:
+?>
+<a href="initial_setup.php">Change semesters, from last one to this one.  Set up semester-specific settings, backup old database, clear out old data.<br/>
+<?php
+default:
+}
 ?>
 <a href="basic_consts.php">Set basic parameters -- start of semester, 
-preferences due date, etc., and possibly clear out old weekly sheets</a><br>
+preferences due date, etc.<br>
 <a href="update_house.php">Update the house list</a><br>
 <a href="set_shift_descriptions.php">Give descriptions of
 workshifts</a><br>

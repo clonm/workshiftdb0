@@ -17,36 +17,65 @@ administrator</a> can reset the password.
 
 <ul>
 
+  <li><a name='initial_setup'><h4>Initial setup</h4> Go to
+<a href='initial_setup.php'>initial_setup.php</a> first of all, to get the new
+semester's framework set up.  It loads pretty slowly because it's doing a lot of
+work behind the scenes just to show you the page (more than almost any other
+page in the system), so be patient.  Also, you should only be going to this page
+at the beginning of the semester, so it will not let you in at other times.  If
+you need to get in for some reason, you should email the administrator.
+<ul>
+
+<li>Since this page does some drastic things, it first
+backs up your current system, so that the old system can be completely restored
+if necessary.  If you want to give a name to this backup,
+  enter it in the box -- otherwise, it will just use the current date
+  and time so that if you need to restore a backup, you know exactly
+  when it is from.  If you are done with the previous semester, you may want to
+enter that semester, like "2009 spring" in this box -- that way, future
+workshift managers will know that this backup is the definitive one for that
+semester.
+
+<li>The next section allows you to "import" settings from a backup.  You will
+  want to do this in summer and fall, because most houses' summer setups are
+  different from their spring setups, and likewise their fall setups are
+  different from their summer setups.  Since nothing really changes from spring
+  to fall, you don't have to do this part in spring.  The backups are organized
+  by season, with the season first that the system thinks you should be
+  restoring the settings from.
+
+<li>The system gives you some extra info about each backup, so that you can
+  figure out if it has the settings that you want.  Almost any backup from the
+  correct season should work, though.  What it will do is get rid of all the
+  current "variables" (like the number of hours owed per week, or the number of weeks in
+  a semester, etc.) and replace them with the values from that semester.  It
+  will also replace all the fining data, and finally the list of workshifts.
+  The house list will not be affected, because there is usually a lot of
+  continuity from semester to semester.
+
+  <li>The last section is for cleaning up previous semesters' data.  The first
+  box deletes members' preference forms.  Some members may have preferences that
+  haven't changed much, but if you don't delete them, you may be misled about
+  their availability, so it's probably a good idea to delete them.  The next box
+  deletes the assigned shifts, so that when you're assigning shifts, you're
+  starting from a blank slate.  Definitely don't check it until the previous
+  semester ends, because otherwise the shift assignments will be lost.  The
+  third and final box should only be checked when the next semester has started,
+  and everything from the previous semester has finished, i.e., all workshift
+  entries have finished, fines have been calculated, etc.  The old semester is
+  still available for viewing through various <a href='#view_backup_database'>archive
+  methods</a> or restoring, if it turns out that it didn't actually end.
+<li>After you've finished up, you'll be given a link to go and
+  <a href='#basic_consts'>set basic constants.</li>
+</ul>
+
   <li><a name='basic_consts'><h4>Set basic constants</h4> Go to <a
   href='basic_consts.php'>basic_consts.php</a> to set some basic
   parameters, like when the semester started and when preferences
   forms are due.
 
-<ul><li>
-  Since this page can change a lot of things, it backs up your system
-  before it does anything, so that the old system can be completely
-  restored if necessary.  If you want to give a name to this backup,
-  enter it in the box -- otherwise, it will just use the current date
-  and time so that if you need to restore a backup, you know exactly
-  when it is from.
-
-  <li>The "start of the semester" section is for cleaning up previous
-  semesters' data.  The first box deletes members' preference forms.
-  Some members may have preferences that haven't changed much, but if
-  you don't delete them, you may be misled about their availability,
-  so it's probably a good idea to delete them.  The next box deletes
-  the assigned shifts, so that when you're assigning shifts, you're
-  starting from a blank slate.  Definitely don't check it until the
-  previous semester ends, because otherwise the shift assignments will
-  be lost.  The third and final box should only be checked when the
-  next semester has started, and everything from the previous semester
-  has finished, i.e., all workshift entries have finished, fines have
-  been calculated, etc.  The old semester is still available for
-  viewing through various <a href='view_backup'>archive methods</a> or
-  restoring, if it turns out that it didn't actually end.
-
-  <li>The preference forms are set up here, because you need to get
-  them ready right away for your house.
+  <p>The preference forms are set up here, because you need to get
+  them ready right away for your house.</p>
 
   <ul><li>The preference forms can either let users choose shifts that
   they want and shifts that they don't want, or it can let users
@@ -77,11 +106,10 @@ administrator</a> can reset the password.
   sequences for that text, but otherwise, read the instructions.
   </ul>
 
-  <li>The houselist question is so that the system can deal with the
+  <p>The houselist question is so that the system can deal with the
   houselists that CO sends you, that you can <a
-  href='update_house.php'>upload</a> to set the house list.<br>
+  href='update_house.php'>upload</a> to set the house list.</p>
 
-</ul>
 <li><a name='update_house'><h4>Enter house list</h4> You need to have
   a house list entered.  You can do that at <a
   href='update_house.php'>update_house.php</a>.  Make sure every

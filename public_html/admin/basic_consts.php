@@ -21,18 +21,6 @@ Many values should not change semester to semester.
 <hr/>
 <form action='<?=this_url()?>' method='POST'>
 <input type=hidden name='basic_consts_submitting_bool' value=1>
-This page will automatically make a backup before it makes any changes.
-Give a name for this backup (leave blank to use the date).:
-<input size=30 maxlength=30 name='backup_ext'><br/>
-If you're starting a new semester and you haven't yet backed up the previous
-semester, you could enter the previous semester, like "2006 summer".<p>
-<hr>
-If you are starting the fall semester, and your house used this system
-over the summer, you might want to <a href='recover_backup_database.php'>restore
-your spring database</a> before you set things up here.  Your spring setup
-will probably be much more similar (in shifts, hours per week, etc.) than
-your summer setup, and it could save you some time.
-<hr>
 <ul>
 <li>Start of semester (first Monday of week 0 -- enter August 29, 2005 as
 2005-08-29): 
@@ -47,20 +35,6 @@ obligations for a given week):
 <li>Number of weeks in the semester (usually 18):
   <input name='tot_weeks' value='<?= get_static('tot_weeks',18)?>'><br/>
 </ul>
-<hr>
-<h4>Check these boxes at the start of the semester, but not after that</h4>
-<input type=checkbox name='delete_prefs_bool'>
-Check this box to delete the preference forms (if you're starting a new
-semester, they're from last semester).<br/>
-<input type=checkbox name='delete_assigned_bool'>
-Check this box to delete the the assigned shifts (if you're starting a new
-semester, they're from last semester).<br/>
-<input type=checkbox name='reset_middle_bool'>
-Check this box to delete fines, reset all owed hours to the default,
-and delete all the weekly sheets.  You should only do this after the
-previous semester has well and truly finished, and any hours/fines
-disputes are over, check-out slips have been turned in, etc.  The data
-will still be in the backup, but not in the current database.  
 <hr>
 <h4>Setup of preference forms</h4>
 <ul>
@@ -218,6 +192,7 @@ Do you want this to be html?
  ?>
  )<p>
 </div>
+</ul>
 <hr>
 <h4>Houselists -- only for Sherman and Hoyt right now</h4>
 Does your house only get a single houselist from CO, always (i.e., not separated
@@ -235,11 +210,6 @@ name='allow_single_houselist_upload_bool'
 <?php
               exit;
               } 
-//backup the database -- we gave the backup extension up above the
-//same name as the one backup_database uses, so we don't need to set any variables.
-
-require_once('backup_database.php');
-print "<hr>";
 echo "<input type=submit value='View parameters you set' " .
   "onclick=\"document.getElementById('" .
   "parameter_messages').style.display = '';\"><br/>";
@@ -265,7 +235,7 @@ foreach (array('allow_single_houselist_upload_bool',
   }
   print("<br/>\n");
 }
-foreach ($_REQUEST as $key => $val) {
+foreach ($_POST as $key => $val) {
   //empty strings are null
   if ($val === '') {
     $_REQUEST[$key] = $val = null;
@@ -286,8 +256,7 @@ foreach ($_REQUEST as $key => $val) {
       exit("Your semester start date is not a Monday!  " .
            "Please go back and change it!");
     }
-    //not a setting -- used by backup_database.php
-  case 'backup_ext':
+  case 'session_id': case 'officer_session_id':
     continue;
   }
   if (substr($key,-5) == '_text') {
@@ -311,88 +280,20 @@ if (!$shift_flag) {
 }
 print "</div>";
 
-//set up the owed table.  It will be modified as needed if the default number
-//of hours changes, the house list changes, etc.
-create_and_update_weekly_totals_data();
-//we're about to delete all the data accumulated over the semester
-//we call delete_weeks.php to do it.
-if (array_key_exists('reset_middle_bool',$_REQUEST)) {
-  print "<h4>About to reset owed hours . . .</h4>";
-  $res = $db->Execute("show columns from `weekly_totals_data` like 'owed%'");
-  $query = "update `weekly_totals_data` set ";
-  $owed_default = get_static('owed_default',5);
-  while ($row = $res->FetchRow()) {
-    $query .= "`" . $row['Field'] . "` = $owed_default, ";
-  }
-  $query = substr($query,0,-2);
-  $db->Execute($query);
-   print ("<h4>About to delete old fines . . .</h4>");
-   //we can't have transactions (with rollbacks) when we're deleting
-   //tables, but now that that's been done, we can use it.  Probably
-   //not useful, but who knows.
-   $db->StartTrans();
-   //unset any manual current week setting
-   set_static('cur_week',null);
-   $db->Execute("delete from `fining_data`");
-   set_mod_date('fining_data');
-   print ("<h4>Delete successful</h4>");
-   if ($db->CompleteTrans()) {
-     print "<h4>Succeeded!</h4>\n";
-   }
-   else {
-     exit("<h3>Resetting of fines failed!  " .
-          "Changes were not made Please email " .
-       "the administrator (" . admin_email() . ")</h3>");
-   }
-   print("<h4>About to delete old weeks . . .</h4>");
-   $_REQUEST['start_week'] = 0;
-   //just overkill
-   $_REQUEST['end_week'] = 100;
-   //this page doesn't output that much, but it tells the user what it does
-   require_once('delete_weeks.php');
-   print("<h4>Delete succeeded!</h4>");
-}
-
-//get rid of preference forms and assigned shifts
-if (array_key_exists('delete_prefs_bool',$_REQUEST)) {
-  print("<h4>About to delete old preferences . . .</h4>");
-  //above, we were deleting tables, so we couldn't 
-  $db->StartTrans();
-  $db->Execute("delete from `wanted_shifts`");
-  set_mod_date('wanted_shifts');
-  //legacy -- should never exist.
-  if (table_exists('unwanted_shifts')) {
-    $db->Execute("drop table `unwanted_shifts`");
-  }
-  $db->Execute("update `personal_info` set `notes` = null, `submit_date` = 0");
-  for ($ii = 0; $ii < 7; $ii++) {
-    $db->Execute("update `personal_info` set `av_$ii` = 0");
-  }
-  set_mod_date('personal_info');
-  if ($db->CompleteTrans()) {
-    print("<h4>Deleting of old preferences succeeded!</h4>");
-  }     
-  else {
-    exit("<h3>Couldn't delete old preferences!</h3>");
-  }
-}
-
-if (array_key_exists('delete_assigned_bool',$_REQUEST)) {
-  print("<h4>About to delete assigned shifts . . .</h4>");
-  $db->StartTrans();
-  foreach ($days as $day) {
-    $db->Execute("update `master_shifts` set `$day` = null where `$day` != ?",
-                 array($dummy_string));
-  }
-  set_mod_date('master_shifts');
-  if ($db->CompleteTrans()) {
-    print("<h4>Deleting of assigned shifts succeeded!</h4>");
-  }     
-  else {
-    exit("<h3>Couldn't delete assigned shifts!</h3>");
-  }
-}
 ?>
 All done!
+<p>
+You can go and
+<ul>
+<li><a href="update_house.php">update the house list</a>;
+<li><a href='master_shifts.php'>modify the workshifts</a>;
+<li><a href="set_shift_descriptions.php">give descriptions of workshifts</a>;
+<li><a href="upload_workshift_doc.php">upload a workshift policy document</a>;
+<li><a href="weekly_totals_consts.php">set buffer, floor, and fining rate for
+weekly totals</a>;
+<li><a href="online_signoff_setup.php">set up online signoffs, if you want your
+house to use them.</a>
+</ul>
+  (All these links are available on the <a href='index.php'>front page</a>.)
 </body>
 </html>
