@@ -384,7 +384,13 @@ onClick="if ('yes' == prompt('Are you sure you want to submit this way?  Type ye
 if (isset($table_caption)) { 
 ?><caption><?=$table_caption?></caption><?php 
 } 
-?><thead>
+?>
+<colgroup span=5 width="0*">
+<colgroup span=1 width="*">
+<colgroup span=5 width="0*">
+
+
+<thead>
 <tr id="header_row"><?php 
 //print out header rows, i.e. column names
 $jj = 0;

@@ -247,7 +247,7 @@ print "<h4>This may take some time -- be patient and wait until the end.</h4>";
 require_once('backup_database.php');
 print "<hr>";
 
-if (isset($_REQUEST['settings_archive'])) {
+if (isset($_REQUEST['settings_archive']) && strlen($_REQUEST['settings_archive'])) {
   $db->debug = true;
   $arch = $archive_pre . $_REQUEST['settings_archive'];
   $tmppre = "zztempsettings_";
