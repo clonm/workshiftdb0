@@ -53,7 +53,7 @@ function is_hoursinput(elt) {
   if (!is_input(elt)) {
     return false;
   }
-  return (elt.className == 'hours');
+  return is_class(elt,'hours');
 }
 
 var unassigned_hours = document.getElementById('unassigned_hours');
@@ -144,11 +144,10 @@ function assign_shift(member, workshift, addshift, silent) {
       shiftlist[member][temp2] = temp;
     }
     //member is no longer free during these times, unless it's a weeklong
-    if (typeof(busylist[member]) != 'undefined') {
-      if (workshift[1] > 0) {
-        for (var ii = temp[0]; ii <= temp[1]; ii++) {
-          busylist[member][workshift[1]-1][ii] = 3;
-        }
+    if (typeof(busylist[member]) != 'undefined' && workshift[1] > 0 &&
+        temp && temp[0] && temp[1]) {
+      for (var ii = temp[0]; ii <= temp[1]; ii++) {
+        busylist[member][workshift[1]-1][ii] = 3;
       }
     }
     //add in the new hours
