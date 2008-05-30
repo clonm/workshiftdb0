@@ -15,6 +15,21 @@ window.onkeydown=process_keydown;
 //warns before user navigates away from page
 window.onunload = process_unload;
 window.onbeforeunload = process_beforeunload;
+// tbody_elt.addEventListener('focus',pass_on_focus,true);
+// tbody_elt.addEventListener('blur',pass_on_blur,true);
+// tbody_elt.addEventListener('change',pass_on_change,true);
+
+// function pass_on_focus(e) {
+//   focus_handler(e.originalTarget);
+// }
+
+// function pass_on_blur(e) {
+//   blur_handler(e.originalTarget);
+// }
+
+// function pass_on_change(e) {
+//   change_handler(e.originalTarget);
+// }
 
 //are we currently hiding rows?
 var restricted = false;
@@ -463,7 +478,7 @@ function add_row() {
         new_in.type = 'checkbox';
       }
       else {
-        new_in.className = col_styles[ii];
+        new_in.className = col_styles[ii] + ' tblin';
       }
     }
     new_in.setAttribute("autocomplete","off");
@@ -543,7 +558,7 @@ function default_change_handler (elt) {
     if (wid.substr(0,wid.length-2) < get_value(elt).length/2) {
       set_style(theRules[style_ind],'width',
                 get_value(elt).length/2 + 'em');
-      if (elt.className == 'member_name') {
+      if (is_nameinput(elt)) {
         theRules = get_css_rules(document.styleSheets.length-2);
         ind = 0;
       }
@@ -869,6 +884,7 @@ function processReqChange () {
       document.getElementById('change_text_on_update').innerHTML = change_text_on_update;
     }
   }
+  return true;
 }
 
 //called when user navigates away from page, warns them about loss of data
@@ -876,9 +892,9 @@ function process_unload() {
   if (check_changed()) {
     if (confirm('Do you want to submit your unsaved data?')) {
       submit_data();
-      return false;
     }
   }
+  return false;
 }
 
 //called before a user navigates away, allowing them not to
@@ -888,6 +904,7 @@ function process_beforeunload() {
       "save your data.  If you are reloading the page, you may have to reload " + 
       "it again to see your changes.";
   }
+  return null;  
 }
 //if php script has not already generated javascript handlers, register these
 if (!self.focus_handler) {
