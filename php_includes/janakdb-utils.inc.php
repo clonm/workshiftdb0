@@ -420,6 +420,11 @@ function create_and_update_weekly_totals_data() {
     $tot_weeks = get_static('tot_weeks',18);
     //what should the owed default be?
     $owed_default = get_static('owed_default',5);
+    //remote possibility of sql injection here
+    if (!ctype_digit($owed_default)) {
+      $owed_default = 5;
+      set_static('owed_default',5);
+    }
     if (!table_exists('weekly_totals_data')) {
       //make a sql create_table command
       $cols = '';
