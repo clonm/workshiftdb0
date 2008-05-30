@@ -134,6 +134,8 @@ if (get_static('online_signoff',null)) {
 }
 //minimum size for everything is 2
 $col_sizes = array_fill(0,count($col_formats),2);
+//notes should expand to fill rest of table
+$col_sizes[5] = '*';
 //rows can be added/deleted
 $delete_flag = true;
 $body_insert = '';
