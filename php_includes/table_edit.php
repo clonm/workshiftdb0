@@ -125,6 +125,13 @@ if (!isset($update_db_url)) {
 
 $dummy_string = get_static('dummy_string','XXXXX',$archive);
 
+//different inputs may have different callback handlers.  Append the defaults to
+//any that the user may have specified.
+if (!isset($class_handlers)) {
+  $class_handlers = array();
+}
+$class_handlers['time'] = array('onchange' => 'time_change_handler');
+
 if (!isset($table_edit_query)) {
   //here goes the big query
   $sql = "SELECT ";
@@ -239,21 +246,25 @@ function timeformat($str, $num_rows = null) {
     }
     $time = $hour . (($minute !== '00')?":$minute":'') . " $suffix";
   }
-  return array($time,strlen($time));
+  //Janak changed 5/29/08 to just return time, because length is clear, and
+  //non-obvious length is only reason to return array
+  return $time;
 }
 
-//timeinput is special because it's an input, and also the time's initial
-//value is formatted with the above
-function timeinput($str, $ii, $jj) {
-  global $col_styles, $dummy_string;
-  $str = timeformat($str,$ii);
-  $str = $str[0];
-  return array("<input class='time tblin'  value='" . escape_html($str) . "' " . 
-               " onchange='time_change_handler(this);' " .
-               "name='cell-{$ii}-{$jj}' id='cell-{$ii}-{$jj}' " . 
-               " onBlur='blur_handler(this);' onFocus='focus_handler(this);' " .
-               "autocomplete=off>",strlen($str));
-}
+//Janak commented out 5/29/08 because timeinput is equivalent to
+//timeformat together with class=time
+/* //timeinput is special because it's an input, and also the time's initial */
+/* //value is formatted with the above */
+/* function timeinput($str, $ii, $jj) { */
+/*   global $col_styles, $dummy_string; */
+/*   $str = timeformat($str,$ii); */
+/*   $str = $str[0]; */
+/*   return array("<input class='time tblin'  value='" . escape_html($str) . "' " .  */
+/*                //               " onchange='time_change_handler(this);' " . */
+/*                "name='cell-{$ii}-{$jj}' id='cell-{$ii}-{$jj}' " .  */
+/*                //               " onBlur='blur_handler(this);' onFocus='focus_handler(this);' " . */
+/*                "autocomplete=off>",strlen($str)); */
+/* } */
 
 //returns a blank cell -- not trivial, because real blank cells take up no space
 function blankfield($str,$ii,$jj) {
@@ -265,8 +276,8 @@ function blankfield($str,$ii,$jj) {
 
 function generic_end($ii,$jj) {
   return " name='cell-{$ii}-{$jj}' id='cell-{$ii}-{$jj}' " . 
-    "onChange='change_handler(this);' " .
-    "onBlur='blur_handler(this);' onFocus='focus_handler(this);' " .
+/*     "onChange='change_handler(this);' " . */
+/*     "onBlur='blur_handler(this);' onFocus='focus_handler(this);' " . */
     "autocomplete=off>";
 }
 
@@ -588,6 +599,38 @@ need to include this file beforehand -->
 <?=$javascript_pre?>
 <script type="text/javascript" src="<?=escape_html($table_edit_js)?>"></script>
 <?=$javascript_post?>
+<?php
+   //needs to go here so that all functions have been defined
+   if (!$read_only) {
+     print "<script type='text/javascript'>\n";
+     print "var class_handlers = {";
+     $first_class = true;
+     foreach ($class_handlers as $class => $handlers) {
+       if ($first_class) {
+         $first_class = false;
+       }
+       else {
+         print ",";
+       }
+       print "\n";
+       print dbl_quote($class) . ": {";
+       $first_handler = true;
+       foreach ($handlers as $event => $handler) {
+         if ($first_handler) {
+           $first_handler = false;
+         }
+         else {
+           print ",";
+         }
+         print "\n";
+         print dbl_quote($event) . ": " . $handler;
+       }
+       print "\n}";
+     }
+     print "};\n</script>";
+   }
+?>
+
 <p id="phptime">
 PHP generated this page in <?=round(array_sum(split(' ',microtime()))-$php_start_time,2)?> seconds.
 </p>

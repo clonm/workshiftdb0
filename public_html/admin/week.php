@@ -101,10 +101,10 @@ if (isset($col_reals['shift_id'])) {
   }
 }*/
 //moved out of conditional above
-  $col_formats['start_time'] = 'timeinput';
-  $col_formats['end_time'] = 'timeinput';
+  $col_formats['start_time'] = 'timeformat';
+  $col_formats['end_time'] = 'timeformat';
 //last three columns are inputs, with the following classes (input is default)
-$col_styles = array('','','','member_name','hours','input','input','input');
+$col_styles = array('','','','member_name','hours','input','time','time');
 $col_sortable = array();
 $col_sortable[0] = 'pre_process_date';
 $col_sortable[1] = 'pre_process_day';

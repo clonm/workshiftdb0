@@ -23,8 +23,8 @@ foreach ($namemung_array as $key => $val) {
 $col_formats = array_merge(array('workshift' => 'shiftlink', 'floor' => '', 
                                  'hours' => '', 'Weeklong' => 'namemung'),
                            $namemung_array,
-                           array('start_time' => 'timeinput', 
-                                 'end_time' => 'timeinput','category' => ''));
+                           array('start_time' => 'timeformat', 
+                                 'end_time' => 'timeformat','category' => ''));
 //columns with names in them, so we can restrict on them
 $restrict_cols = array(3,4,5,6,7,8,9,10);
 

@@ -15,21 +15,40 @@ window.onkeydown=process_keydown;
 //warns before user navigates away from page
 window.onunload = process_unload;
 window.onbeforeunload = process_beforeunload;
-// tbody_elt.addEventListener('focus',pass_on_focus,true);
-// tbody_elt.addEventListener('blur',pass_on_blur,true);
-// tbody_elt.addEventListener('change',pass_on_change,true);
+tbody_elt.addEventListener('focus',pass_on_focus,true);
+tbody_elt.addEventListener('blur',pass_on_blur,true);
+tbody_elt.addEventListener('change',pass_on_change,true);
 
-// function pass_on_focus(e) {
-//   focus_handler(e.originalTarget);
-// }
+function pass_on_event(e, action, default_handler) {
+  var target = e.originalTarget;
+  var classes = target.className.split(' ');
+  var did_action = false;
+  var retval;
+  for (var ii in classes) {
+    if (class_handlers && class_handlers[classes[ii]] &&
+        class_handlers[classes[ii]][action]) {
+      retval = class_handlers[classes[ii]][action](target);
+      did_action = true;
+      break;
+    }
+  }
+  if (!did_action) {
+    retval = default_handler(target);
+  }
+  return retval;
+}
+  
+function pass_on_focus(e) {
+  return pass_on_event(e,'onfocus',focus_handler);
+}
 
-// function pass_on_blur(e) {
-//   blur_handler(e.originalTarget);
-// }
+function pass_on_blur(e) {
+  return pass_on_event(e,'onblur',blur_handler);
+}
 
-// function pass_on_change(e) {
-//   change_handler(e.originalTarget);
-// }
+function pass_on_change(e) {
+  return pass_on_event(e,'onchange',change_handler);
+}
 
 //are we currently hiding rows?
 var restricted = false;
@@ -485,9 +504,10 @@ function add_row() {
     //blank value
     new_in.setAttribute('value','');
     new_in.onblur = blur_handler;
-    new_in.onchange = change_handler;
-    new_in.onblur = blur_handler;
-    new_in.onfocus = focus_handler;
+//Janak commented out 5/29/08 as part of new handling mechanism
+//     new_in.onchange = change_handler;
+//     new_in.onblur = blur_handler;
+//     new_in.onfocus = focus_handler;
     new_td.appendChild(new_in);
     new_td.style.display = header_row.cells[ii].style.display;
     new_row.appendChild(new_td);
@@ -552,23 +572,24 @@ function default_change_handler (elt) {
   elt.style.border.color = "red";
   var elts = get_cell(elt);
   if (is_input(elt) && !is_checkbox(elt)) {
-    var theRules = get_css_rules();
-    var style_ind = Number(elts[1])*2;
-    var wid = get_style(theRules[style_ind],'width');
-    if (wid.substr(0,wid.length-2) < get_value(elt).length/2) {
-      set_style(theRules[style_ind],'width',
-                get_value(elt).length/2 + 'em');
-      if (is_nameinput(elt)) {
-        theRules = get_css_rules(document.styleSheets.length-2);
-        ind = 0;
-      }
-      else {
-        ind = Number(style_ind)+Number(1);
-      }
-      set_style(theRules[ind],'width',
-                get_value(elt).length/2 + 'em');
-      set_value(elt,get_value(elt));
-    }
+      elt.parentNode.style.width = (get_value(elt).length/2) + "em";
+//     var theRules = get_css_rules();
+//     var style_ind = Number(elts[1])*2;
+//     var wid = get_style(theRules[style_ind],'width');
+//     if (wid.substr(0,wid.length-2) < get_value(elt).length/2) {
+//       set_style(theRules[style_ind],'width',
+//                 get_value(elt).length/2 + 'em');
+//       if (is_nameinput(elt)) {
+//         theRules = get_css_rules(document.styleSheets.length-2);
+//         ind = 0;
+//       }
+//       else {
+//         ind = Number(style_ind)+Number(1);
+//       }
+//       set_style(theRules[ind],'width',
+//                 get_value(elt).length/2 + 'em');
+//       set_value(elt,get_value(elt));
+//     }
   }
   var rwindex = elt.parentNode.parentNode.rowIndex-1;
   //get element describing this row's changes
