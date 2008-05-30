@@ -106,10 +106,19 @@ function js_array($arr) {
 //out the full javascript, since it consists of multiple statements.  It should
 //be rewritten to just return the string.
 function js_assoc_array($js_var,$arr) {
-  echo "var $js_var = new Array();\n";
+  $output = "var $js_var = {";
+  $first_time = true;
   foreach ($arr as $key => $val) {
-    echo "{$js_var}[" . dbl_quote($key) . "] = " . dbl_quote($val) . ";\n";
+    if ($first_time) {
+      $first_time = false;
+    }
+    else {
+      $output .= ",";
+    }
+    $output .= "\n";
+    $output .= dbl_quote($key) . ": " . dbl_quote($val);
   }
+  echo $output . "};\n";
 }
 
 //quote string that will be used in a "like" mysql query -- underscore
