@@ -183,11 +183,6 @@ if (!$res) {
 //get the houselist for various things.  Not always necessary, but too hard to
 //figure out when
 $name_array = get_houselist(true,$archive);
-//get how wide the names should be
-$name_width = 10;
-foreach ($name_array as $name) { 
-  $name_width = max(strlen($name)/2,$name_width);
-}
 
 //text that appears above restrict select box -- changes when user restricts
 $restrict_label_text = "Limit To:";
@@ -253,9 +248,9 @@ function timeinput($str, $ii, $jj) {
   global $col_styles, $dummy_string;
   $str = timeformat($str,$ii);
   $str = $str[0];
-  return array("<input class='time'  value='" . escape_html($str) . "' " . 
+  return array("<input class='time tblin'  value='" . escape_html($str) . "' " . 
                " onchange='time_change_handler(this);' " .
-               "name='cell-{$ii}-{$jj}' id='cell-{$ii}-{$jj}'" . 
+               "name='cell-{$ii}-{$jj}' id='cell-{$ii}-{$jj}' " . 
                " onBlur='blur_handler(this);' onFocus='focus_handler(this);' " .
                "autocomplete=off>",strlen($str));
 }
@@ -274,13 +269,12 @@ function generic_end($ii,$jj) {
     "onBlur='blur_handler(this);' onFocus='focus_handler(this);' " .
     "autocomplete=off>";
 }
+
 ?>
 <style type="text/css">
-<?php //we know how much space names take up now ?>
-INPUT.member_name {
-  width: <?=$name_width?>em;
+INPUT.tblin {
+  width: 100%;
 }
-
 </style>
 <?php
 if (isset($head_insert)) {
@@ -385,17 +379,15 @@ if (isset($table_caption)) {
 ?><caption><?=$table_caption?></caption><?php 
 } 
 ?>
-<colgroup span=5 width="0*">
-<colgroup span=1 width="*">
-<colgroup span=5 width="0*">
-
 
 <thead>
 <tr id="header_row"><?php 
 //print out header rows, i.e. column names
 $jj = 0;
 foreach ($col_names as $title) {
-  $col_sizes[$jj] = max($col_sizes[$jj],strlen($title)/2);
+  if ($col_sizes[$jj] != '*') {
+    $col_sizes[$jj] = max($col_sizes[$jj],strlen($title)/2);
+  }
 ?><th><?php
 if (isset($col_sortable[$jj])) {
 ?><a href='#' class='sortheader' onclick='ts_resortTable(this,<?=$jj?>);return false;'><?php
@@ -408,7 +400,7 @@ if (isset($col_sortable[$jj])) {
 ?></th><?php 
 } 
 $jj = 0;
-if ($delete_flag) {echo '<td>Delete?</td>';}
+if ($delete_flag) {echo '<td style="width: 3em">Delete?</td>';}
 ?></tr></thead><tbody id="data_rows"><?php
 
 //here comes the big data loop
@@ -468,18 +460,15 @@ while ($row =& $res->FetchRow()) {
         //this is a big hack and hasn't been fully tested, but it should never
         //happen in real life -- only in table_edit.wrapper.php
         if ($col_styles[$jj] == 'textarea' || substr_count($str,"\n")) {
-          echo "<textarea rows=3 cols=30 class='{$col_styles[$jj]}' " .
+          echo "<textarea rows=3 cols=30 class='{$col_styles[$jj]} tblin' " .
             generic_end($num_rows,$jj) . escape_html($str) . "</textarea>";
         }
         else if ($col_styles[$jj] == 'checkbox') {
           echo "<input type=checkbox " . ($str?'checked ':'') . generic_end($num_rows,$jj);
         }
         else {
-          if ($col_styles[$jj] === 'input') {
-            $col_styles[$jj] = "input$jj";
-          }
           echo 
-            "<input class='{$col_styles[$jj]}' value='" . escape_html($str) . "'" .
+            "<input class='{$col_styles[$jj]} tblin' value='" . escape_html($str) . "'" .
             generic_end($num_rows,$jj);
         }
       }
@@ -489,19 +478,23 @@ while ($row =& $res->FetchRow()) {
       }
       //keep track of sizes
       //if in textarea, have 30 columns
-      if (substr_count($str,"\n")) {
-        $col_sizes[$jj] = max($col_sizes[$jj],20);
-      }
-      else {
-        $col_sizes[$jj] = max(strlen($str)/2,$col_sizes[$jj]);
+      if ($col_sizes[$jj] != '*') {
+        if (substr_count($str,"\n")) {
+          $col_sizes[$jj] = max($col_sizes[$jj],20);
+        }
+        else {
+          $col_sizes[$jj] = max(strlen($str)/2,$col_sizes[$jj]);
+        }
       }
     }
     //there was a script-specified format for this column, so use it
     else {
       //print the content -- ret was set above
       echo $ret[0];
-      //keep track of sizes
-      $col_sizes[$jj] = max($ret[1]/2,$col_sizes[$jj]);
+      if ($col_sizes[$jj] != '*') {
+        //keep track of sizes
+        $col_sizes[$jj] = max($ret[1]/2,$col_sizes[$jj]);
+      }
     }
     //done with this cell!
     echo '</td>';
@@ -527,17 +520,15 @@ while ($row =& $res->FetchRow()) {
 <?php //we know how much space each column takes up now 
 $ii = 0;
 foreach ($col_formats as $col => $junk) {
+  if ($col_sizes[$ii] != '*') {
 ?>
-INPUT.input<?=$ii?> {
-  width: <?=$col_sizes[$ii]?>em;
-}
-
  td.td<?=$ii?> {
    width: <?=$col_sizes[$ii]?>em;
  }
 <?php 
+    }
     if (!$col_styles[$ii]) {
-      $col_styles[$ii] = "input$ii";
+      $col_styles[$ii] = "tblin";
     } 
  $ii++; 
 } ?>
