@@ -28,6 +28,7 @@ function show_prefs(e) {
   var show = window.open('show_prefs.php?person=' + 
 			 divhouselist[targ.id.substring(4,targ.id.length)],'show_prefs'); 
   show.focus();
+  return true;
 }
 
 var divhouselist = [<?=js_array($houselist)?>];
@@ -176,10 +177,10 @@ var used_hours = false;
 function sort_list(shift_change_only) {
   //  alert('sort ' + used_prio);
   if (shift_change_only == 1 && !used_prio) {
-    return;
+    return false;
   }
   if (shift_change_only == 2 && !used_hours) {
-    return;
+    return false;
   }
   if (!shift_change_only) {
     var newtop = sort_select.value;
