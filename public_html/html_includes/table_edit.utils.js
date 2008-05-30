@@ -46,7 +46,7 @@ function is_nameinput(elt) {
     return false;
   }
   //  if (++tempval < 5) alert(elt.className);
-  return (elt.className == 'member_name');
+  return (elt.className.split(' ').indexOf('member_name') != -1);
 }
 
 //is this a cell which contains times?
