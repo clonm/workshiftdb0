@@ -32,21 +32,23 @@ function is_td(elt) {
   return elt.nodeName && elt.nodeName == 'TD';
 }
 
+function is_class(elt,class_name) {
+  if (!elt.className) {
+    return false;
+  }
+  return (elt.className.split(' ').indexOf(class_name) != -1);
+}
+  
 //the following functions can easily be extended.  There should be one for 
 //every cell which requires special handling behavior.  Currently there's
 //just name and time cells.
 
 //is this a cell which contains member names?
-var tempval = 0;
 function is_nameinput(elt) {
   if (!is_input(elt)) {
     return false;
   }
-  if (!elt.className) {
-    return false;
-  }
-  //  if (++tempval < 5) alert(elt.className);
-  return (elt.className.split(' ').indexOf('member_name') != -1);
+  return is_class(elt,'member_name');
 }
 
 //is this a cell which contains times?
@@ -54,14 +56,9 @@ function is_timeinput(elt) {
   if (!is_input(elt)) {
     return false;
   }
-  if (!elt.className) {
-    return false;
-  }
-  return (elt.className == 'time');
+  return is_class(elt,'time');
 }
   
-var ttemp = 0;
-
 function get_value(thing) {
   if (!thing) {
     alert("error retrieving element value.  Please contact administrator");
