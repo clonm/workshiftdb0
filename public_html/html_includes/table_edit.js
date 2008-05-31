@@ -915,11 +915,19 @@ function process_unload() {
       submit_data();
     }
   }
+  //user shouldn't move away from page until submission finished
+  while (req != 0 && confirm(
+    "Press OK when the page says 'Ready' again, or if you think it's done.  "
+    + "If this dialog keeps on appearing, then press Cancel.")) {};
   return false;
 }
 
 //called before a user navigates away, allowing them not to
 function process_beforeunload() {
+  //user shouldn't move away from page until submission finished
+  while (req != 0 && confirm(
+    "Please wait to press OK until the page says 'Ready' again.  If it "
+      + "has hung, then press Cancel.")) {};
   if (check_changed()) {
     return "You have unsaved data.  If you press OK, you will be prompted to " +
       "save your data.  If you are reloading the page, you may have to reload " + 
