@@ -84,7 +84,7 @@ function change_handler(elt) {
     return;
   }
   var row = elt.parentNode.parentNode.childNodes;
-  key_weeks = 0;
+  var key_weeks = 0;
 HEREDOC
   ; 
   if ($cash_hours_auto) {
@@ -107,14 +107,14 @@ HEREDOC
   var oth_fine = other_fines[member_name];
   var total_fine = oth_fine;
   if (special_fining[member_name]) {
-    new_fine_weeks = new Array();
+    var new_fine_weeks = new Array();
     if (!key_weeks) {
       for (var kk in backup_fine_weeks) {
         key_weeks[key_weeks.length] = kk;
       }
     }
     for (kk = 1; kk <= 5; kk++) {
-      new_week = special_fining[member_name]["fine_week_" + kk];
+      var new_week = special_fining[member_name]["fine_week_" + kk];
       if (new_week != -1 && new_week < week_num &&
           new_week != (old_week = key_weeks[kk-1])) {
         if (new_week.length) {
@@ -136,8 +136,11 @@ HEREDOC
   ;
  }
  $javascript_pre .= <<<HEREDOC
-  for (ii = 0; ii < week_num; ii++) {
+
+  for (var ii = 0; ii < week_num; ii++) {
     var this_week = 0;
+    var end_fine = false;
+    var max_up_hours = backup_max_up_hours;
     if (row[5*ii+3].firstChild) {
       this_week = Number(get_value(row[5*ii+Number(3)]));
     }
@@ -146,20 +149,13 @@ HEREDOC
     set_value(row[5*ii+Number(5)],this_week);
     if (fine_weeks[ii]) {
       end_fine = true;
-    }
-    else {
-      end_fine = false;
-    }
-    if (end_fine) {
       max_up_hours = max_up_hours_fining;
-    }
-    else {
-      max_up_hours = backup_max_up_hours;
     }
     if (ii == tot_weeks) {
       fining_percent_fine = 100;
       zero_partial = 100;
     }
+
 HEREDOC
   ;
  if ($nonzeroed_total) {
@@ -181,11 +177,12 @@ if ($cash_hours_auto) {
 HEREDOC
   ;
 }
-$javascript_pre .= "runtot = max_up_hours;\n}\n";
+$javascript_pre .= "\n     runtot = max_up_hours;\n   }\n";
 if (!$weekly_fining) {
   $javascript_pre .= "if (fine_weeks[ii]) {\n";
 }
 $javascript_pre .= <<<HEREDOC
+var fin_floor; var fin_rate; var fin_buffer; var fin_doublefloor;
 if (end_fine) {
   fin_floor = fine_weeks[ii]['fining_floor'];
   fin_rate = fine_weeks[ii]['fining_rate'];
@@ -212,12 +209,12 @@ if (!fin_buffer) {
 if (!fin_rate) {
   fin_rate = fining_rate;
 }
-temptotal = runtot;
+var temptotal = runtot;
 temptotal = Number(temptotal) + Number(fin_floor);
 temptotal *= -1;
 if (temptotal > fin_buffer) {
   temptotal *= fining_percent_fine/100;
-  fine = temptotal*fin_rate;
+  var fine = temptotal*fin_rate;
   if (fin_doublefloor && fin_doublefloor >= fin_floor) {
     fin_doublefloor -= fin_floor;
     fine = Number(fine) + Number((temptotal-fin_doublefloor)*fin_rate);
@@ -348,130 +345,107 @@ function initialize_weekly_totals_update() {
      elt.focus();
      set_value(elt,val);
      elt.blur();
-     if (elt.style.color != 'red') {
-       elt.onchange();
-     }
+     pass_on_change({'originalTarget' : elt});
      return 0;
    }
    return 2;
  }
  
  function change_week_handler() {
-   var newval = get_value_by_id('change_week_hours_week');
-   var elt = get_elt_by_id('change_week_hours_week_end');
+   var newval = get_value_by_id('change_hours_week');
+   var elt = get_elt_by_id('change_hours_week_end');
    if (get_value(elt) < newval) {
      set_value(elt,newval);
    }
    return true;
  }
 
-function change_week_hours() {
-  var week = parseInt(get_value_by_id('change_week_hours_week'));
-  var week_end = parseInt(get_value_by_id('change_week_hours_week_end'));
-  if (week < 0) {
-    alert(week + " is less than 0 -- not allowed.  Starting at week 0.");
-    week = 0;
-  }
-  if (week_end < 0) {
-    alert("Ending week, " + week_end + " cannot be less than 0.");
-    return;
-  }
-  if (week > tot_weeks) {
-    alert("Can't alter owed for week " + week + 
-          " -- the semester isn't that long");
-    return;
-  }
-  if (week_end > tot_weeks) {
-    alert("Can't alter owed for week " + week_end + 
-          " -- the semester isn't that long.  Just doing " + 
-          "up to " + tot_weeks);
+  function change_hours() {
+    var mem = get_value_by_id('change_hours_member');
+    if (!mem.length) {
+      alert("You didn't select anyone.");
+      return false;
+    }
+    var hrs = get_value_by_id('change_hours_value');
+    var overwrite = get_value_by_id('change_hours_overwrite');
+    var week = parseInt(get_value_by_id('change_hours_week'));
+    var week_end = parseInt(get_value_by_id('change_hours_week_end'));
+    if (week < 0) {
+      alert(week + " is less than 0 -- not allowed.  Starting at week 0.");
+      week = 0;
+    }
+    if (week_end < 0) {
+      alert("Ending week, " + week_end + " cannot be less than 0.");
+      return false;
+    }
+    if (week > tot_weeks) {
+      alert("Can't alter owed for week " + week + 
+            " -- the semester isn't that long");
+      return false;
+    }
+    if (week_end > tot_weeks) {
+      alert("Can't alter owed for week " + week_end + 
+            " -- the semester isn't that long.  Just doing " + 
+            "up to " + tot_weeks);
     week_end = tot_weeks;
-  }
-  var hrs = get_value_by_id('change_week_hours_value');
-  var overwrite = get_value_by_id('change_week_hours_check');
-  var rowlen = rows_array.length;
-  var col;
-  for (; week <= week_end; week++) {
-    if (week < week_num) {
-      col = 5*(Number(week)+1)-1;
+    }
+    var cols = new Array();
+    for (; week <= week_end; week++) {
+      if (week < week_num) {
+        cols[cols.length] = 5*(Number(week)+1)-1;
+      }
+      else {
+        cols[cols.length] = last_offset+Number(week)-week_num;
+      }
+    }
+    if (mem == '(Whole house)') {
+      return change_week_hours(cols, hrs, overwrite, rows_array.length);
     }
     else {
-      col = last_offset+Number(week)-week_num;
+      return change_person_hours(mem, cols, hrs, overwrite, rows_array.length);
     }
+  }
+
+  function change_week_hours(cols, hrs, overwrite, rowlen) {
     //go through rows, changing hours
     for (var ii = 0; ii < rowlen; ii++) {
-      var elt = rows_array[ii].childNodes[col].firstChild;
+      change_row_hours(ii,cols,hrs,overwrite);
+    }
+    return true;
+}
+
+  function change_person_hours(mem, cols, hrs, overwrite, rowlen) {
+    //go through rows, looking for matches
+    for (var ii = 0; ii < rowlen; ii++) {
+      var cur_mem = get_value(rows_array[ii].firstChild);
+      if (cur_mem == mem) {
+        break;
+      }
+    }
+    if (ii == rowlen) {
+      alert("Error!  Couldn't find " + mem + " in list!");
+      return false;
+    }
+    change_row_hours(ii,cols,hrs,overwrite);
+    return true;
+  }
+ 
+  function change_row_hours(row_num,cols,hrs,overwrite) {
+    var arr = rows_array[row_num].childNodes;
+    for (var jj in cols) {
+      var elt = arr[cols[jj]].firstChild;
       if (!overwrite) {
         if (get_value(elt) != $owed_default) {
           continue;
         }
       }
       if (alter_cell(elt,hrs) > 1) {
-        alert("Couldn't alter element in row " + ii + " with value " + get_value(elt));
+        alert("Couldn't alter element in row " + row_num
+              + " with value " + get_value(elt));
       }
     }
+    return true;
   }
-}
-
-function change_person_hours() {
-  var mem = get_value_by_id('change_person_hours_member');
-  var hrs = get_value_by_id('change_person_hours_value');
-  var overwrite = get_value_by_id('change_person_hours_check');
-  var week = parseInt(get_value_by_id('change_week_hours_week'));
-  var week_end = parseInt(get_value_by_id('change_week_hours_week_end'));
-  if (week < 0) {
-    alert(week + " is less than 0 -- not allowed.  Starting at week 0.");
-    week = 0;
-  }
-  if (week_end < 0) {
-    alert("Ending week, " + week_end + " cannot be less than 0.");
-    return;
-  }
-  if (week > tot_weeks) {
-    alert("Can't alter owed for week " + week + 
-          " -- the semester isn't that long");
-    return;
-  }
-  if (week_end > tot_weeks) {
-    alert("Can't alter owed for week " + week_end + 
-          " -- the semester isn't that long.  Just doing " + 
-          "up to " + tot_weeks);
-    week_end = tot_weeks;
-  }
-  var rowlen = rows_array.length;
-  //go through rows, looking for matches
-  for (var ii = 0; ii < rowlen; ii++) {
-    var cur_mem = get_value(rows_array[ii].firstChild);
-    if (cur_mem == mem) {
-      break;
-    }
-  }
-  if (ii == rowlen) {
-    alert("Error!  Couldn't find " + mem + " in list!");
-    return false;
-  }
-  var arr = rows_array[ii].childNodes;
-  var sz = arr.length;
-  for (; week <= week_end; week++) {
-    if (week < week_num) {
-      col = 5*(Number(week)+1)-1;
-    }
-    else {
-      col = last_offset+Number(week)-week_num;
-    }
-    var elt = arr[col].firstChild;
-    if (!overwrite) {
-      if (get_value(elt) != $owed_default) {
-        continue;
-      }
-    }
-    if (alter_cell(elt,hrs) > 1) {
-      alert("Couldn't alter element in week " + week + " with value " + get_value(elt));
-    }
-  }
-  return false;
-}
- 
 </script>
 HEREDOC;
 	     
@@ -481,32 +455,26 @@ if (!isset($body_insert)) {
 }
 $houselist = get_houselist();
 $body_insert .= <<<EOS
-<input type=submit value='Change week(s)' onclick='change_week_hours()' style='background-color: rgb(0, 255, 0)'>
-<input id='change_week_hours_week' style='border-width: 1px; border-style: solid;'
-onchange='change_week_handler()' value=0 size=1>-
-<input id='change_week_hours_week_end' style='border-width: 1px; border-style: solid;' value=0 size=1> 
-hours owed to
-<input id='change_week_hours_value' style='border-width: 1px; border-style: solid;' value=3 size=1>
-(<input type=checkbox id='change_week_hours_check'>
-<label for='change_week_hours_check'>check here to change hours owed 
-even if a person currently doesn't owe $owed_default hours for that week)</label>
-<br>
-<input onclick='change_person_hours()' type=submit value='Change person' style='background-color: rgb(0, 255, 0)'>
-<select id='change_person_hours_member'>
-<option>
+<div style='border: blue 1px solid; width: 90%'>
+Change hours for <select id='change_hours_member'>
+<option selected>
+<option>(Whole house)
 EOS
-;
+  ;
 foreach ($houselist as $mem) {
 $body_insert .= "<option>" . escape_html($mem) . "\n";
 }
 $body_insert .= <<<EOS
 </select>
- hours owed, for the week range above, to
-<input id='change_person_hours_value' style='border-width: 1px; border-style: solid;' value=3 size=1>
-(<input type=checkbox id='change_person_hours_check'>
-<label for='change_person_hours_check'>check here to change hours 
-for every week, even if this person currently doesn't owe $owed_default hours for some week)</label>
-<br>
+to
+<input id='change_hours_value' style='border-width: 1px; border-style: solid;' value=3 size=1> starting at week
+<input id='change_hours_week' style='border-width: 1px; border-style: solid;'
+onchange='change_week_handler()' value=0 size=1> and going through week
+<input id='change_hours_week_end' style='border-width: 1px; border-style: solid;' value=0 size=1>.<br/>(<input type=checkbox id='change_hours_overwrite'>
+<label for='change_hours_overwrite'>check here to change hours owed 
+even if a person currently doesn't owe $owed_default hours for that week)</label><br/>
+<input class='button' type=submit onclick='change_hours()' value='Change!'/>
+</div>
 EOS;
 require_once("$php_includes/table_edit.php");
 ?>
