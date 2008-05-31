@@ -24,6 +24,10 @@ function is_radio(elt) {
   return is_input(elt) && elt.type && elt.type == 'radio';
 }
 
+function is_select(elt) {
+  return elt.nodeName && elt.nodeName == 'SELECT';
+}
+
 function is_link(elt) {
   return (elt.nodeName && elt.nodeName == 'A');
 }
@@ -80,6 +84,7 @@ function get_value(thing) {
   }
   //maybe thing.value is null but it still has it (value is for inputs)
   if (thing.value || is_input(thing) || is_textarea(thing) ||
+      is_select(thing) ||
       (thing.hasAttribute && 
        thing.hasAttribute('value'))) {
     return thing.value;
