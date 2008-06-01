@@ -79,11 +79,14 @@ function change_handler(elt) {
     return;
   }
   var coords = get_cell(elt);
+  if (!coords) {
+    return;
+  }
   //is this an owed field, i.e. before the Totals field
   if (coords[1] >= 5*week_num+Number(1)) {
     return;
   }
-  var row = elt.parentNode.parentNode.childNodes;
+  var row = rows_array[coords[0]].cells;
   var key_weeks = 0;
 HEREDOC
   ; 
@@ -146,7 +149,7 @@ HEREDOC
     }
     this_week -= Number(get_value(row[5*ii+Number(4)]));
     runtot += this_week;
-    set_value(row[5*ii+Number(5)],this_week);
+    change_cell(row[5*ii+Number(5)],this_week);
     if (fine_weeks[ii]) {
       end_fine = true;
       max_up_hours = max_up_hours_fining;
@@ -273,7 +276,6 @@ HEREDOC
     }
     $javascript_pre .= <<<HEREDOC
 
-    change_cell(row[5*$week_num],runtot);
     change_cell(row[$total_fine_col-1],'$' + Math.round(oth_fine*100)/100);
     change_cell(row[$total_fine_col],'$' + Math.round(total_fine*100)/100);
 HEREDOC
