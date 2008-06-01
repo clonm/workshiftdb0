@@ -430,6 +430,7 @@ $colorcell = array();
 if (!isset($switch_color_frequency)) {
   $switch_color_frequency = 3;
 }
+$first_cell_index = -1;
 while ($row =& $res->FetchRow()) {
   if (isset($mung_whole_row)) {
     $mung_whole_row($row);
@@ -479,7 +480,8 @@ while ($row =& $res->FetchRow()) {
         //happen in real life -- only in table_edit.wrapper.php
         if ($col_styles[$jj] == 'textarea' || substr_count($str,"\n")) {
           echo "<textarea rows=3 cols=30 class='{$col_styles[$jj]} tblin' " .
-            generic_end($num_rows,$jj) . escape_html($str) . "</textarea>";
+            generic_end($num_rows,$jj) . escape_html($str) . 
+            "</textarea>";
         }
         else if ($col_styles[$jj] == 'checkbox') {
           echo "<input type=checkbox " . ($str?'checked ':'') . generic_end($num_rows,$jj);
