@@ -858,14 +858,17 @@ function processReqChange () {
 	//success!
 	statustext.innerHTML = "Table updated!";
 	//the page is no longer reliable if rows were added or deleted
-	var reload_flag = (del_rows_copy.length != 0);
-        if (!reload_flag) {
-	  for (ii in ch_array_copy) {
-	    if (!ch_array_copy[ii].length) {
-	      reload_flag = true;
-              break;
+        var reload_flag = false;
+        if (!unloading_process) {
+	  reload_flag = (del_rows_copy.length != 0);
+          if (!reload_flag) {
+	    for (ii in ch_array_copy) {
+	      if (!ch_array_copy[ii].length) {
+	        reload_flag = true;
+                break;
+	      }
 	    }
-	  }
+          }
         }
         if (ch_array_copy.length) {
 	  for (ii in ch_array_copy) {
@@ -907,8 +910,10 @@ function processReqChange () {
   return true;
 }
 
+var unloading_process = false;
 //called when user navigates away from page, warns them about loss of data
 function process_unload() {
+  unloading_process = true;
   if (check_changed()) {
     if (confirm('Do you want to submit your unsaved data?')) {
       submit_data();
