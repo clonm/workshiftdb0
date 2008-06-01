@@ -22,6 +22,9 @@ tbody_elt.addEventListener('click',pass_on_click,true);
 
 function pass_on_event(e, action, default_handler) {
   var target = e.originalTarget;
+  if (!is_cell(target)) {
+    return true;
+  }
   var classes = target.className.split(' ');
   var did_action = false;
   var retval;
