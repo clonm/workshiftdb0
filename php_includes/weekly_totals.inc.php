@@ -158,7 +158,7 @@ $delete_flag = false;
 if ($weekly_fining) {
 function notes_fines($str,$num_rows,$jj) {
   global $col_styles, $notes_fines, $col_formats, $notes_col, $weekly_fining;
-  if ($col_styles[$notes_col] != 'input') {
+  if ($col_styles[$notes_col] != 'input' && $col_styles[$notes_col] != 'textarea') {
     $col_formats['notes'] = '';
     return $str;
   }
