@@ -487,6 +487,11 @@ function add_row() {
   //make new row element
   var new_row = document.createElement('tr');
   var ii;
+  //we want tabbing to go "smoothly".  The +150 is a hack because we don't
+  //know how many tab elements there are at the top of the page.  This still
+  //doesn't really work because we won't be able to tab between rows, but
+  //at least tabbing within a row will work.
+  var current_tab = num_rows*num_cols+150;
   for (ii = 0; ii < num_cols; ii++) {
     //new cell and cell input
     var new_td = document.createElement('td');
@@ -517,6 +522,7 @@ function add_row() {
 //     new_in.onchange = change_handler;
 //     new_in.onblur = blur_handler;
 //     new_in.onfocus = focus_handler;
+    new_in.setAttribute('tabindex',current_tab++);
     new_td.appendChild(new_in);
     new_td.style.display = header_row.cells[ii].style.display;
     new_row.appendChild(new_td);
