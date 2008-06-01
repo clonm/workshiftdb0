@@ -477,7 +477,7 @@ function change_handler(elt) {
         if (coords[1] == 3) {
           var changed = '';
           for (var jj = 4; jj < 11; jj++) {
-            this_elt = get_elt_by_id('cell-' + coords[0] + '-' + jj);
+            this_elt = get_cell_elt(coords[0],jj);
             if (!get_value(this_elt)) {
               set_value(this_elt,dummy_string);
               change_handler(this_elt);
@@ -489,7 +489,7 @@ function change_handler(elt) {
           }
         }
         else {
-          wklng_elt = get_elt_by_id('cell-' + coords[0] + '-' + 3);
+          wklng_elt = get_cell_elt(coords[0],3);
           if (!get_value(wklng_elt)) {
             set_value(wklng_elt,dummy_string);
             change_handler(wklng_elt);

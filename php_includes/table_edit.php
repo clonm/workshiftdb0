@@ -28,6 +28,8 @@ if (!isset($table_edit_css)) {
 <?php
 //set all variables that weren't set by calling script 
 #$db->debug = true;
+//scaling factor for widths -- from characters to ems
+  $em_scaling = 2/3;
 //location of javascript include file
 if (!isset($table_edit_js)) {
   $table_edit_js = "$html_includes/table_edit.js";
@@ -125,12 +127,17 @@ if (!isset($update_db_url)) {
 
 $dummy_string = get_static('dummy_string','XXXXX',$archive);
 
+$empty_function = 'function (dummy) {return true;}';
 //different inputs may have different callback handlers.  Append the defaults to
 //any that the user may have specified.
 if (!isset($class_handlers)) {
   $class_handlers = array();
 }
 $class_handlers['time'] = array('onchange' => 'time_change_handler');
+$class_handlers['delete_check'] = array('onclick' => 'delete_row_handler',
+                                        'onchange' => $empty_function,
+                                        'onfocus' => $empty_function,
+                                        'onblur' => $empty_function);
 
 if (!isset($table_edit_query)) {
   //here goes the big query
@@ -397,7 +404,7 @@ if (isset($table_caption)) {
 $jj = 0;
 foreach ($col_names as $title) {
   if ($col_sizes[$jj] != '*') {
-    $col_sizes[$jj] = max($col_sizes[$jj],strlen($title)/2);
+    $col_sizes[$jj] = max($col_sizes[$jj],$em_scaling*strlen($title));
   }
 ?><th><?php
 if (isset($col_sortable[$jj])) {
@@ -494,7 +501,7 @@ while ($row =& $res->FetchRow()) {
           $col_sizes[$jj] = max($col_sizes[$jj],20);
         }
         else {
-          $col_sizes[$jj] = max(strlen($str)/2,$col_sizes[$jj]);
+          $col_sizes[$jj] = max($em_scaling*strlen($str),$col_sizes[$jj]);
         }
       }
     }
@@ -504,7 +511,7 @@ while ($row =& $res->FetchRow()) {
       echo $ret[0];
       if ($col_sizes[$jj] != '*') {
         //keep track of sizes
-        $col_sizes[$jj] = max($ret[1]/2,$col_sizes[$jj]);
+        $col_sizes[$jj] = max($em_scaling*$ret[1],$col_sizes[$jj]);
       }
     }
     //done with this cell!
@@ -518,8 +525,8 @@ while ($row =& $res->FetchRow()) {
   }
   //tack on delete checkbox if we can delete
   if ($delete_flag) {
-    echo "<td><input type=checkbox name='delete_$num_rows' " .
-    "onClick=\"delete_row_handler(this);\" tabindex=32767></td>";
+    echo "<td><input type=checkbox class='delete_check' name='delete_$num_rows' " .
+    "tabindex=32767></td>";
   }
   //end of row!
   echo "</tr>\n";

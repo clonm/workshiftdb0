@@ -1,10 +1,25 @@
 //get coordinates of input cell
 function get_cell(targ) {
-  var elts = targ.id.split("-");
+  var elts = targ.name.split("-");
   if (elts[0] != "cell") {
     return 0;
   }
+  var rowind = targ.parentNode.parentNode.rowIndex-1;
+  var colind = targ.parentNode.cellIndex;
+  if (rowind != elts[1] || colind != elts[2]) {
+    alert("Please email Janak and tell him there was a problem with "
+          + "get_cell, and tell him what page you're on, and what "
+          + "you were doing, along with the following numbers: " + rowind + ' ' + elts[1] + ' ' + colind + ' ' + elts[2]);
+  }
   return new Array(elts[1],elts[2]);
+}
+
+function get_cell_elt(ii,jj) {
+  if (typeof(rows_array[ii]) == "undefined") {
+    alert(ii);
+    debugger;
+  }
+  return rows_array[ii].cells[jj].firstChild;
 }
 
 //is this an input cell?

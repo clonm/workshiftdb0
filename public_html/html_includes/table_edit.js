@@ -18,6 +18,7 @@ window.onbeforeunload = process_beforeunload;
 tbody_elt.addEventListener('focus',pass_on_focus,true);
 tbody_elt.addEventListener('blur',pass_on_blur,true);
 tbody_elt.addEventListener('change',pass_on_change,true);
+tbody_elt.addEventListener('click',pass_on_click,true);
 
 function pass_on_event(e, action, default_handler) {
   var target = e.originalTarget;
@@ -48,6 +49,10 @@ function pass_on_blur(e) {
 
 function pass_on_change(e) {
   return pass_on_event(e,'onchange',change_handler);
+}
+
+function pass_on_click(e) {
+  return pass_on_event(e,'onclick',change_handler);
 }
 
 //are we currently hiding rows?
@@ -291,6 +296,7 @@ function color_row(rw, color) {
     rw.style.color = color;
     //remember to color all the cells!
     for (var ii = 0; ii < num_cols; ii++) {
+      rw.cells[ii].style.color = color;
       if (rw.cells[ii].firstChild && rw.cells[ii].firstChild.style) {
         rw.cells[ii].firstChild.style.color = color;
       }
@@ -573,38 +579,20 @@ function default_change_handler (elt) {
   var elts = get_cell(elt);
   if (is_input(elt) && !is_checkbox(elt)) {
       elt.parentNode.style.width = (get_value(elt).length/2) + "em";
-//     var theRules = get_css_rules();
-//     var style_ind = Number(elts[1])*2;
-//     var wid = get_style(theRules[style_ind],'width');
-//     if (wid.substr(0,wid.length-2) < get_value(elt).length/2) {
-//       set_style(theRules[style_ind],'width',
-//                 get_value(elt).length/2 + 'em');
-//       if (is_nameinput(elt)) {
-//         theRules = get_css_rules(document.styleSheets.length-2);
-//         ind = 0;
-//       }
-//       else {
-//         ind = Number(style_ind)+Number(1);
-//       }
-//       set_style(theRules[ind],'width',
-//                 get_value(elt).length/2 + 'em');
-//       set_value(elt,get_value(elt));
-//     }
   }
-  var rwindex = elt.parentNode.parentNode.rowIndex-1;
   //get element describing this row's changes
-  var ch = change_array[rwindex];
+  var ch = change_array[elts[0]];
   if (ch) {
     //is this an array?
     if (ch.length) {
-      ch[ch.length] = elt.id;
+      ch[ch.length] = elts[1];
     }
     //else whole row is being done, so don't bother adding this
   }
   else {
     //first change of this row
-    change_array[rwindex] = new Array(1);
-    change_array[rwindex][0]=elt.id;
+    change_array[elts[0]] = new Array(1);
+    change_array[elts[0]][0]=elts[1];
   }
   statustext.innerHTML = "Press CTRL-s to save your work.";
   return true;
@@ -744,30 +732,30 @@ function submit_data () {
   var jj;
   //tell update_db we're using javascript, so it can be smart about sql
   data += "js_flag=1&";
-  var len = ch_array_copy.length;
-  //each changed row is a separate array, so there are lots of 
-  //changed_cells_ii arrays passed through
-  for (ii in ch_array_copy) {
-    var ch = ch_array_copy[ii];
-    //were individual cells changed?
-    if (ch.length) {
-      for (jj = 0; jj< ch.length; jj++) {
-        var elts = ch[jj].split("-");
-        data += "changed_cells_" + ii + "[]=" + elts[2] + "&";
-        data += "cell-" + ii + "-" + elts[2] + "=" + 
-          val_of(rows_array[ii].cells[elts[2]].firstChild) + "&";
+  if (ch_array_copy.length) {
+    //each changed row is a separate array, so there are lots of 
+    //changed_cells_ii arrays passed through
+    for (ii in ch_array_copy) {
+      var ch = ch_array_copy[ii];
+      //were individual cells changed?
+        if (ch.length) {
+          for (jj = 0; jj< ch.length; jj++) {
+            data += "changed_cells_" + ii + "[]=" + ch[jj] + "&";
+            data += "cell-" + ii + "-" + ch[jj] + "=" + 
+              val_of(get_cell_elt(ii,ch[jj])) + "&";
+          }
+        }
+      else {
+        //whole row modified?
+          data += "changed_cells_" + ii + "=1&";
+        for (jj = 0; jj < num_cols; jj++) {
+          data += "cell-" + ii + "-" + jj + "=" + 
+            val_of(get_cell_elt(ii,jj)) + "&";
+        }
       }
+      data += "autoid-" + ii + "=" + 
+        val_of(get_cell_elt(ii,num_cols)) + "&";
     }
-    else {
-      //whole row modified?
-      data += "changed_cells_" + ii + "=1&";
-      for (jj = 0; jj < num_cols; jj++) {
-        data += "cell-" + ii + "-" + jj + "=" + 
-          val_of(rows_array[ii].cells[jj].firstChild) + "&";
-      }
-    }
-    data += "autoid-" + ii + "=" + 
-      val_of(rows_array[ii].cells[num_cols].firstChild) + "&";
   }
   //throw in deleted rows
   if (!del_rows_copy.length) {
@@ -777,7 +765,7 @@ function submit_data () {
     for (ii in del_rows_copy) {
       data += "deleted_rows[]=" + ii + "&";
       data += "autoid-" + ii + "=" + 
-        val_of(rows_array[ii].cells[num_cols].firstChild) + "&";
+        val_of(get_cell_elt(ii,num_cols)) + "&";
     }
   }
   // we send the data more efficiently above
@@ -830,66 +818,73 @@ function processReqChange () {
 	//revert to previous data, since the updates weren't successful
 	//really the arrays could just be copied, but just in case
 	//for each old changed index,
-	for (ii in ch_array_copy) {
-	  //if we don't have that index anymore, 
-          //or it was the whole row, just set it here
-	  if (!change_array[ii] || !ch_array_copy[ii].length) {
-	    change_array[ii] = ch_array_copy[ii];
-	    continue;
+        if (ch_array_copy.length) {
+	  for (ii in ch_array_copy) {
+	    //if we don't have that index anymore, 
+            //or it was the whole row, just set it here
+	    if (!change_array[ii] || !ch_array_copy[ii].length) {
+	      change_array[ii] = ch_array_copy[ii];
+	      continue;
+	    }
+	    //if the user has changed the whole row anyway, continue
+	    if (!change_array[ii].length) {
+	      continue;
+	    }
+	    //merge changes user made since updating with the ones before
+	    var ch = ch_array_copy[ii];
+	    var arr = change_array[ii];
+	    for (jj in ch) {
+	      arr[arr.length] = ch[jj];
+	    }
 	  }
-	  //if the user has changed the whole row anyway, continue
-	  if (!change_array[ii].length) {
-	    continue;
+        }
+        if (del_rows_copy.length) {
+	  //deleted rows are easier
+	  for (ii in del_rows_copy) {
+	    deleted_rows[ii] = 1;
 	  }
-	  //merge changes user made since updating with the ones before
-	  var ch = ch_array_copy[ii];
-	  var arr = change_array[ii];
-	  for (jj in ch) {
-	    arr[arr.length] = ch[jj];
-	  }
-	}
-	//deleted rows are easier
-	for (ii in del_rows_copy) {
-	  deleted_rows[ii] = 1;
-	}
+        }
       }
       else {
 	//success!
 	statustext.innerHTML = "Table updated!";
 	//the page is no longer reliable if rows were added or deleted
-	var flag = false;
-	for (ii in ch_array_copy) {
-	  if (!ch_array_copy[ii].length) {
-	    flag = true;
+	var reload_flag = (del_rows_copy.length != 0);
+        if (!reload_flag) {
+	  for (ii in ch_array_copy) {
+	    if (!ch_array_copy[ii].length) {
+	      reload_flag = true;
+              break;
+	    }
 	  }
-	}
-	if (del_rows_copy.length || flag) {
-	  alert("The page will now be reloaded, " +
-                "since you deleted or added rows.");
-	  location.reload(true);
-	}
-	for (ii in ch_array_copy) {
-	  ch = ch_array_copy[ii];
-          rows_array[ii].style.color = "black";
-	  for (jj in ch) {
-	    document.getElementById(ch[jj]).style.color = "black";
-	  }
-          for (jj =0; jj<num_cols; jj++) {
-            rows_array[ii].cells[jj].style.color = "black";
-	}
         }
-        hide_elts = document.getElementsByTagName("div");
-        hide_elts = document.getElementsByTagName("div");
-        for (var ii in hide_elts) {
-          if (hide_elts[ii].className) {
-            var classes = hide_elts[ii].className.split(" ");
-            for (var jj in classes) {
-              if (classes[jj] == 'update_hide') {
-                hide_elts[ii].style.display = 'none';
-                continue;
+        if (ch_array_copy.length) {
+	  for (ii in ch_array_copy) {
+	    ch = ch_array_copy[ii];
+            color_row(rows_array[ii],"black");
+          }
+          hide_elts = document.getElementsByTagName("div");
+          for (var ii in hide_elts) {
+            if (hide_elts[ii].className) {
+              var classes = hide_elts[ii].className.split(" ");
+              for (var jj in classes) {
+                if (classes[jj] == 'update_hide') {
+                  hide_elts[ii].style.display = 'none';
+                  continue;
+                }
               }
             }
           }
+        }
+        req = 0;
+        statustext.innerHTML = "Ready -- remember to reload page (CTRL-F5) before you start editing";
+        if (typeof(change_text_on_update) != 'undefined') {
+          document.getElementById('change_text_on_update').innerHTML = change_text_on_update;
+        }
+        if (reload_flag) {
+          alert("The page will now be reloaded, " +
+                "since you deleted or added rows.");
+	  location.reload(true);
         }
       }
     }
@@ -898,11 +893,6 @@ function processReqChange () {
       statustext.innerHTML = 
 	"There was an error communicating with the server: " + req.status + 
 	": " + req.responseText;
-    }
-    req = 0;
-    statustext.innerHTML = "Ready -- remember to reload page (CTRL-F5) before you start editing";
-    if (typeof(change_text_on_update) != 'undefined') {
-      document.getElementById('change_text_on_update').innerHTML = change_text_on_update;
     }
   }
   return true;

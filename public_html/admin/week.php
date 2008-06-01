@@ -235,7 +235,7 @@ if (!strlen($start_date) == 0) {
   mydate.setDate(Number(mydate.getDate())+7*$week_num);
   function change_handler(elt) {
     default_change_handler(elt);
-    if (!elt.id) {
+    if (!is_input(elt)) {
       if (elt.target) elt = elt.target;
       else if (elt.srcElement) elt = elt.srcElement;
     }
@@ -246,7 +246,7 @@ if (!strlen($start_date) == 0) {
     //change something that affected hours?
     if (coords[1] == 3 || coords[1] == 4) {
       if (coords[1] == 3) {
-        var hrs = get_value_by_id('cell-' + coords[0] + '-4');
+        var hrs = get_value(get_cell_elt(coords[0],4));
         if (!prev_val || !prev_val.length) {
           set_value(assigned_hours,Number(get_value(assigned_hours))+Number(hrs));
           set_value(unassigned_hours,Number(get_value(unassigned_hours))-Number(hrs));
@@ -257,7 +257,7 @@ if (!strlen($start_date) == 0) {
         }
       }
       else {
-        var is_mem = get_value_by_id('cell-' + coords[0] + '-3');
+        var is_mem = get_value(get_cell_elt(coords[0],3));
         var elt_to_change = unassigned_hours;
         if (is_mem && is_mem.length) {
           elt_to_change = assigned_hours;
@@ -266,16 +266,21 @@ if (!strlen($start_date) == 0) {
         set_value(total_hours,Number(get_value(total_hours))-Number(prev_val)+Number(hrs));
         set_value(elt_to_change,Number(get_value(elt_to_change))-Number(prev_val)+Number(hrs));
       }
-    }     
-    if (coords && coords[1] == 1 && 
-        !get_value(elt.parentNode.parentNode.cells[0].firstChild)) {
-      var add_val = 6;
-      if (typeof(days_arr[get_value(elt)]) != 'undefined') {
-        add_val = Math.min(6,days_arr[get_value(elt)]);
+    }   
+    //did user set a day for a row that had no date?  Guess date from day.
+    if (coords[1] == 1) {
+      var date_cell = get_cell_elt(coords[0],0);
+      if (!get_value(date_cell)) {
+        var add_val = 6;
+        if (typeof(days_arr[get_value(elt)]) != 'undefined') {
+          add_val = Math.min(6,days_arr[get_value(elt)]);
+        }
+        var temp_date = new Date();
+        temp_date.setDate(mydate.getDate()+add_val);
+        change_cell(date_cell,
+                    (Number(1)+Number(temp_date.getMonth())) + '/' 
+                    + temp_date.getDate());
       }
-      var temp_date = new Date();
-      temp_date.setDate(mydate.getDate()+add_val);
-      change_cell(elt.parentNode.parentNode.cells[0].firstChild,(Number(1)+Number(temp_date.getMonth())) + '/' + temp_date.getDate());
     }
   }
   //for keeping track of hours assigned this week
@@ -295,14 +300,13 @@ if (!strlen($start_date) == 0) {
   }
 
   function delete_row_handler(elt) {
-    var rowelt = elt.parentNode.parentNode;
-    var rownum = rowelt.rowIndex-1;
-    var is_mem = get_value_by_id('cell-' + rownum + '-3');
+    var rownum = elt.parentNode.parentNode.rowIndex;
+    var is_mem = get_value(get_cell_elt(rownum,3));
     var elt_to_change = unassigned_hours;
     if (is_mem && is_mem.length) {
       elt_to_change = assigned_hours;
     }
-    var hrs_val = get_value_by_id('cell-' + rownum + '-4');
+    var hrs_val = get_value(get_cell_elt(rownum,4));
     if (elt.checked) {
       hrs_val *= -1;
     }
