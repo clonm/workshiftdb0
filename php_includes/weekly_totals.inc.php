@@ -164,19 +164,16 @@ function notes_fines($str,$num_rows,$jj) {
   }
   if (substr_count($str,"\n") || $col_styles[$jj] === 'textarea') {
     return array("<textarea rows=3 cols=30 name='cell-{$num_rows}-{$jj}' id='cell-{$num_rows}-{$jj}'" . 
-                 " class='{$col_styles[$jj]}'" .
-                 " onChange='change_handler(this);' " .
-                 "onBlur='blur_handler(this);' onFocus='focus_handler(this);' " .
+                 " class='{$col_styles[$jj]} tblin'" .
                  "autocomplete=off>" . escape_html($str) . "</textarea>" . 
                  escape_html($notes_fines),
                  20+strlen($notes_fines)/2);
   }
   else {
     return array("<input name='cell-{$num_rows}-{$jj}' id='cell-{$num_rows}-{$jj}'" . 
-                 " class='{$col_styles[$jj]}' " . 
+                 " class='{$col_styles[$jj]} tblin' " . 
                  "size='" . max(2,1+strlen($str)/2) . "' " .
-                 " value='" . escape_html($str) . "' onChange='change_handler(this);' " .
-                 "onBlur='blur_handler(this);' onFocus='focus_handler(this);' " .
+                 " value='" . escape_html($str) . 
                  "autocomplete=off>" . escape_html($notes_fines),
                  (max(4,2+strlen($str)) + strlen($notes_fines))/2);
   }
