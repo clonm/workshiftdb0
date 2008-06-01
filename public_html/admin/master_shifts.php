@@ -47,10 +47,8 @@ function namemung($str, $rownum, $colnum) {
   global $col_styles, $dummy_string;
   return array("<input name='cell-{$rownum}-{$colnum}' " .
                "id='cell-{$rownum}-{$colnum}' " . 
-               "class='member_name' " .
+               "class='member_name tblin' " .
                " value='" . escape_html($str) . "' " .
-               "onChange='change_handler(this);' " .
-               "onBlur='blur_handler(this);' onFocus='focus_handler(this);' " .
                "autocomplete=off" . 
 	       (($str === $dummy_string)?' style="background-color: grey;"':'') .
 	       '>',strlen($str));
@@ -62,8 +60,7 @@ function namemung($str, $rownum, $colnum) {
 function shiftlink($str,$rownum, $colnum) {
   return array("<input name='cell-{$rownum}-{$colnum}' id='cell-{$rownum}-{$colnum}'" . 
                " class='input$colnum'" .
-               " value='" . escape_html($str) . "' onChange='change_handler(this);' " .
-               "onBlur='blur_handler(this);' onFocus='focus_handler(this);' " .
+               " value='" . escape_html($str) . "' " .
                "autocomplete=off>",strlen($str));
 }
 
