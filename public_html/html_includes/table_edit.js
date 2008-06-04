@@ -809,7 +809,7 @@ function submit_data () {
         }
       }
       data += "autoid-" + ii + "=" + 
-        val_of(get_cell_elt(ii,num_cols)) + "&";
+        val_of(get_elt_by_id("autoid-" + ii)) + "&";
     }
   }
   //throw in deleted rows
@@ -820,7 +820,7 @@ function submit_data () {
     for (ii in del_rows_copy) {
       data += "deleted_rows[]=" + ii + "&";
       data += "autoid-" + ii + "=" + 
-        val_of(get_cell_elt(ii,num_cols)) + "&";
+        val_of(get_elt_by_id("autoid-" + ii)) + "&";
     }
   }
   // we send the data more efficiently above
@@ -918,8 +918,8 @@ function processReqChange () {
         }
         if (ch_array_copy.length) {
 	  for (ii in ch_array_copy) {
-	    ch = ch_array_copy[ii];
-            color_row(rows_array[ii],"black");
+            color_row(get_elt_by_id("autoid-" + ii).parentNode.parentNode,
+                      "black");
           }
           hide_elts = document.getElementsByTagName("div");
           for (var ii in hide_elts) {
