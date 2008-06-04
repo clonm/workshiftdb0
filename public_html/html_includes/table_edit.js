@@ -163,51 +163,68 @@ function process_keyup(e) {
   return true;
 }
 
+
+//variable get_keys uses because it doesn't know whether shift is passed on
+//or not, depending on browser version.
+var shift_aware = null;
+
+//really auxiliary function to see if key-presses are shift-aware.
+function is_browser_shift_aware() {
+var index = navigator.userAgent.indexOf("Firefox");
+  if (index == -1) {
+    alert("You don't appear to be using Firefox.  " +
+          "That's a bad idea for this site.");
+  }
+  else if (parseFloat(navigator.userAgent.substring(index+"Firefox".length+1)) < 3) {
+    shift_aware = false;
+  }
+  else {
+    shift_aware = true;
+  }
+}
+
+//auxiliary function to get exact keys pressed by user.  Could be
+//IE-ed, but currently just Firefox
+function get_keys(event) {
+  var cur_char = String.fromCharCode(event.charCode);
+  if (!shift_aware && event.shiftKey) {
+      //note that this isn't sufficient, but currently we don't care about
+      //non-alphabetic characters
+      cur_char = cur_char.toUpperCase();
+  }
+  return {'char' : cur_char, 'code' : event.keyCode, 'ctrl' : event.ctrlKey,
+          'shift' : event.shiftKey, 'alt' : event.altKey};
+}
+
+//auxiliary function to get target of event.  Could be IE-ed.
+function get_target(event) {
+  return event.target;
+}
+
 //do the main event handling.
 //e is the event, passed by the browser
 function process_keypress(e) {
   //get hold of the event, in a cross-browser way, as above
   if (!e) e = window.event;
   if (!e) return true;
-  var code;
-  if (e.keyCode) code = e.keyCode;
-  else if (e.which) code = e.which;
-  var targ;
-  if (e.target) targ = e.target;
-  else if (e.srcElement) targ = e.srcElement;
-  if (e.ctrlKey || (e.modifiers && e.modifiers == 2)) {
-    key_modifier = 17;
+  var keys = get_keys(e);
+  if (keys['alt']) {
+    return true;
   }
-  if (e.shiftKey || (e.modifiers && e.modifiers == 4)) {
-    key_modifier = 16;
-  }
-  //<enter>
-  if (code == 13 && key_modifier == 0 && targ.nodeName && targ.nodeName != 'TEXTAREA') {
-    enter_pressed = true;
-    //if user hit enter in the name_limit select box, limit by the name
-    //they chose
-    if (targ.id == "name_limit") {
-      restrict_rows(targ);
-      return false;
-    }
-    //if we're in an auxilary form, it's ok to process enter
-    if (targ.parentNode && targ.parentNode.nodeName && targ.parentNode.nodeName == 'FORM') {
-      enter_pressed = false;
-      return true;
-    }
-    //otherwise, do the spreadsheet thing and go forward one row
-    forward_row(targ,1,0);
-    return false;
-  }
+  var targ = get_target(e);
   //<shift>-<enter>
-  if (code == 13 && key_modifier == 16) {
+  if (keys['code'] == 13 && !keys['ctrl'] && keys['shift']) {
     enter_pressed = true;
     //go back one row
     forward_row(targ,-1,0);
     return false;
   }
+  //nothing else uses a shift key
+  if (keys['shift']) {
+    return true;
+  }
   //ctrl-e
-  if (code == 101 && key_modifier == 17) {
+  if (keys['char'] == 'e' && keys['ctrl']) {
     //restrict or unrestrict to match person
     //    key_modifier = 0;
     if (restricted) {
@@ -218,7 +235,7 @@ function process_keypress(e) {
     return false;
   }
   //ctrl-s
-  if (code == 115 && key_modifier == 17) {
+  if (keys['char'] == 's' && keys['ctrl']) {
     //submit data using javascript
     //key_modifier = 0;
     if (targ && targ.blur) {
@@ -227,33 +244,9 @@ function process_keypress(e) {
     submit_data();
     return false;
   }
-  //page-down
-  if (code == 34 && key_modifier == 0 && targ.nodeName && 
-      targ.nodeName == 'INPUT' && targ.type && targ.type == 'text') {
-    //spreadsheet page-down
-    forward_row(targ,15,1);
-    return false;
-  }
-  //page-up
-  if (code == 33 && key_modifier == 0 && targ.nodeName && targ.nodeName == 'INPUT' && targ.type && targ.type == 'text') {
-    //spreadsheet page-down
-    forward_row(targ,-15,1);
-    return false;
-  }
-  //downarrow
-  if (code == 40 && key_modifier != 16 && targ.nodeName && targ.nodeName == 'INPUT' && targ.type && targ.type == 'text') {
-    //spreadsheet forward row
-    forward_row(targ,1,1);
-    return false;
-  }
-  //uparrow
-  if (code == 38 && targ.nodeName && targ.nodeName == 'INPUT' && targ.type && targ.type == 'text') {
-    //spreadsheet backward row
-    forward_row(targ,-1,1);
-    return false;
-  }
   //ctrl-end
-  if (code == 35 && key_modifier == 17 && targ.nodeName && targ.nodeName != 'TEXTAREA') {
+  if (keys['code'] == 35 && keys['ctrl'] && 
+      (!targ.nodeName || targ.nodeName != 'TEXTAREA')) {
     //go to bottom of page
     if (targ.blur) {
       targ.blur();
@@ -261,8 +254,9 @@ function process_keypress(e) {
     scroll(0,document.body.scrollHeight);
     return false;
   }
-  //home
-  if (code == 36 && key_modifier == 17 && targ.nodeName && targ.nodeName != 'TEXTAREA') {
+  //ctrl-home
+  if (keys['code'] == 36 && keys['ctrl'] &&
+      (!targ.nodeName || targ.nodeName != 'TEXTAREA')) {
     //go to top of page
     if (targ.blur) {
       targ.blur();
@@ -270,9 +264,61 @@ function process_keypress(e) {
     scroll(0,0);
     return false;
   }
-  //escape
-  if (code == 27 && in_calculation) {
-    stop_calculation = true;
+  //nothing else uses ctrl key
+  if (keys['ctrl']) {
+    return true;
+  }
+  //everything else wants us to be in a cell
+  if (!is_cell(targ)) {
+    return true;
+  }
+  //<enter>
+    if (keys['code'] == 13 && 
+        (!targ.nodeName || targ.nodeName != 'TEXTAREA')) {
+    enter_pressed = true;
+    //if user hit enter in the name_limit select box, limit by the name
+    //they chose
+    if (targ.id && targ.id == "name_limit") {
+      restrict_rows(targ);
+      return false;
+    }
+    //if we're in an auxiliary form, it's ok to process enter
+    if (targ.parentNode && targ.parentNode.nodeName &&
+        targ.parentNode.nodeName == 'FORM') {
+      enter_pressed = false;
+      return true;
+    }
+    //otherwise, do the spreadsheet thing and go forward one row
+    forward_row(targ,1,0);
+    return false;
+  }
+  //following only apply if we're in an editable cell
+  if (!targ.nodeName || targ.nodeName != 'INPUT' || !targ.type ||
+      targ.type != 'text') {
+    return true;
+  }
+  //page-down
+  if (keys['code'] == 34) {
+    //spreadsheet page-down
+    forward_row(targ,15,1);
+    return false;
+  }
+  //page-up
+  if (keys['code'] == 33) {
+    //spreadsheet page-up
+    forward_row(targ,-15,1);
+    return false;
+  }
+  //downarrow
+  if (keys['code'] == 40) {
+    //spreadsheet forward row
+    forward_row(targ,1,1);
+    return false;
+  }
+  //uparrow
+  if (keys['code'] == 38) {
+    //spreadsheet backward row
+    forward_row(targ,-1,1);
     return false;
   }
   return true;

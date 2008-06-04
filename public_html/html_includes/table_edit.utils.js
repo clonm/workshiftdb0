@@ -1,30 +1,26 @@
 //get coordinates of input cell
 function get_cell(targ) {
+  //need to get from name, because actual cells change order upon sorting
   var elts = targ.name.split("-");
   if (elts[0] != "cell") {
     return 0;
-  }
-  var rowind = targ.parentNode.parentNode.rowIndex-1;
-  var colind = targ.parentNode.cellIndex;
-  if (rowind != elts[1] || colind != elts[2]) {
-    alert("Please email Janak (janak@berkeley.edu) and tell him there was a problem with "
-          + "get_cell, and tell him what page you're on, and what "
-          + "you were doing, along with the following numbers: " + rowind + ' ' + elts[1] + ' ' + colind + ' ' + elts[2]);
   }
   return new Array(elts[1],elts[2]);
 }
 
 function get_cell_elt(ii,jj) {
-  if (!rows_array[ii]) {
-    alert("Please email Janak (janak@berkeley.edu) and tell him there was a problem "
-          + "with get_cell_elt, and tell him what page you're on, and what "
-          + "you were doing, along with the following numbers: " + ii + ' ' + jj);
-    fake_function_call(fake_variable);
-  }
-  return rows_array[ii].cells[jj].firstChild;
+  return get_elt_by_id("cell-" + ii + "-" + jj);
 }
 
 function is_cell(elt) {
+  //some weird firefox permission denied error
+  try {
+    if (!elt.parentNode) {
+      return false;
+    }
+  } catch (e) {
+    return false;
+  }
   var parent = elt.parentNode;
   if (!is_td(parent)) {
     return false;

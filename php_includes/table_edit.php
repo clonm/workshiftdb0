@@ -522,8 +522,9 @@ while ($row =& $res->FetchRow()) {
   }
   //at end of row, tack on autoid if we're modifying
   if (!$read_only) {
-    echo "<td class='autoid'><input type=hidden name=\"autoid-{$num_rows}\" " .
-      "value=\"" . escape_html($row['autoid']) . "\"></td>";
+    echo "<td class='autoid'><input type=hidden id=\"autoid-{$num_rows}\" " .
+      "name=\"autoid-{$num_rows}\" value=\"" . 
+      escape_html($row['autoid']) . "\"></td>";
   }
   //tack on delete checkbox if we can delete
   if ($delete_flag) {
