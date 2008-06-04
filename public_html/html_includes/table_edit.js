@@ -799,6 +799,8 @@ function submit_data () {
             data += "cell-" + ii + "-" + ch[jj] + "=" + 
               val_of(get_cell_elt(ii,ch[jj])) + "&";
           }
+          data += "autoid-" + ii + "=" + 
+            val_of(get_elt_by_id("autoid-" + ii)) + "&";
         }
       else {
         //whole row modified?
@@ -808,8 +810,6 @@ function submit_data () {
             val_of(get_cell_elt(ii,jj)) + "&";
         }
       }
-      data += "autoid-" + ii + "=" + 
-        val_of(get_elt_by_id("autoid-" + ii)) + "&";
     }
   }
   //throw in deleted rows
@@ -918,18 +918,25 @@ function processReqChange () {
         }
         if (ch_array_copy.length) {
 	  for (ii in ch_array_copy) {
-            color_row(get_elt_by_id("autoid-" + ii).parentNode.parentNode,
+            var cell_elt;
+            if (ch_array_copy[ii].length) {
+              cell_elt = get_elt_by_id("autoid-" + ii);
+            }
+            else {
+              cell_elt = get_cell_elt(ii,0);
+            }
+            color_row(cell_elt.parentNode.parentNode,
                       "black");
           }
-          hide_elts = document.getElementsByTagName("div");
-          for (var ii in hide_elts) {
-            if (hide_elts[ii].className) {
-              var classes = hide_elts[ii].className.split(" ");
-              for (var jj in classes) {
-                if (classes[jj] == 'update_hide') {
-                  hide_elts[ii].style.display = 'none';
-                  continue;
-                }
+        }
+        hide_elts = document.getElementsByTagName("div");
+        for (var ii in hide_elts) {
+          if (hide_elts[ii].className) {
+            var classes = hide_elts[ii].className.split(" ");
+            for (var jj in classes) {
+              if (classes[jj] == 'update_hide') {
+                hide_elts[ii].style.display = 'none';
+                continue;
               }
             }
           }
