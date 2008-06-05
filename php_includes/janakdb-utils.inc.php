@@ -979,6 +979,27 @@ function this_url() {
   return escape_html($page_name);
 }
 
+//function to allow scripts to pass on (sight unseen) all the get
+//variables that were set in this page -- unfortunately a GET form
+//will erase all current get variables, even if they're in the url
+function print_gets_for_form() {
+  $retval = '';
+  foreach ($_GET as $key => $val) {
+    $arr_flag = is_array($val);
+    if (!$arr_flag) {
+      $val = array($val);
+    }
+    foreach ($val as $value) {
+      $retval .= "<input type=hidden name='" . escape_html($key);
+      if ($arr_flag) {
+        $retval .= "[]";
+      }
+      $retval .= "' value='" . escape_html($value) . "'/>\n";
+    }
+  }
+  return $retval;
+}
+
 /////  My error-handling section.
 
 //this function should be called more.  It gets all the error messages
