@@ -18,7 +18,9 @@ if (array_key_exists('member_name_view',$_REQUEST)) {
 ?>
 <html><head><title>View Member Info</title></head><body>
 <?=$body_insert?>
+
 <form action='<?=this_url()?>' method=GET>
+  <?=print_gets_for_form() ?>
    Name: <select name='member_name_view'>
 <?php
 foreach ($houselist as $name) {
