@@ -22,12 +22,6 @@ Many values should not change semester to semester.
 <form action='<?=this_url()?>' method='POST'>
 <input type=hidden name='basic_consts_submitting_bool' value=1>
 <ul>
-<li>Start of semester (first Monday of week 0 -- enter August 29, 2005 as
-2005-08-29): 
-<input name='semester_start' value='<?= get_static('semester_start')?>'><br/>
-(Even if week 0 started on a Thursday, enter the date of the Monday that the
-week started.  So in Fall 2006, the contract starts Thursday 2006-08-24, but
-you should enter 2006-08-21, since that is the date of the Monday.)<br/>
 <li>Hours of workshift owed per week (you can always change any given person's
 <!-- emacs formatting ' -->
 obligations for a given week): 
@@ -250,12 +244,6 @@ foreach ($_POST as $key => $val) {
     continue;
   }
   switch ($key) {
-    //semester *must* start on a Monday
-  case 'semester_start':
-    if (date('w',strtotime($val))!=1) {
-      exit("Your semester start date is not a Monday!  " .
-           "Please go back and change it!");
-    }
   case 'session_id': case 'officer_session_id':
     continue;
   }

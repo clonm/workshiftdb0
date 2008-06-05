@@ -143,6 +143,13 @@ function uncouplecheckbox(newval) {
   print '"' . date('Y ',$last_time) . $last_sem . '"';
   ?> (without quotes).</p>
   <hr>
+Start of semester (first Monday of week 0 -- enter August 29, 2005 as
+2005-08-29): 
+<input name='semester_start' value='<?= get_static('semester_start')?>'><br/>
+(Even if week 0 started on a Thursday, enter the date of the Monday that the
+week started.  So in Fall 2006, the contract starts Thursday 2006-08-24, but
+you should enter 2006-08-21, since that is the date of the Monday.)<br/>
+<hr/>
 <?php
   switch ($current_sem) {
   case 'spring':
@@ -243,6 +250,20 @@ will still be in the backup, but not in the current database.
 //';
 exit;
 }
+//semester *must* start on a Monday
+$sem_start = $_REQUEST['semester_start'];
+if (!preg_match('/\d\d\d\d-\d\d?-\d\d?/',$sem_start)) {
+  exit("Your semester start date is not in the proper format.  " .
+       "Enter the four-digit year, then a dash, then the two-digit " .
+       "month, then a dash, then the two-digit date, then a dash, like " .
+       "2009-08-26 for August 26, 2009.");
+}
+if (date('w',strtotime($sem_start))!=1) {
+  exit("Your semester start date is not a Monday!  " .
+       "Please go back and change it!");
+}
+set_static('semester_start',$sem_start);
+
 print "<h4>This may take some time -- be patient and wait until the end.</h4>";
 require_once('backup_database.php');
 print "<hr>";
