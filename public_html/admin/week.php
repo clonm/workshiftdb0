@@ -206,17 +206,25 @@ escape_html($un_hours['sum']) . "</span> hours are unassigned, and there are " .
 escape_html($tot_hours['sum']) . "</span> total hours.<br/>";
 
 $start_date = get_static('semester_start');
-if (!strlen($start_date) == 0) {
-  $start_date = explode('-',$start_date);
-  $start_date[0]+=0;
-  //months are 0-indexed
-  $start_date[1]-=1;
-  $start_date[2]+=0;
-  if (!isset($javascript_pre)) {
-    $javascript_pre = '';
+$start_date = explode('-',$start_date);
+$week_dates = array();
+if (count($start_date) != 3) {
+  $week_dates  = array_fill(0,7,null);
+}
+else {
+  for ($ii = 0; $ii < 7; $ii++) {
+    $week_dates[$ii] = date('m/d',
+                            mktime(0,0,0,$start_date[1],
+                                   $start_date[2]+$week_num*7+$ii,$start_date[0]));
   }
-  $javascript_pre .= <<<JAVASCRIPT_PRE
-<script>    
+}
+if (!isset($javascript_pre)) {
+  $javascript_pre = '';
+}
+$javascript_pre .= "<script>\n";
+$javascript_pre .= "var week_dates = new Array(" . js_array($week_dates) . ");\n";
+$javascript_pre .= <<<JAVASCRIPT_PRE
+
     function change_cell(elt,new_val) {
       if (get_value(elt) != new_val) {
         set_value(elt,new_val);
@@ -230,9 +238,6 @@ if (!strlen($start_date) == 0) {
   var assigned_hours = get_elt_by_id('week_assigned_hours');
   var unassigned_hours = get_elt_by_id('week_unassigned_hours');
 
-  var mydate = new Date();
-  mydate.setFullYear({$start_date[0]},{$start_date[1]},{$start_date[2]});
-  mydate.setDate(Number(mydate.getDate())+7*$week_num);
   function change_handler(elt) {
     default_change_handler(elt);
     if (!is_input(elt)) {
@@ -275,11 +280,7 @@ if (!strlen($start_date) == 0) {
         if (typeof(days_arr[get_value(elt)]) != 'undefined') {
           add_val = Math.min(6,days_arr[get_value(elt)]);
         }
-        var temp_date = new Date();
-        temp_date.setDate(mydate.getDate()+add_val);
-        change_cell(date_cell,
-                    (Number(1)+Number(temp_date.getMonth())) + '/' 
-                    + temp_date.getDate());
+        change_cell(date_cell, week_dates[add_val]);
       }
     }
   }
@@ -317,6 +318,5 @@ if (!strlen($start_date) == 0) {
 </script>
 JAVASCRIPT_PRE
   ;
-}      
 require_once("$php_includes/table_edit.php");
 ?>
