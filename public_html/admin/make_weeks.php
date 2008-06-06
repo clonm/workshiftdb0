@@ -71,9 +71,9 @@ function case_days_sql($day,$ind) {
 $days[] = 'Weeklong';
 //create every table we can
 for ($ii = $start_week; $ii <= $end_week; $ii++) {
-  //2005-09-06 -- the day the week started
-  $week_date = date('Y-m-d',mktime(7*24*$ii,0,0,$start_date[1],
-                                   $start_date[2],$start_date[0]));
+  //the day the week started
+  $week_date = date('Y-m-d',mktime(0,0,0,$start_date[1],
+                                   $start_date[2]+7*$ii,$start_date[0]));
   $tbl = "week_$ii";
   $db->Execute("drop table if exists `$tbl`");
   if (!$db->Execute('CREATE TABLE if not exists ' . bracket($tbl) . ' (' . 
