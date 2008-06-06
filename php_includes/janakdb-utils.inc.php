@@ -660,7 +660,7 @@ function set_static($var_name,$var_value,$dummyarchive='') {
   set_mod_date('static_data');
   return $ret;
 }
-
+  
 //return the current week, either the manually set one, or the one
 //calculated from the start of the semester, adjusted to make sure
 //that we have existing weekly sheets.  Note that cur_week is a bit of
@@ -673,14 +673,36 @@ function get_cur_week() {
   //has the week been set manually?
   $week_num = get_static('cur_week');
   if (!is_numeric($week_num)) {
-    //current week is time now - time of semester start, divided by
-    //seconds in a week, rounded down. strtotime takes a string and
-    //turns it into a timestamp
     $sem_start = get_static('semester_start');
     if (is_null($sem_start) || $sem_start === '') {
       return -2;
     }
+    $start_date = explode('-',$sem_start);
+    if (count($start_date) != 3) {
+      return -2;
+    }
     $week_num = floor((time()-strtotime($sem_start))/(60*60*24*7));
+    //this might be off because of DST (daylight saving time), so we
+    //do a check, possibly adjusting -- Janak 6/5/08
+    //start_time is the starting time for this week
+    $start_time = mktime(0,0,0,$start_date[1],
+                         $start_date[2]+7*$week_num,$start_date[0]);
+    //start_time should almost always be less than current time
+    if ($start_time < time()) {
+      //are we actually in the next week?  This will happen if, for
+      //instance, it's 12:30 am on Monday after DST has gone into
+      //effect.  Then there will be one less hour since the semester
+      //start than the above calculation assumed, and so we'll be off
+      //by a week.
+      if (time() >= mktime(0,0,0,$start_date[1],
+                           $start_date[2]+7*($week_num+1),$start_date[0])) {
+        $week_num++;
+      }
+    }
+    //this happens when we're at 11:30 pm on Sunday after DST has ended.
+    else if ($start_time > time()) {
+      $week_num--;
+    }
   }
   else {
     //add one because I think the user wants results *through* week x
