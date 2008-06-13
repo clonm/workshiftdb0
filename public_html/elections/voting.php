@@ -556,11 +556,11 @@ while ($namerow = $nameres->FetchRow()) {
       print("At least " . escape_html(-$row['threshold']) . 
             " votes are required for " . $opt . "<br>");
     }
-    if (!$row['abstain_count'] && $row['threshold']) {
+    if (!$row['abstain_count'] && $row['threshold'] > 0) {
       print("  Abstentions do not count towards the threshold, so if you wish " .
             "to abstain, you may, by choosing the abstain option.<br>");
     }
-    else if ($row['threshold'] > 0) {
+    else if ($row['threshold']) {
       print "  <strong>Choosing abstain (or not choosing anything at all) " .
         "makes it harder</strong> for a choice to win.<br/>";
     }

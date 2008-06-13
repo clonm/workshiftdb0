@@ -9,7 +9,7 @@ $archive_pre = 'zz_archive_';
 $priv_types = array('workshift','house','president');
 
 //used to safely quote strings for javascript statements like
-// var aa = <?=dbl_quote("nasty\nstring with </script> in it") ? >;
+// var aa = start_tag dbl_quote("nasty\nstring with </script> in it") end_tag;
 //frontslash and the angle brackets are escaped so we won't
 //accidentally drop out of the script with a </script> tag or the
 //like.  newlines, double quotes, and backslashes are escaped for

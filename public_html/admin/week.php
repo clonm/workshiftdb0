@@ -27,10 +27,12 @@ if ($redo_flag) {
          . "number -- it must be a whole number, like 0 or 17.<br/>\n";
      }
 ?>
-<form method=get action='<?=this_url()?>'>
-     <input type=submit value='Get week: '><input name='week' size=3>
+<form method='get' action='<?=this_url()?>'>
+     <input type='submit' value='Get week: '><input name='week' size='3'>
 </form></body></html> 
-     <?php exit;}
+<?php
+exit;
+  }
 // Displays a week's input sheets for editing
 require_once('default.inc.php');
 //order by date, then day, then shift, then name 
@@ -45,11 +47,12 @@ $make_weeks_form = "<form action='make_weeks.php' method='GET'  onsubmit='" .
     "<input type=hidden name='start_week' value=$week_num>" .
     "<input type=hidden name='end_week' value=$week_num>" .
     "<input type=hidden name='overwrite' value='1'>";
-if (!table_exists("week_$week_num")) {
-  ?>
+    if (!table_exists("week_$week_num")) {
+?>
 <html><head><title>Week <?=$week_num?> does not exist yet</title></head>
 <body>
 <?=$body_insert?>
+
 <?php
    if (!table_exists('house_list')) {
      exit("The house list does not exist yet! Email " . admin_email() . "<p>");
@@ -65,8 +68,8 @@ Week <?=$week_num?> does not exist yet.  Create it now?
 </body>
 </html>
 <?php
-   exit;
-   }
+exit;
+ }
 
 
 //date is modified by calling function dateformat on it, all others are
