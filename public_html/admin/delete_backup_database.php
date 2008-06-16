@@ -12,14 +12,23 @@
 //the president and workshift might both need to delete backups.
 $require_user = array('workshift','president');
 require_once('default.inc.php');
+if (!isset($php_start_time)) {
+  $php_start_time = array_sum(split(' ',microtime()));
+}
 $oldfetch = $db->fetchMode;
 //use numbered columns because columns have database name in them
 $db->SetFetchMode(ADODB_FETCH_NUM); 
+if (!isset($dbnames)) {
+  $dbnames = get_backup_dbs();
+}  
+if (!isset($start_db_index) && isset($_REQUEST['start_db_index'])) {
+  $start_db_index = $_REQUEST['start_db_index'];
+}
 if (!array_key_exists('backup_name',$_REQUEST)) {
   ?>
  If you are running low on space, or if you want to clean up very old backups,
-you can delete old backup sets here.  There is no particular reason to do this,
-so unless you have some good reason to, why do it?<p>
+you can delete old backup sets here.  It's best just to delete the
+redundant/corrupt ones.  This page may take a long time to load.<p>
                                                  
 The backed-up databases are backed up by date -- 
 year_month_day_hour_minute_second.
@@ -28,7 +37,6 @@ You should probably delete the oldest one, if you are just saving space.
 <select id='backup_name' name='backup_name[]' multiple
 title='double-click to view archive in a new window'>
   <?php
- $dbnames = get_backup_dbs();
  foreach ($dbnames as $backup) { 
    print "<option value='" . escape_html($backup) . "'>" . 
        escape_html($backup) . "\n";
@@ -38,17 +46,14 @@ title='double-click to view archive in a new window'>
 <input type=submit value='Delete backup database(s)'></form>
 <hr/>
 <?php
-    if (count($dbnames) > 40) {
-if (isset($_REQUEST['start_db_index'])) {
-  $start_db_index = $_REQUEST['start_db_index'];
-}
-else {
-  $start_db_index = 0;
-}
+   $delete_dbs = get_dbs_to_delete();
+   if ($delete_dbs[2] != count($dbnames)) {
 ?>
-Due to the large number of backups, the buttons below will only work on 40
-backups in the list above.  Delete some backups and the selections will
-extend to later backups.<br/>
+
+Due to the large number of backups, the buttons below will only work on the
+first <?=$delete_dbs[2]?> backups in the list above.  Delete some backups and
+the selections will extend to later backups.<br/>
+
 You can also enter a number here and submit, so that the system will skip
 the first so many backups, and look for redundant ones after that.<br/>
 <form action=<?=this_url()?> method=get>
@@ -57,20 +62,27 @@ size=3>
 <input type=submit value='Start looking for redundant databases here'/>
 </form>
 <?php
-$dbnames = array_slice($dbnames,$start_db_index,40+$start_db_index);
-    }
+}
+   if (count($delete_dbs[0])) {
 ?>
-<input id='button_redund' type=submit value='Select all redundant backups' 
+<input id='button_redund' type=submit value='Select all <?=count($delete_dbs[0])?> redundant backups' 
 onclick='select_redundant()'><br/>
 (Pressing this button will select backups which seem to just be intermediate
 backups, made automatically by the system when you changed things, and not
 useful since the semester in which they were made is finished.  Please check
 and make sure that this is the case.)<br/>
-<input id='button_corrupt' type=submit value='Select all corrupt backups'
+<?php
+}
+if (count($delete_dbs[1])) {
+?>
+<input id='button_corrupt' type=submit value='Select all <?=count($delete_dbs[1])?> corrupt backups'
 onclick='select_corrupt()'><br/>
 (This will select backups that do not seem to be complete -- they may be from an
 earlier version of the program, or something may have gone wrong with them.  They
 are unlikely to contain any useful information.)
+<?php
+}
+?>
 </body>
 <script type='text/javascript'>
 //javascript so user can press button and select redundant/corrupt backups
@@ -81,7 +93,6 @@ var redund_flag = false;
 var corrupt_flag = false;
  sel_elt.ondblclick = show_backup;
 <?php
-    $delete_dbs = get_dbs_to_delete();
  //get redundant backups
 $redunds = array_flip($delete_dbs[0]);
 //we're about to output a javascript array, and the javascript code
@@ -105,7 +116,8 @@ function select_redundant() {
       sel_elt.options[ii].selected = redund_flag;
     }
   }
-  button_redund.value = (redund_flag?'Uns':'S') + 'elect all redundant backups';
+  button_redund.value = (redund_flag?'Uns':'S') + 'elect all ' +
+'<?=count($delete_dbs[0])?> redundant backups';
 }
 
 function select_corrupt() {
@@ -115,7 +127,8 @@ function select_corrupt() {
       sel_elt.options[ii].selected = corrupt_flag;
     }
   }
-  button_corrupt.value = (corrupt_flag?'Uns':'S') + 'elect all corrupt backups';
+  button_corrupt.value = (corrupt_flag?'Uns':'S') + 'elect all ' +
+'<?=count($delete_dbs[1])?> corrupt backups';
 }
 
 //function to display backup (via index.php) when clicked.
@@ -147,8 +160,29 @@ if (!is_array($backup_arr)) {
   $backup_arr = array_merge($delete_dbs[0],$delete_dbs[1]);
 }
 
+$num_deleted = 0;
 //pretty standard deleting.
 foreach ($backup_arr as $backup) {
+  if (!check_php_time()) {
+?>
+<h2>Ran out of time deleting backups.</h2>
+<form action='<?=this_url()?>' method='post'>
+<?=print_gets_for_form() ?>
+<?php
+      for ($ii = $num_deleted; $ii < count($backup_arr); $ii++) {
+?>
+<input type='hidden' name='backup_name[]'
+value='<?=escape_html($backup_arr[$ii])?>'/>
+
+<?php
+      }
+?>
+      <input type='submit' value='Delete some more of the <?=count($backup_arr)-$num_deleted?> backups'>
+</form>
+<?php
+    exit;
+  }
+  $num_deleted++;
   $ret = true;
   print "<h4>Deleting " . escape_html($backup) . "</h4>\n";
   //quote whatever funky name they gave us to avoid mysql regular expressions
@@ -185,13 +219,24 @@ echo "<h3>All done!\n</h3>";
 
 //workhorse -- finds dbs that shouldn't be useful anymore
 function get_dbs_to_delete() {
-  global $db, $archive,$dummy_string,$days,$archive_pre,$dbnames;
+  global $db,
+    $archive,$dummy_string,$days,$archive_pre,$dbnames,$start_db_index,
+    $max_time_allowed, $php_start_time;
+  if (!isset($start_db_index)) {
+    $start_db_index = 0;
+  }
   $corrupt = array();
   //get all archives
   //go through and get info on each backup
   //don't want to delete things from current semester
   $sem_start = get_static('semester_start');
-  foreach ($dbnames as $backup) {
+  $num_done = 0;
+  foreach (array_slice($dbnames,$start_db_index) as $backup) {
+    //don't keep on going if we've run out of time
+    if (!check_php_time()) {
+      break;
+    }
+    $num_done++;
     //the fact that we're setting the $archive variable means that all
     //$archive-dependent functions will now be accessing the archive,
     //not the current db
@@ -269,7 +314,7 @@ function get_dbs_to_delete() {
     }
   }
   if (!isset($backups)) {
-    return array(array(),$corrupt);
+    return array(array(),$corrupt, $num_done);
   }
   //back to normal
   $archive = '';
@@ -325,7 +370,7 @@ function get_dbs_to_delete() {
       }
     }
   }
-  return array($to_delete,$corrupt);
+  return array($to_delete,$corrupt,$num_done);
 }
 
 //function which allows us to figure out which dbs are "less" than others,
