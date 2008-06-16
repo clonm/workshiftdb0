@@ -990,7 +990,7 @@ function process_beforeunload() {
       "save your data.  If you are reloading the page, you may have to reload " + 
       "it again to see your changes.";
   }
-  return null;  
+  return;  
 }
 //if php script has not already generated javascript handlers, register these
 if (!self.focus_handler) {
