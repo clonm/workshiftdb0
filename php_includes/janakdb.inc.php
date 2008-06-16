@@ -159,31 +159,6 @@ $real_username = get_real_username();
 #                "for this database: $real_username",E_USER_ERROR);
 #}
 
-//table_allow and _deny are used similarly to permissions in apache,
-//assuming we don't have use_mysql_features.  If _allow is non-null,
-//access through a given url to table_edit.php and update_db.php is
-//only allowed to the tables in _allow, and if deny is non-null,
-//access is denied to those tables.  Note that it currently doesn't
-//make sense to specify both _allow and _deny, since there are no
-//wildcards currently allowed.  They only really affect
-//table_edit.wrapper.wrapper.php, since that's the only way a user can
-//access an arbitrary table
-//The workshiftadmin can view/edit any table
-if ($real_username == 'workshiftadmin') {
-  $table_permissions = array('table_allow' => null,
-                             'table_deny' => null);
-}
-else {
-  $table_permissions = array('table_allow' => null,
-                             'table_deny' => array_flip(array('password_table',
-                                                              'elections_record',
-                                                              'votes',
-                                                              'voting_record',
-                                                              'house_info',
-                                                              'static_data',
-                                                              'officer_password_table',
-                                                              'session_data')));
-}
 
 //many scripts can be invoked with an archive argument, which will make them
 //access the backup database, instead of the current one.

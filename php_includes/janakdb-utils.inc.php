@@ -903,7 +903,34 @@ function check_tablename($arr,$tbl) {
 
 //does the current user have permission to view/edit/update this table?
 function access_table($tbl) {
-  global $table_permissions;
+  static $table_permissions;
+  if (!isset($table_permissions)) {
+    //table_allow and _deny are used similarly to permissions in apache,
+    //assuming we don't have use_mysql_features.  If _allow is non-null,
+    //access through a given url to table_edit.php and update_db.php is
+    //only allowed to the tables in _allow, and if deny is non-null,
+    //access is denied to those tables.  Note that it currently doesn't
+    //make sense to specify both _allow and _deny, since there are no
+    //wildcards currently allowed.  They only really affect
+    //table_edit.wrapper.wrapper.php, since that's the only way a user can
+    //access an arbitrary table
+    //The workshiftadmin can view/edit any table
+    if (check_admin_priv()) {
+      $table_permissions = array('table_allow' => null,
+                                 'table_deny' => null);
+    }
+    else {
+      $table_permissions = array('table_allow' => null,
+                                 'table_deny' => array_flip(array('password_table',
+                                                                  'elections_record',
+                                                                  'votes',
+                                                                  'voting_record',
+                                                                  'house_info',
+                                                                  'static_data',
+                                                                  'officer_password_table',
+                                                                  'session_data')));
+    }
+  }
   if ((array_key_exists('table_allow',$table_permissions) &&
        $table_permissions['table_allow'] &&
        !check_tablename($table_permissions['table_allow'],$tbl)) ||
@@ -2531,5 +2558,18 @@ function set_userconf($attrib,$val,$page_name = null) {
                              $attrib,$val)));
 }
 
-
+function check_php_time() {
+  global $php_start_time, $max_time_allowed;
+  if (!isset($php_start_time)) {
+    $php_start_time = array_sum(split(' ',microtime()));
+  }
+  if (!isset($max_time_allowed)) {
+    $max_time_allowed = 20;
+  }
+  if (array_sum(split(' ',microtime()))-$php_start_time >= $max_time_allowed) {
+    return false;
+  }
+  return true;
+}
+ 
 ?>
