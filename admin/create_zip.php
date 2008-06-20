@@ -6,7 +6,33 @@ ini_set('zlib.output_compression',false);
 if (!array_key_exists('REQUEST_URI',$_SERVER)) {
   $_REQUEST = array_flip($argv);
 }
-
+if (!isset($_REQUEST['houses'])) {
+?>
+<html><head><title>Create backups</title></head><body>
+Create backups for house(s):
+<form action='<?=this_url()?>' method='get'>
+<select name='houses[]' multiple>
+<?php
+foreach ($houses as $house) {
+   print "<option value='" . escape_html($house) . "'>" . 
+   escape_html($house) . "\n";
+}
+?>
+</select><br/>
+<input type='checkbox' name='all' id='all'>
+<label for='all'>Get backup of entire database, including archives</label><br/>
+<input type='checkbox' name='quick' id='quick'>
+<label for='quick'>Get backup in a quicker, but less standard way</label><br/>
+<input type='checkbox' name='optimize' id='optimize'>
+<label for='optimize'>Optimize tables as they are backed up</label><br/>
+<input type='submit' value='Create archive'>
+</form>
+</body>
+</html>
+<?php
+exit;
+}
+$houses = $_REQUEST['houses'];
 $scratch_dir = "$php_includes/scratch";
 $backup_dir = "$scratch_dir/backupadmin";
 #if (false) {
@@ -25,7 +51,16 @@ else {
   mkdir($backup_dir);
 }
 set_error_handler('janak_errhandler');
+$done_houses = array();
+$max_time_allowed = 10;
 foreach ($houses as $house_name) {
+   if (check_php_time()) {
+     $done_houses[] = $house_name;
+     //     print "doing house $house_name\n";
+   }
+   else {
+     break;
+   }
   $url_array['user'] = $url_array['db'] = "usca_janak$house_name";
   $sql_user = null;
   $cols = array();
@@ -91,7 +126,7 @@ foreach ($houses as $house_name) {
       join(' ',array_map('escapeshellarg',$cols)) . 
       " 2>&1 1> " . escapeshellarg($backup_dir) . "/" . 
            escapeshellarg($url_array['db']);
-#    print $exec_string;
+    //    print $exec_string;
     system($exec_string);
   }
 }
@@ -100,7 +135,8 @@ foreach ($houses as $house_name) {
 if (array_key_exists('REQUEST_URI',$_SERVER)) {
   header('Content-Type: application/zip');
   header('Content-disposition: attachment; filename="' . 
-         date('Y-m-d-H-i-s') . '-workshift-backup.zip"');
+         date('Y-m-d-H-i-s') . '-' . 
+         join('-',$done_houses) . '-workshift-backup.zip"');
 }
 if (!array_key_exists('mail',$_REQUEST)) {
   passthru("zip -j - " . addslashes($backup_dir) . "/*");
