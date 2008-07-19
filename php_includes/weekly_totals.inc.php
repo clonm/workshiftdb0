@@ -367,7 +367,6 @@ function mung_whole_row(&$row) {
 $mung_whole_row = 'mung_whole_row';
 
 $onload_function = 'initialize_weekly_totals';
-
 $javascript_pre = <<<JAVASCRIPT
 <script type='text/javascript'>\nvar week_num = $week_num; 
 function initialize_weekly_totals() {

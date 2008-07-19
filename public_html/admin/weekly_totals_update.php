@@ -134,7 +134,7 @@ HEREDOC
   ;
  if ($weekly_fining) {
    $javascript_pre .= <<<HEREDOC
-     var weekly_fines_text = '';
+     var weekly_fining_text = '';
 HEREDOC
   ;
  }
@@ -149,7 +149,9 @@ HEREDOC
     }
     this_week -= Number(get_value(row[5*ii+Number(4)]));
     runtot += this_week;
-    change_cell(row[5*ii+Number(5)],this_week);
+    if (ii < week_num -1) {
+      change_cell(row[5*ii+Number(5)],this_week);
+    }
     if (fine_weeks[ii]) {
       end_fine = true;
       max_up_hours = max_up_hours_fining;
@@ -215,7 +217,12 @@ if (!fin_rate) {
 var temptotal = runtot;
 temptotal = Number(temptotal) + Number(fin_floor);
 temptotal *= -1;
-if (temptotal > fin_buffer) {
+if (temptotal <= fin_buffer) {
+  if (end_fine) {
+    change_cell(row[5*week_num+Number(fine_weeks[ii]['fine_num'])],'$0');
+  }
+}
+else {
   temptotal *= fining_percent_fine/100;
   var fine = temptotal*fin_rate;
   if (fin_doublefloor && fin_doublefloor >= fin_floor) {
@@ -233,12 +240,13 @@ HEREDOC
   if ($weekly_fining) {
     $javascript_pre .= <<<HEREDOC
       else {
-        if (!weekly_fines_text.length) {
-          weekly_fines_text += '(also fined for week ';
+        if (!weekly_fining_text.length) {
+          weekly_fining_text += '(also fined for week ';
         }
         else {
-          weekly_fines_text += ', ';
+          weekly_fining_text += ', ';
         }
+        weekly_fining_text += ii;
         oth_fine = Number(oth_fine)+Number(fine);
       }
 HEREDOC
@@ -278,15 +286,25 @@ HEREDOC
 
     change_cell(row[$total_fine_col-1],'$' + Math.round(oth_fine*100)/100);
     change_cell(row[$total_fine_col],'$' + Math.round(total_fine*100)/100);
+    change_cell(row[5*(week_num-1)+Number(5)],runtot);
 HEREDOC
     ;
     if ($weekly_fining) {
       $javascript_pre .= <<<HEREDOC
-
         if (weekly_fining_text.length) {
-          row[$notes_col].childNodes[1] = weekly_fining_text;
+          weekly_fining_text += ")";
+          if (row[$notes_col].childNodes.length < 2) {
+            row[$notes_col].appendChild(document.createTextNode(weekly_fining_text));
+          }
+          else {
+            row[$notes_col].childNodes[1] = document.createTextNode(weekly_fining_text);
+          }
         }
-
+        else {
+          if (row[$notes_col].childNodes.length >= 2) {
+            row[$notes_col].removeChild(row[$notes_col].childNodes[1]);
+          }
+        }
 HEREDOC
   ;
     }      
