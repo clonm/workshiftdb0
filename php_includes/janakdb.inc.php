@@ -35,7 +35,7 @@ $default_server = 'localhost';
 //users are determined by the url.  However, which part of the url to use is not
 //so clear -- it'll vary server to server, based on the setup of the aliases.
 //Change the number below to the segment of the url that is used.
-$house_name_component = 4;
+$house_name_component = 1;
 
 //////////////  END OPTIONS THAT MAY NEED TO BE CHANGED ON SITE CHANGES /////
 
