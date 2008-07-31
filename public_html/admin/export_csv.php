@@ -85,10 +85,7 @@ while ($tbl = $showres->FetchRow()) {
     continue;
   }
   //don't export tables with sensitive data
-  if ((is_array($table_permissions['table_allow']) && 
-       !in_array($tbl,$table_permissions['table_allow'])) ||
-      (is_array($table_permissions['table_deny']) &&
-       in_array($tbl,$table_permissions['table_deny']))) {
+  if (!access_table($tbl)) {
     continue;
   }
   fwrite($sqlhandle,"\nDROP TABLE IF EXISTS " . bracket($tbl) . ";\n");

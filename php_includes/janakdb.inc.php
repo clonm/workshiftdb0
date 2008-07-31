@@ -5,7 +5,7 @@
 ////////////  OPTIONS THAT NEED TO BE CHANGED ON SITE CHANGES ///////////////
 
 //location of html_includes directory -- will vary site to site
-$html_includes = '/public_html/html_includes';
+$html_includes = '/~bsccoo5/cvsworkshift/workshiftdb0/public_html/html_includes';
 //php_utils is a directory containing source files with functions that
 //are defined in later versions of php, but may not be defined in
 //ours.  It is interpreted as a path relative to the php_includes dir.
@@ -20,9 +20,6 @@ $bug_report_url = 'http://sourceforge.net/tracker/?func=add&group_id=191164&atid
 $feature_request_url = 'http://sourceforge.net/tracker/?func=add&group_id=191164&atid=936275';
 $project_url = 'http://sourceforge.net/projects/workshiftdb0/';
 
-////////////  END OPTIONS THAT NEED TO BE CHANGED ON SITE CHANGES //////////
-
-////////////  OPTIONS THAT MAY NEED TO BE CHANGED ON SITE CHANGES /////////
 //TODELETE
 //USE_MYSQL_FEATURES says whether we're using multiple users and multiple 
 //databases.  I think it's better for security, but it probably won't work
@@ -38,7 +35,7 @@ $default_server = 'localhost';
 //users are determined by the url.  However, which part of the url to use is not
 //so clear -- it'll vary server to server, based on the setup of the aliases.
 //Change the number below to the segment of the url that is used.
-$house_name_component = 1;
+$house_name_component = 4;
 
 //////////////  END OPTIONS THAT MAY NEED TO BE CHANGED ON SITE CHANGES /////
 
@@ -81,7 +78,7 @@ if (isset($php_includes)) {
 //variable will be ignored, maybe because it shows up in javascript, and then
 //either break the javascript or cause a massive data loss error.  Better for the
 //page not to load.
-error_reporting(E_ALL);
+error_reporting((E_ALL | E_RECOVERABLE_ERROR) & ~E_STRICT);
 //adodb is the wrapper for our database.  Note that either the include
 //path needs to point to adodb, or adodb should be a subdirectory of this dir.
 //Something I don't quite understand is that if you are including files
@@ -141,8 +138,8 @@ if (array_key_exists('forget_login',$_REQUEST)) {
 //database name is a more complicated function of the house_name, you
 //might have to make this into a function.  It's an array because of
 //the admin functions that might need to use it repeatedly
-$url_array = array('db' => "usca_janak$house_name", 
-                   'user' => "usca_janak$house_name",
+$url_array = array('db' => "bsccoo5_workshift$house_name", 
+                   'user' => "bsccoo5_wkshift",
                    'pwd' => "workshift",
                    'server' => $default_server,
 );
@@ -233,11 +230,11 @@ function janak_mysqlerr($errno,$errstr,$errfile,
     exit("Sorry, the BSC shares its server with other accounts, and they're "
          . "hogging the server.  Try connecting again in a minute.");
   }
-  if (substr($errstr,0,strlen("mysql_connect()")) == "mysql_connect()") {
-    exit("Sorry, there was an error connecting to the workshift database.  Try"
-         . " again in a minute and everything should be ok.  Otherwise, "
-         . "email " . admin_email() . ".");
-  }
+//   if (substr($errstr,0,strlen("mysql_connect()")) == "mysql_connect()") {
+//     exit("Sorry, there was an error connecting to the workshift database.  Try"
+//          . " again in a minute and everything should be ok.  Otherwise, "
+//          . "email " . admin_email() . ".");
+//   }
   janak_errhandler($errno,$errstr,$errfile,$errline,$errcontext);
 }
 ?>

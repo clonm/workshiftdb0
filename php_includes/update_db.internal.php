@@ -42,7 +42,7 @@ function make_date($date) {
 }
 
 //called by my qstr to format dates
-function date_format($v) {
+function my_date_format($v) {
   $date = make_date($v);
   if (!strlen($date)) {
     return null;
@@ -115,7 +115,7 @@ class quoting_mysqlt extends ADODB_mysqlt {
     //do we have a date?
     //(at least one number, a forward slash, then at least one other number)
     if (preg_match('/^\d\d?\/\d\d?$/',$str)) {
-      return date_format($str);
+      return my_date_format($str);
     }
     //how about a time?
     //at least one number, a colon, then two more numbers, or at least

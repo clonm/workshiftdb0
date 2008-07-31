@@ -969,7 +969,8 @@ function admin_email() {
 
 //name of the script, without .php or path
 function script_name() {
-  return substr(end(explode('/',$_SERVER['SCRIPT_NAME'])),0,-4);
+  $temp = explode('/',$_SERVER['SCRIPT_NAME']);
+  return substr(end($temp),0,-4);
 }
 
 //for form actions.  Note that other scripts can "fake" a new url by

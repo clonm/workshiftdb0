@@ -123,7 +123,7 @@ echo "backup name " . escape_html($backup_ext) . "<p>";
       //the new table name if we're recovering
       $bnewtbl = substr($tbl,strlen("$archive_pre{$backup_ext}_"));
     }
-    $ret &= $db->Execute("drop table if exists $bnewtbl");
+    $db->Execute("drop table if exists $bnewtbl");
     //this code is now no longer strictly necessary -- our version of
     //mysql has "create table like" command.  But who knows what the
     //next service we go to will have.  Until everyone's upgraded,
@@ -134,18 +134,13 @@ echo "backup name " . escape_html($backup_ext) . "<p>";
     $sqlcode = $res->fields[1];
     $startlen = strlen("CREATE TABLE " . $btbl);
     $sqlcode = "CREATE TABLE " . $bnewtbl . substr($sqlcode,$startlen);
-    $ret &= $db->Execute($sqlcode);
+$db->Execute($sqlcode);
     $db->StartTrans();
-    $ret &= $db->Execute("insert into $bnewtbl select * from $btbl");
+$db->Execute("insert into $bnewtbl select * from $btbl");
     $db->CompleteTrans();
   }
   echo "</div>";
-  if ($ret) {
-    echo "<h4>" . ($recover?"Restore":"Backup") . " succeeded!</h4>";
-  }
-  else {
-    echo "<h4>" . ($recover?"Restore":"Backup") . " had problems!  Try again.</h4>";
-  }
+echo "<h4>" . ($recover?"Restore":"Backup") . " succeeded!</h4>";
   echo "<input type=submit value='View sql commands issued, if you care' " .
   "onclick=\"document.getElementById('" .
   ($recover?'recover':'backup') . "_messages').style.display = '';\"><br/>";

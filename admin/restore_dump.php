@@ -39,6 +39,11 @@ $php_start_time = array_sum(split(' ',microtime()));
 $filedata = $_FILES['userfile'];
 $scratch_dir = "$php_includes/scratch";
 $restore_dir = "$scratch_dir/adminrestore";
+//for restore backup database -- it thinks it's in admin directory
+$include_path = get_include_path();
+$include_path = '../public_html/' . PATH_SEPARATOR . $include_path;
+set_include_path($include_path);
+
 if (file_exists("$restore_dir/.lock")) {
   trigger_error("Restore directory is locked.  Are you trying to run two copies " .
                 "of this page?  If not, " .
@@ -123,6 +128,8 @@ function clean_up($errno,$errstr,$errfile,$errline,$errcontext) {
   $arr = split(' ',microtime());
   print("Page took " . round(array_sum(split(' ',microtime()))-$php_start_time,2) . 
         " seconds to generate<br>\n");
+janak_errhandler($errno,$errstr,$errfile,
+                 $errline,$errcontext);
   exit;
 } 
 
@@ -131,10 +138,16 @@ function server_from_db($db) {
 #  return $db . '.test.usca.org';
 }
 
+function user_from_db($db) {
+  global $url_array;
+  return $url_array['user'];
+}
+
 function restore_db($restore_dir,$fname) {
-  global $db,$url_array, $php_includes, $USE_MYSQL_FEATURES;
+  global $db,$url_array, $php_includes, $USE_MYSQL_FEATURES, $archive_pre;
   $server = server_from_db($fname);
-  $db->Connect($server,$fname,$url_array['pwd'],$fname);
+  $user = user_from_db($fname);
+  $db->Connect($server,$user,$url_array['pwd'],$fname);
   $row = $db->GetRow("select version() as vs");
   $temp = $row['vs'];
   $temp = explode('.',$temp);
@@ -160,7 +173,7 @@ function restore_db($restore_dir,$fname) {
     $retval = $db->Execute(file_get_contents("$restore_dir/$fname"));
   }
   else {
-    $retval = system("mysql -u" .escapeshellarg($fname) . " -p" .
+    $retval = system("mysql -u" .escapeshellarg($user) . " -p" .
                      escapeshellarg($url_array['pwd']) . " -h" . escapeshellarg($server) .
                      " " . escapeshellarg($fname) . 
                      " < " . escapeshellarg($restore_dir) . "/" . 
