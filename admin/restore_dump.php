@@ -1,5 +1,8 @@
 <html><head><title>Restore dumpfile(s)</title></head><body>
 <?php
+if (!array_key_exists('REQUEST_URI',$_SERVER)) {
+  $_FILES['userfile'] = $argv[2];
+}
 if (!array_key_exists('userfile',$_FILES)) {
   ?>
 <form enctype="multipart/form-data" action='<?=$_SERVER['REQUEST_URI']?>' 
