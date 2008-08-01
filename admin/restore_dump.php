@@ -166,9 +166,12 @@ function restore_db($restore_dir,$fname) {
   $db->SetFetchMode(ADODB_FETCH_ASSOC); 
   //enable transactions -- MyISAM doesn't have transactions
   $db->Execute("set table_type = 'InnoDB'");
-  $_REQUEST['backup_ext'] = '';
-  print("<h3>Backing up old $fname</h3>");
-  require("../public_html/admin/backup_database.php");
+  //are there any tables anyway?
+  if (!is_empty($db->GetRow("show tables"))) {
+    $_REQUEST['backup_ext'] = '';
+    print("<h3>Backing up old $fname</h3>");
+    require("../public_html/admin/backup_database.php");
+  }
   $db->debug = true;
   if ($MYSQL_VERSION >= 41000) {
     //this command will screw up the mysql connection, but it's ok because
