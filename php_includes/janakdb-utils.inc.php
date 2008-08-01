@@ -540,7 +540,7 @@ group by `member_name` order by `member_name`
 SELECT
 ;
     $this_tbl = bracket("{$archive}week_{$ii}_totals");
-    $done &= $db->Execute(
+    $db->Execute(
 <<<CREATETABLE
 create table if not exists $this_tbl
 (`autoid` int(11) not null auto_increment,
@@ -551,8 +551,8 @@ create table if not exists $this_tbl
  primary key (autoid), unique (member_name))
 CREATETABLE
 );
-    $done &= $db->Execute("delete from $this_tbl");
-    $done &= $db->Execute("insert into $this_tbl " . $sel_statement);
+    $db->Execute("delete from $this_tbl");
+    $db->Execute("insert into $this_tbl " . $sel_statement);
     set_mod_date("week_" . $ii . "_totals");
   }
   return $done;
