@@ -37,7 +37,7 @@ exit;
 $backup_ext = $_REQUEST['backup_ext'];
 //no backup given?  Use the date
 if (!$backup_ext) {
-  $backup_ext = date('Y_m_d_H_i_s');
+  $backup_ext = user_time('Y_m_d_H_i_s');
 }
 else if ($backup_ext{0} == '"' && $backup_ext{count($backup_ext)-1} == '"') {
   //stupid managers might put quotes around
