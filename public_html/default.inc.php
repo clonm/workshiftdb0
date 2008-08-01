@@ -2,6 +2,7 @@
 //try to figure out where php_includes lives.  But really, you should just set 
 //$php_includes manually, unless you control PHP and can set the include_path
 $success = false;
+$basedir = null;
 foreach (array('DOCUMENT_ROOT','PATH_TRANSLATED','SCRIPT_FILENAME','PWD') as $key) {
   $success_basedir = false;
   foreach (array('HTTP_SERVER_VARS','_SERVER','HTTP_ENV_VARS','_ENV') as $global) {
