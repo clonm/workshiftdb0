@@ -1,4 +1,6 @@
 <?php
+phpinfo();
+exit;
 /*
 if (array_key_exists('logout',$_REQUEST)) {
   setcookie('member_name',null,time()-3600);
