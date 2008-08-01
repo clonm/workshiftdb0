@@ -8,7 +8,6 @@ foreach (array('DOCUMENT_ROOT','PATH_TRANSLATED','SCRIPT_FILENAME','PWD') as $ke
   foreach (array('HTTP_SERVER_VARS','_SERVER','HTTP_ENV_VARS','_ENV') as $global) {
     if (array_key_exists($key,$GLOBALS[$global]) && $GLOBALS[$global][$key]) {
       $basedir = realpath(dirname($GLOBALS[$global][$key]));
-      break;
     }
     if (!$basedir) {
       break;
