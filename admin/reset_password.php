@@ -30,7 +30,7 @@ if (!isset($_REQUEST['house']) || !isset($_REQUEST['officer'])) {
 }
 $house = $_REQUEST['house'];
 $officer = $_REQUEST['officer'];
-$db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
+$db->Connect('localhost',"bsccoo5_wkshft","workshift","bsccoo5_workshift$house");
 set_passwd($house . $officer,null,'',true,true);
 print "Success resetting password for " . escape_html($house . $officer);
 ?>
