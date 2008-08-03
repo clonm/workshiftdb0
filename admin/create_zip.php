@@ -5,6 +5,11 @@ $max_email_size = 9000000;
 ini_set('zlib.output_compression',false);
 if (!array_key_exists('REQUEST_URI',$_SERVER)) {
   $_REQUEST = array_flip($argv);
+  $_REQUEST['houses'] = $houses;
+  $command_line = true;
+}
+else {
+  $command_line = false;
 }
 if (!isset($_REQUEST['houses'])) {
 ?>
@@ -54,7 +59,10 @@ set_error_handler('janak_errhandler');
 $done_houses = array();
 $max_time_allowed = 10;
 foreach ($houses as $house_name) {
-   if (check_php_time()) {
+  if ($command_line) {
+    fwrite(STDERR,"doing $house_name\n");
+  }
+   if ($command_line || check_php_time()) {
      $done_houses[] = $house_name;
      //     print "doing house $house_name\n";
    }
@@ -132,7 +140,7 @@ foreach ($houses as $house_name) {
 }
 #}
 // We'll be outputting a ZIP file
-if (array_key_exists('REQUEST_URI',$_SERVER)) {
+if (!$command_line) {
   header('Content-Type: application/zip');
   header('Content-disposition: attachment; filename="' . 
          date('Y-m-d-H-i-s') . '-' . 
