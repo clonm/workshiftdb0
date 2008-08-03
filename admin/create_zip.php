@@ -69,7 +69,8 @@ foreach ($houses as $house_name) {
    else {
      break;
    }
-  $url_array['user'] = $url_array['db'] = "usca_janak$house_name";
+  $url_array['user'] = "bsccoo5_wkshift";
+  $url_array['db'] = "bsccoo5_workshift$house_name";
   $sql_user = null;
   $cols = array();
   if (!array_key_exists('all',$_REQUEST) || 
