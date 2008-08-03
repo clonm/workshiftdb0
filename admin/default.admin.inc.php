@@ -30,6 +30,6 @@ $_SERVER['PHP_AUTH_USER'] = 'workshiftadmin';
 if (!isset($delay_include)) {
   include_once("$php_includes/janakdb.inc.php");
 }
-$houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
-		'kid','kng','lot','rid','she','stb','wil','wol','co');
+$houses = array('ath','aca','caz','clo','con','dav','euc','fen','hip','hoy',
+		'kid','kng','lot','nsc','rid','roc','she','stb','wil','wol','co');
 ?>
