@@ -380,7 +380,8 @@ if (array_key_exists('delete_members',$_REQUEST)) {
         $rescol = $db->Execute('SHOW FULL COLUMNS FROM ' . bracket($tbl));
         while ($cols = $rescol->FetchRow()) {
           $col = $cols['Field'];
-          if (!$cols['Null'] && $col === 'member_name') {
+          //changed equality test to NO because behavior seems to have changed
+          if ($cols['Null'] == 'NO' && $col === 'member_name') {
             $db->Execute('DELETE FROM ' . bracket($tbl) . ' WHERE ' . 
                          bracket('member_name') . '= ?',$delete_members);
             set_mod_date($tbl);
