@@ -276,7 +276,7 @@ function update_member_info($main_arr, $workshift_arr, $member_name,$passwd) {
   }
   if ($main_arr[1]) {
     $mn_arr['email'] = $main_arr[1];
-    $email_row = $db->Execute("select `email` from `house_info` where " .
+    $email_row = $db->GetRow("select `email` from `house_info` where " .
                               "`member_name` = ?",
                               array($mn_arr['member_name']));
     if (is_empty($email_row)) {
