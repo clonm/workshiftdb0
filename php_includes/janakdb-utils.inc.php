@@ -584,7 +584,7 @@ function create_and_update_fining_data_totals() {
 //changes and we create a new weekly sheet
 function update_master_week() {
   global $db,$days,$archive;
-  //the <= is because master_week should be younget
+  //the = is because master_week should be youngest
   if (get_mod_date('master_week') <=
       get_mod_date('master_shifts')) {
     $this_tbl = bracket($archive . 'master_week');
