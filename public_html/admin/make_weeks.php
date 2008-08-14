@@ -94,8 +94,7 @@ for ($ii = $start_week; $ii <= $end_week; $ii++) {
   }
   //just paranoia here
   $db->Execute('LOCK TABLES ' . bracket($tbl) . ' WRITE, ' . 
-               bracket('master_shifts') . 
-               ' READ, ' . bracket('master_week') . " READ");
+               bracket('master_week') . " READ");
   $db->StartTrans();
   $db->Execute("delete from `$tbl`");
   $db->Execute('INSERT INTO ' . bracket($tbl) . 
