@@ -1,6 +1,4 @@
 <?php
-phpinfo();
-exit;
 /*
 if (array_key_exists('logout',$_REQUEST)) {
   setcookie('member_name',null,time()-3600);
@@ -26,29 +24,12 @@ else {
 */
 $php_includes = '../php_includes/';
 require_once('../php_includes/janakdb.inc.php');
-$db->Connect('localhost',"usca_janakclo","workshift","usca_janakclo");
-$res = $db->Execute("select `autoid`,`option_choice` from `votes` " .
-                    "where `election_name` = ? and `option_name` = 3474",
-                    array('2008-spring_Fall 2008 Managers'));
-$val_array = array();
-print "<pre>";
-while ($row = $res->FetchRow()) {
-  $val_array[$row['autoid']] = str_replace('Davis Hampian','David Hampian',$row['option_choice']);
-}
-foreach ($val_array as $key => $val) {
-  $db->Execute("update `votes` set `option_choice` = ? where `autoid` = ?",
-               array($val,$key));
-}
-
-print count($val_array);
-exit;
-
 $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
 		'kid','kng','lot','rid','she','stb','wil','wol','co','nsc','co');
 #$houses = array('rid','she','stb','wil','wol','co');
-#$houses = array('hoy');
+$houses = array('hip');
 #janak_fatal_error_reporting(0);
-$db->SetFetchMode(ADODB_FETCH_NUM);
+#$db->SetFetchMode(ADODB_FETCH_NUM);
 #$houses = array('kng');
 #require_once('../public_html/admin/create_all_tables.php');
 #$creates = array('master_shifts','wanted_shifts','house_list','password_table','personal_info',
@@ -62,15 +43,45 @@ $db->SetFetchMode(ADODB_FETCH_NUM);
 #require_once('../public_html/admin/create_all_tables.php');
 foreach ($houses as $house) {
   $db->debug = true;
-  $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
+  $db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshift$house");
   print "<h1>$house</h1>";
-  $res = $db->Execute("show tables");
+  $res = $db->Execute("select `autoid`, `date`,`day`,`workshift`,`shift_id`,`online_signoff` from week_11
+  order by day, workshift");
+  print "<pre>";
+  $originals = array();
+$duplicates = array();
   while ($row = $res->FetchRow()) {
-    $inforow = $db->GetRow("show table status like '" . $row[0] . "'");
-    if ($inforow[1] != 'InnoDB') {
-      $db->Execute("alter table `" . $row[0] . "` engine = innodb;");
-    }
+    if (!isset($originals[$row['date'] . $row['day'] . $row['workshift']
+    . $row['shift_id']])) {
+     $originals[$row['date'] . $row['day'] . $row['workshift']
+    . $row['shift_id']] = $row['autoid'];
   }
+else {
+if ($row['online_signoff'] != 0) {
+$duplicates[] = $originals[$row['date'] . $row['day'] . $row['workshift']
+    . $row['shift_id']];
+     $originals[$row['date'] . $row['day'] . $row['workshift']
+    . $row['shift_id']] = $row['autoid'];
+print $row['autoid'] . "happened here\n";
+}
+else {
+$duplicates[] = $row['autoid'];
+}
+}
+
+}
+foreach ($duplicates as $id) {
+$db->Execute("delete from week_11 where autoid = ?",array($id));
+}
+print "size: " . count($duplicates) . "\n";
+print "originals: " . count($originals) . "\n";
+#  $res = $db->Execute("show tables");
+#  while ($row = $res->FetchRow()) {
+#    $inforow = $db->GetRow("show table status like '" . $row[0] . "'");
+#    if ($inforow[1] != 'InnoDB') {
+#      $db->Execute("alter table `" . $row[0] . "` engine = innodb;");
+#    }
+#  }
   continue;
 //   while ($row = $res->FetchRow()) {
 //     foreach (array('feedback','member_add','member_comments','abstain_count') as $bool_attrib) {

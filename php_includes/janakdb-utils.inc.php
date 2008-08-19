@@ -563,12 +563,12 @@ function create_and_update_fining_data_totals() {
   $done = true;
   if (get_mod_date("fining_data",false) >
       get_mod_date("fining_data_totals",true)) {
-    $done &= create_and_update_weekly_totals_data();
+    $done = create_and_update_weekly_totals_data();
     $this_tbl = bracket($archive . 'fining_data_totals');
     $tot_tbl = bracket($archive . 'weekly_totals_data');
     $fin_tbl = bracket($archive . 'fining_data');
-    $done &= $db->Execute("delete from $this_tbl");
-    $done &= $db->Execute("insert into $this_tbl " .
+    $db->Execute("delete from $this_tbl");
+    $db->Execute("insert into $this_tbl " .
                           "select null, $tot_tbl.`member_name`, " .
                           "sum(`fine`) from " .
                           "$tot_tbl left join $fin_tbl " .
