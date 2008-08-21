@@ -250,19 +250,6 @@ will still be in the backup, but not in the current database.
 //';
 exit;
 }
-//semester *must* start on a Monday
-$sem_start = $_REQUEST['semester_start'];
-if (!preg_match('/\d\d\d\d-\d\d?-\d\d?/',$sem_start)) {
-  exit("Your semester start date is not in the proper format.  " .
-       "Enter the four-digit year, then a dash, then the two-digit " .
-       "month, then a dash, then the two-digit date, then a dash, like " .
-       "2009-08-26 for August 26, 2009.");
-}
-if (date('w',strtotime($sem_start))!=1) {
-  exit("Your semester start date is not a Monday!  " .
-       "Please go back and change it!");
-}
-set_static('semester_start',$sem_start);
 
 print "<h4>This may take some time -- be patient and wait until the end.</h4>";
 require_once('backup_database.php');
@@ -302,6 +289,21 @@ if (isset($_REQUEST['settings_archive']) && strlen($_REQUEST['settings_archive']
   set_error_handler($old_errhandler);
 }
                
+
+//semester *must* start on a Monday
+$sem_start = $_REQUEST['semester_start'];
+if (!preg_match('/\d\d\d\d-\d\d?-\d\d?/',$sem_start)) {
+  exit("Your semester start date is not in the proper format.  " .
+       "Enter the four-digit year, then a dash, then the two-digit " .
+       "month, then a dash, then the two-digit date, then a dash, like " .
+       "2009-08-26 for August 26, 2009.");
+}
+if (date('w',strtotime($sem_start))!=1) {
+  exit("Your semester start date is not a Monday!  " .
+       "Please go back and change it!");
+}
+set_static('semester_start',$sem_start);
+
 //set up the owed table.  It will be modified as needed if the default number
 //of hours changes, the house list changes, etc.
 create_and_update_weekly_totals_data();
