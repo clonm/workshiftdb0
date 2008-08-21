@@ -287,12 +287,17 @@ if (isset($_REQUEST['settings_archive']) && strlen($_REQUEST['settings_archive']
     $db->Execute("insert into `$tmppre$table` select * from " .
                  bracket($arch . "_$table"));
   }
-  function rename_map($arg) {
+  function rename_tempmap($arg) {
     global $tmppre;
-    return bracket($tmppre . $arg) . " to " . bracket("zz$arg");
+    return bracket($tmppre . $arg) . " to " . bracket("$arg");
+  }
+  function rename_origmap($arg) {
+    global $tmppre;
+    return bracket($arg) . " to " . bracket("zz$arg");
   }
   $db->Execute("rename table " .
-               join(",",array_map('rename_map',$settings_tables)));
+               join(",", array_map('rename_origmap',$settings_tables)) . "," .
+               join(",",array_map('rename_tempmap',$settings_tables)));
   $db->debug = false;
   set_error_handler($old_errhandler);
 }
