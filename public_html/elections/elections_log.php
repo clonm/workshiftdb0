@@ -24,6 +24,9 @@ if (isset($_REQUEST['details'])) {
       ob_end_flush();
       $backup_names = unserialize($row['oldval']);
       $backup_witnesses = unserialize($row['val']);
+      if (!$backup_witnesses) {
+        $backup_witnesses = array();
+      }
         ?>
 <dl>
    <dt>Person who did restore:
