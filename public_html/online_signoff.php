@@ -1,4 +1,3 @@
-<html><head><title>Online Signoff</title>
 <?php
 //it's ok not to be signed in when you go to this page
 $require_user = 'ok_nouser';
@@ -8,6 +7,9 @@ require_once('default.inc.php');
 if (!get_static('online_signoff',null)) {
   exit("Online signoffs are not active for your house!");
 }
+?>
+<html><head><title>Online Signoff</title>
+<?
 $cur_week = get_cur_week();
 if ($cur_week == -2) {
   exit("<h3>Your workshift manager has not set up " .
