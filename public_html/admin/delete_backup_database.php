@@ -201,11 +201,13 @@ value='<?=escape_html($backup_arr[$ii])?>'/>
     if ($row[0] === "$archive_pre{$backup}_house_list") {
       continue;
     }
-    $ret &= $db->Execute("drop table " . bracket($row[0]));
+    $rs = $db->Execute("drop table " . bracket($row[0]));
+    $ret &= $rs->EOF;
   }
   if ($ret) {
-    $ret &= $db->Execute("drop table " . 
-                         bracket("$archive_pre{$backup}_house_list"));
+    $rs = $db->Execute("drop table " . 
+             bracket("$archive_pre{$backup}_house_list"));
+    $ret &= $rs->EOF;
   }
   if ($ret) {
     print "<h4>Done with " . escape_html($backup) . "</h4>\n";
