@@ -299,7 +299,7 @@ as HTML (otherwise it will be treated as plain text):
   if ($elect_row && $elect_row['descript_file']) {
     print "<br/>Current file which is linked to from ballot:<br/>\n";
     print "<a href='../descript_file.php?election_name=" . 
-    escape_html($elect_row['election_name']) . "' target=descript_file>" .
+    escape_html(rawurlencode($elect_row['election_name'])) . "' target=descript_file>" .
     escape_html($elect_row['descript_filename']) . "</a>";
 ?>
 <label for='descript_file_remove'>
@@ -631,7 +631,7 @@ if ($row['ct'] > 0 && !$modify) {
   exit("Election already exists -- choose a different name if you " .
        "are running a different election, or " .
        "<a href='administer_election.php?election_name=" .
-       escape_html(urlencode($election_name)) .
+       escape_html(rawurlencode($election_name)) .
        "#delete'>delete it if you're done with it</a>");
 }
 //The anon_voting field of elections_record is tricky.  It's 0 for
@@ -980,4 +980,4 @@ $db->CompleteTrans();
 $db->Execute("unlock tables");
 
 ?>
-<a href='administer_election.php?election_name=<?=escape_html($election_name)?>'>Administer this election</a>
+<a href='administer_election.php?election_name=<?=escape_html(rawurlencode($election_name))?>'>Administer this election</a>

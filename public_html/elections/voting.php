@@ -162,7 +162,7 @@ if (!array_key_exists('page_type',$_REQUEST) ||
     unset($_GET['internal']);
 ?>
 <frameset rows="50%,50%">
-<frame src='descript_file.php?election_name=<?=escape_html($election_name)?>'>
+<frame src='descript_file.php?election_name=<?=escape_html(rawurlencode($election_name))?>'>
 <frame src='<?=$frame_url?>'>
 </frameset>
 <noframes>
@@ -352,7 +352,7 @@ if (!get_election_attrib('descript_html',null,false)) {
 }
 if ($descript_file) {
   print "<p><a href='descript_file.php?election_name=" .
-    escape_html($election_name) . "'>File with more info on election " .
+    escape_html(rawurlencode($election_name)) . "'>File with more info on election " .
     "(what's in the frame above)</a></p>";
 }
 //maybe internal is set, but we don't want it to be here
