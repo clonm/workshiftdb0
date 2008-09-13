@@ -399,6 +399,12 @@ for ($ii = 0; $ii <= $tot_weeks; $ii++) {
     print("Week $ii does not end a fining period<br>");
     continue;
   }
+  if (!$_REQUEST["buffer_$ii"]) {
+    $_REQUEST["buffer_$ii"] = 0;
+  }
+  if (!$_REQUEST["floor_$ii"]) {
+    $_REQUEST["floor_$ii"] = 0;
+  }
   $db->Execute("insert into `fining_periods` values (null,?,?,?,?,?,?)",
                array($ii, $_REQUEST['fining_rate'], $_REQUEST["buffer_$ii"],
                      $_REQUEST["floor_$ii"], $_REQUEST["doublefloor_$ii"],

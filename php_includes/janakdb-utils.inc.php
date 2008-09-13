@@ -879,7 +879,7 @@ function print_help($section=null,$span=false) {
     ($public_utils?'../admin/':'') . "help.html#" . 
     escape_html($section?$section:script_name())  . 
     "' target='workshift_help'>Help</a></strong>&nbsp;&nbsp;" .
-    "<a href='index.php'>Home</a>&nbsp;&nbsp;" .
+    "<a href='index.php' target='_top'>Home</a>&nbsp;&nbsp;" .
     "<span style='font-size: smaller'><a href='" .
     escape_html($bug_report_url) .
     "'>Submit Bug</a>&nbsp;&nbsp;<a href='" .
