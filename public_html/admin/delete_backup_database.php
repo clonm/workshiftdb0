@@ -263,8 +263,11 @@ function get_dbs_to_delete() {
                                              '([0-9]{2,2})_$/',
                                              $archive,$matches)) {
       //here's the timestamp
-      $db_props['time'] = mktime($matches[3],$matches[4],$matches[5],
-                                 $matches[1],$matches[2],$matches[0]);
+      //9/13/08 -- Janak increased indices of $matches, because
+      //apparently it was always wrong, and $matches[0] always contains
+      //the full string.
+      $db_props['time'] = mktime($matches[4],$matches[5],$matches[6],
+                                 $matches[2],$matches[3],$matches[1]);
     }
     else {
       $db_props['time'] = null;
