@@ -17,7 +17,8 @@ Fill out your <a href="preferences.php">preference form</a>.<p>
 <tbody><tr><td class="first">
 <?php
 if (get_static('online_signoff',null)) {
-  print "<a href='online_signoff.php'>Sign off of a shift online</a><p>\n";
+  print "<a href='online_signoff.php'>Sign off of a shift online</a>
+<p>\n";
 }
 ?>
 <a href="weekly_totals.php">The weekly totals</a><p>

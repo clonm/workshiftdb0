@@ -9,6 +9,11 @@ if (!get_static('online_signoff',null)) {
 }
 ?>
 <html><head><title>Online Signoff</title>
+<?=$body_insert?>
+For more help if you need it, click on the "help" link above,
+or you can check out
+<a href='http://docs.google.com/Presentation?id=dhcp4ck8_29g4698bf8'>this presentation</a>
+by the Wilde workshift manager.<hr/>
 <?
 $cur_week = get_cur_week();
 if ($cur_week == -2) {
