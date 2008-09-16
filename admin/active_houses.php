@@ -7,7 +7,7 @@ $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
 		'kid','kng','lot','rid','she','stb','wil','wol','nsc');
 $inactive_houses = array();
 foreach ($houses as $house) {
-  $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
+  $db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshift$house");
 #  $db->debug = true;
   if (table_exists('modified_dates')) {
     $row = $db->GetRow("select `table_name`," .
