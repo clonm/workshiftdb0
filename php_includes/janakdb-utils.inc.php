@@ -1425,7 +1425,8 @@ function elections_log($election_name,$subj_name,$attrib,$oldval,$val) {
   if ($attrib == 'start_president_modif') {
     $last_row = $db->GetRow('select `election_name`,`attrib` from ' .
                             '`elections_log` order by `autoid` desc limit 1');
-    if ($last_row['election_name'] == $election_name &&
+    if ($last_row && !is_empty($last_row) &&
+    $last_row['election_name'] == $election_name &&
         $last_row['attrib'] == 'end_president_modif') {
       $db->Execute('delete from `elections_log` order by `autoid` desc limit 1');
       set_mod_date('elections_log');
