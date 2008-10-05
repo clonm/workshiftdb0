@@ -597,6 +597,12 @@ while ($row = $res->FetchRow()) {
         escape_html($row['attrib']) . " changed their email</a></td><td>" .
         escape_html($row['oldval']) . " became " . escape_html($row['val']);
       break;
+    case 'president email change':
+      print "president_email_change'>" .
+        escape_html($row['attrib']) . " had their email changed " .
+        "by the president</a></td><td>" .
+        escape_html($row['oldval']) . " became " . escape_html($row['val']);
+        break;
     case 'member change':
       switch ($row['attrib']) {
       case 'password set':

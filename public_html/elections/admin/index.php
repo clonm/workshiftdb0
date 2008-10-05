@@ -20,6 +20,9 @@ password</a>.
 
 <li><a href='../../admin/reset_user_password.php'>Reset the password of a user who has forgotten it.</a>
 
+<li><a href='enter_emails.php'>Enter email addresses for house members,
+if they have not entered them themselves, for voting.</a>
+
 <li><a
 href='../../admin/administer_users.php'>administer_users.php</a> lets
 you add/remove user privileges.  You should use this to make boarders
