@@ -20,8 +20,14 @@ password</a>.
 
 <li><a href='../../admin/reset_user_password.php'>Reset the password of a user who has forgotten it.</a>
 
+<li>Use the following two pages only if your house does not use the workshift
+system, but you still want to use the online elections system.
+
 <li><a href='enter_emails.php'>Enter email addresses for house members,
 if they have not entered them themselves, for voting.</a>
+
+<li><a href='password_mail.php'>Mail passwords to users who have email
+addresses, but no passwords, so that they can vote.
 
 <li><a
 href='../../admin/administer_users.php'>administer_users.php</a> lets
