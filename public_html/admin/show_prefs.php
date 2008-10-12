@@ -7,7 +7,7 @@ if (!isset($_REQUEST['person'])) {
   $this_url = explode('?',$_SERVER['REQUEST_URI']);
   $this_url = $this_url[0];
 ?>
-<html><head><title>View information</title></head>
+<html><head><title>Preference Form View</title></head>
 <body>
 <form action='<?=escape_html($this_url)?>' method=GET>
    Name: <select name='person'>

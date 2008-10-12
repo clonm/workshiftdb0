@@ -15,7 +15,7 @@ if (!isset($php_start_time)) {
   $php_start_time = array_sum(split(' ',microtime()));
 }
 ?>
-<html><head><title>Information for <?=escape_html($member_name)?></title>
+<html><head><title>Shift history for <?=escape_html($member_name)?></title>
 </head><body>
 <?php
 print $body_insert;
