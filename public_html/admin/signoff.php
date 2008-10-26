@@ -597,8 +597,6 @@ if (isset($col_formats['start_time'])) {
 $blanksize = 40;
 
 $title_page = 'Signoffs for ' . join('/',$day_array);
-$table_caption = '<h1>' . join('/',$day_array) . ' Signoffs for Week ' . 
-(strlen($week_num)?"$week_num ($beg_date-$end_date)":'') . "</h1>";
 
 #$db->debug = true;
  if (!isset($body_insert)) {
@@ -619,7 +617,10 @@ $table_caption = '<h1>' . join('/',$day_array) . ' Signoffs for Week ' .
    }
  }
  $temp_insert .= "<input type=submit style='background-color: grey' value='Download to Excel'></form></div>\n";
- $body_insert = $temp_insert . $body_insert;
+ $body_insert = $temp_insert . '<h2>' . join('/',$day_array) .
+                ' Signoffs for Week ' .
+                (strlen($week_num)?"$week_num ($beg_date-$end_date)":'') .
+                '</h2>' . $body_insert;
  if (array_key_exists('download',$_REQUEST)) {
    if (!isset($mung_whole_row)) {
      $mung_whole_row = null;
