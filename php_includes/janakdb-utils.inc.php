@@ -551,13 +551,15 @@ create table if not exists $this_tbl
  primary key (autoid), unique (member_name))
 CREATETABLE
 );
+    $db->Execute("lock table $this_tbl write, $tot_tbl read, $wk_tbl read");
     $db->Execute("delete from $this_tbl");
     $db->Execute("insert into $this_tbl " . $sel_statement);
+    $db->Execute("unlock tables");
     set_mod_date("week_" . $ii . "_totals");
   }
   return $done;
 }
-    
+
 function create_and_update_fining_data_totals() {
   global $db,$archive;
   $done = true;
