@@ -1,4 +1,5 @@
 <?php
+//Janak -- tofix -- verify shift signoff within hours limits for all shifts
 //it's ok not to be signed in when you go to this page
 $require_user = 'ok_nouser';
 //the help should be printed into body_insert
