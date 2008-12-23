@@ -257,6 +257,11 @@ foreach ($_POST as $key => $val) {
   print("Set " . escape_html($key) . " to <div style='" . white_space_css() . 
         "'>" . escape_html($val,true) . "</div>\n");
 }
+//If the total number of weeks is more than the week some fining period ends,
+//that fining period will become a "zombie," so we just clear it out.
+$db->Execute("delete from `fining_periods` " .
+             "where `week` > get_static('tot_weeks')");
+
 //not using ratings, but that just means we're rating out of 2, with default 1
 if (!$shift_flag) {
   print("<h4>Setting shift preference style to " . 
