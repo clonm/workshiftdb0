@@ -25,12 +25,20 @@ else {
 $php_includes = '../php_includes/';
 require_once('../php_includes/janakdb.inc.php');
 $houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
-		'kid','kng','lot','rid','she','stb','wil','wol','co','nsc','co');
+		'kid','kng','lot','rid','she','stb','wil','wol','co','nsc');
 #$houses = array('rid','she','stb','wil','wol','co');
-$houses = array('hip');
+#$houses = array('hip');
 #janak_fatal_error_reporting(0);
 #$db->SetFetchMode(ADODB_FETCH_NUM);
 #$houses = array('kng');
+foreach ($houses as $house) {
+  $db->debug = true;
+  $db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshift$house");
+  print "<h1>$house</h1>";
+  $db->Execute("alter table `special_fining` add column `fine_week_6` int default '-1' after fine_week_5, add column `fine_week_7` int default '-1' after fine_week_6, add column `fine_week_8` int default '-1' after fine_week_7, add column `fine_week_9` int default '-1' after fine_week_8, add column `fine_week_10` int default '-1' after fine_week_9, add column `fine_week_11` int default '-1' after fine_week_10, add column `fine_week_12` int default '-1' after fine_week_11, add column `fine_week_13` int default '-1' after fine_week_12, add column `fine_week_14` int default '-1' after fine_week_13, add column `fine_week_15` int default '-1' after fine_week_14, add column `fine_week_16` int default '-1' after fine_week_15, add column `fine_week_17` int default '-1' after fine_week_16, add column `fine_week_18` int default '-1' after fine_week_17, add column `fine_week_19` int default '-1' after fine_week_18");
+}
+?>
+
 #require_once('../public_html/admin/create_all_tables.php');
 #$creates = array('master_shifts','wanted_shifts','house_list','password_table','personal_info',
 #                 'house_info','workshift_description','static_data','fining_periods',
@@ -41,10 +49,9 @@ $houses = array('hip');
 #print "<pre>";
 #$houses = array('clo');
 #require_once('../public_html/admin/create_all_tables.php');
-foreach ($houses as $house) {
-  $db->debug = true;
-  $db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshift$house");
-  print "<h1>$house</h1>";
+
+
+
   $res = $db->Execute("select `autoid`, `date`,`day`,`workshift`,`shift_id`,`online_signoff` from week_11
   order by day, workshift");
   print "<pre>";
@@ -374,4 +381,3 @@ exit;
 #  system("rm ../$house");
 #  system("ln -s /home/usca/domains/usca.org/public_html/workshift/public_html ../$house");
 #}
-?>

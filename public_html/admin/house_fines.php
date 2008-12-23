@@ -155,8 +155,8 @@ function mung_whole_row(&$row) {
     if (!$key_weeks) {
       $key_weeks = array_keys($backup_fine_weeks);
     }
-    //assume that never more than 5 fining periods
-    for ($kk = 1; $kk <= 5; $kk++) {
+    //assume that never more than 19 fining periods
+    for ($kk = 1; $kk <= 19; $kk++) {
       //when is this fining period
       $new_week = $special_fining[$row['member_name']]["fine_week_$kk"];
       //-1 means unchanged.  Did it move, and is it not actually just the

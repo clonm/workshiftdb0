@@ -89,8 +89,8 @@ $special_res = $db->Execute("select * from `{$archive}special_fining`");
 $special_fining = array();
 while ($special_row = $special_res->FetchRow()) {
   $special_fining[$special_row['member_name']] = $special_row;
-  if ($max_period < 5) {
-    for ($ii = $max_period+1; $ii <= 5; $ii++) {
+  if ($max_period < 19) {
+    for ($ii = $max_period+1; $ii <= 19; $ii++) {
       if ($special_row["fine_week_$ii"] > -1 && 
           $special_row["fine_week_$ii"] < $week_num) {
         $max_period = $ii;
