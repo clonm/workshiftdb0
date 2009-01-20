@@ -24,10 +24,10 @@ else {
 */
 $php_includes = '../php_includes/';
 require_once('../php_includes/janakdb.inc.php');
-$houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
-		'kid','kng','lot','rid','she','stb','wil','wol','co','nsc');
+#$houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
+#		'kid','kng','lot','rid','she','stb','wil','wol','co','nsc');
 #$houses = array('rid','she','stb','wil','wol','co');
-#$houses = array('hip');
+$houses = array('fen','roc');
 #janak_fatal_error_reporting(0);
 #$db->SetFetchMode(ADODB_FETCH_NUM);
 #$houses = array('kng');

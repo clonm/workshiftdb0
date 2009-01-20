@@ -42,13 +42,13 @@ if ($cash_hours_auto) {
 }
 
 $table_edit_query = substr($table_edit_query,11);
-for ($ii = $week_num; $ii <= $tot_weeks; $ii++) {
-  $col_names[] = "owed $ii";
-  $col_formats["owed $ii"] = '';
-  $col_styles[] = 'input';
-  $table_edit_query = "`owed $ii`, " . $table_edit_query;
-  $col_sizes[] = 2;
-}
+  for ($ii = max(0,$week_num); $ii <= $tot_weeks; $ii++) {
+    $col_names[] = "owed $ii";
+    $col_formats["owed $ii"] = '';
+    $col_styles[] = 'input';
+    $table_edit_query = "`owed $ii`, " . $table_edit_query;
+    $col_sizes[] = 2;
+  }
 
 $table_edit_query = "select " . $table_edit_query;
 //this will be initialized by a col_formats function as it is called -- ooh, fancy
