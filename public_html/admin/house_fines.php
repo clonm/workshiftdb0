@@ -155,10 +155,14 @@ function mung_whole_row(&$row) {
     if (!$key_weeks) {
       $key_weeks = array_keys($backup_fine_weeks);
     }
-    //assume that never more than 19 fining periods
-    for ($kk = 1; $kk <= 19; $kk++) {
-      //when is this fining period
-      $new_week = $special_fining[$row['member_name']]["fine_week_$kk"];
+    for ($kk = 1; $kk <= count($key_weeks); $kk++) {
+      if (!isset($special_fining[$row['member_name']]["fine_week_$kk"])) {
+        $new_week = -1;
+      }
+      else {
+        //when is this fining period
+        $new_week = $special_fining[$row['member_name']]["fine_week_$kk"];
+      }
       //-1 means unchanged.  Did it move, and is it not actually just the
       //usual week?
       if ($new_week != -1 && 
@@ -309,7 +313,7 @@ function mung_whole_row(&$row) {
     $row['Total after Cash-in'] = $row['Total'];
     //if max_up_hours was there, it's possible that we've already
     //cashed in some hours
-    if ($max_up_hours && $cash_hours > 0) {
+    if (isset($max_up_hours) && $max_up_hours && $cash_hours > 0) {
       $row['Fine Rebate'] = $fining_rate*min($cash_hours,$cash_max);
       $cash_max-=$cash_hours;
     }

@@ -89,9 +89,10 @@ $special_res = $db->Execute("select * from `{$archive}special_fining`");
 $special_fining = array();
 while ($special_row = $special_res->FetchRow()) {
   $special_fining[$special_row['member_name']] = $special_row;
-  if ($max_period < 19) {
-    for ($ii = $max_period+1; $ii <= 19; $ii++) {
-      if ($special_row["fine_week_$ii"] > -1 && 
+  if ($max_period < count($backup_fine_weeks)) {
+    for ($ii = $max_period+1; $ii <= count($backup_fine_weeks); $ii++) {
+      if (isset($special_row["fine_week_$ii"]) &&
+          $special_row["fine_week_$ii"] > -1 && 
           $special_row["fine_week_$ii"] < $week_num) {
         $max_period = $ii;
       }
@@ -230,7 +231,12 @@ function mung_whole_row(&$row) {
       $key_weeks = array_keys($backup_fine_weeks);
     }
     for ($kk = 1; $kk <= count($key_weeks); $kk++) {
-      $new_week = $special_fining[$row['member_name']]["fine_week_$kk"];
+      if (isset($special_fining[$row['member_name']]["fine_week_$kk"])) {
+        $new_week = $special_fining[$row['member_name']]["fine_week_$kk"];
+      }
+      else {
+        $new_week = -1;
+      }
       if ($new_week != -1 && 
           $new_week != ($old_week = $key_weeks[$kk-1])) {
         if (strlen($new_week) && $new_week < $week_num) {
