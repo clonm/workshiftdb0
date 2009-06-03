@@ -101,6 +101,7 @@ if ($page_status != 'submit') {
       $options_array[$archive_sem][$semester_time][] = $archive_data;
     }
   }
+  $archive = '';
   foreach ($options_array as $key => $junk) {
     krsort($options_array[$key],SORT_NUMERIC);
     foreach ($options_array[$key] as $ind => $junk) {
