@@ -606,13 +606,13 @@ $title_page = 'Signoffs for ' . join('/',$day_array);
    "' method=post><input type=hidden name='download'>";
  foreach ($_POST as $key => $val) {
    if (!is_array($val)) {
-     $temp_insert .= "<input type=hidden name='" . escape_strip($key) . "' value='" .
-       escape_strip($val) . "'>";
+     $temp_insert .= "<input type=hidden name='" . escape_html($key) . "' value='" .
+       escape_html($val) . "'>";
    }
    else {
      foreach ($val as $arrval) {
-       $temp_insert .= "<input type=hidden name='" . escape_strip($key) . "[]' value='" .
-         escape_strip($arrval) . "'>";
+       $temp_insert .= "<input type=hidden name='" . escape_html($key) . "[]' value='" .
+         escape_html($arrval) . "'>";
      }
    }
  }

@@ -24,18 +24,27 @@ else {
 */
 $php_includes = '../php_includes/';
 require_once('../php_includes/janakdb.inc.php');
-#$houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
-#		'kid','kng','lot','rid','she','stb','wil','wol','co','nsc');
+$houses = array('ath','aca','caz','clo','con','dav','euc','hip','hoy',
+		'kid','kng','lot','rid','she','stb','wil','wol','co','nsc','fen','roc');
 #$houses = array('rid','she','stb','wil','wol','co');
-$houses = array('fen','roc');
+#$houses = array('fen','roc');
 #janak_fatal_error_reporting(0);
 #$db->SetFetchMode(ADODB_FETCH_NUM);
-#$houses = array('kng');
+$houses = array('lot');
 foreach ($houses as $house) {
-  $db->debug = true;
+#  $db->debug = true;
   $db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshift$house");
   print "<h1>$house</h1>";
-  $db->Execute("alter table `special_fining` add column `fine_week_6` int default '-1' after fine_week_5, add column `fine_week_7` int default '-1' after fine_week_6, add column `fine_week_8` int default '-1' after fine_week_7, add column `fine_week_9` int default '-1' after fine_week_8, add column `fine_week_10` int default '-1' after fine_week_9, add column `fine_week_11` int default '-1' after fine_week_10, add column `fine_week_12` int default '-1' after fine_week_11, add column `fine_week_13` int default '-1' after fine_week_12, add column `fine_week_14` int default '-1' after fine_week_13, add column `fine_week_15` int default '-1' after fine_week_14, add column `fine_week_16` int default '-1' after fine_week_15, add column `fine_week_17` int default '-1' after fine_week_16, add column `fine_week_18` int default '-1' after fine_week_17, add column `fine_week_19` int default '-1' after fine_week_18");
+  $res = $db->Execute("show tables");
+  while ($row = $res->FetchRow()) {
+    if ($row[0]{0} != '2') {
+      continue;
+    }
+    print $row[0] . "<br>\n";
+    $db->Execute("drop table " . $row[0]);
+  }
+
+  #  $db->Execute("alter table `special_fining` add column `fine_week_6` int default '-1' after fine_week_5, add column `fine_week_7` int default '-1' after fine_week_6, add column `fine_week_8` int default '-1' after fine_week_7, add column `fine_week_9` int default '-1' after fine_week_8, add column `fine_week_10` int default '-1' after fine_week_9, add column `fine_week_11` int default '-1' after fine_week_10, add column `fine_week_12` int default '-1' after fine_week_11, add column `fine_week_13` int default '-1' after fine_week_12, add column `fine_week_14` int default '-1' after fine_week_13, add column `fine_week_15` int default '-1' after fine_week_14, add column `fine_week_16` int default '-1' after fine_week_15, add column `fine_week_17` int default '-1' after fine_week_16, add column `fine_week_18` int default '-1' after fine_week_17, add column `fine_week_19` int default '-1' after fine_week_18");
 }
 ?>
 

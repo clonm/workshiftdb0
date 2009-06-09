@@ -292,7 +292,7 @@ function update_member_info($main_arr, $workshift_arr, $member_name,$passwd) {
     $mn_arr['phone'] = $main_arr[2];
   }
   if (count($mn_arr) > 1) {
-    if (!$db->Replace(db_prefix($main_db) . bracket('house_info'),
+    if (!$db->Replace(bracket('house_info'),
                       $mn_arr,'member_name',true)) {
       return null;
     }

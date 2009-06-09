@@ -1,11 +1,19 @@
 <?php
+//This monster file has basically all of the functions that multiple
+//scripts call.  Janak started commenting/cleaning up 6/3/09
+
 // Section 0: general quoting/utility functions for php
 
+//these are all global variables.  Ugh.
+
+//note that 'Weeklong' is a day
 $days = array('Monday','Tuesday','Wednesday',
               'Thursday','Friday','Saturday','Sunday','Weeklong');
+//name for empty shifts
 $dummy_string = 'XXXXX';
 //all backups are prefixed with this string
 $archive_pre = 'zz_archive_';
+//the kind of officer logins that there are
 $priv_types = array('workshift','house','president');
 
 //used to safely quote strings for javascript statements like
@@ -76,7 +84,7 @@ if (!function_exists('stripformslash')) {
     }
   }
   else {
-    //quoting for database?  Man, you're stupid -- databases quote things already
+    //quoting for database?  You're stupid -- databases quote things already
     function stripformslash($str) {
       global $first_strip;
       if (!$first_strip) {
@@ -88,11 +96,6 @@ if (!function_exists('stripformslash')) {
       return str_replace("''","'",$str);
     }
   }
-}
-
-//TODELETE
-function escape_strip($str) {
-  return escape_html($str);
 }
 
 //takes php array, returns string which, when surrounded by [ and ],
@@ -133,20 +136,6 @@ function quote_mysqlreg($str) {
 function bracket($str) {
   $str = str_replace('`','``',$str);
   return "`$str`";
-}
-
-//TODELETE
-//just gives the database in brackets with a '.'.  It's here so that if we don't
-//have multiple databases, this can go away
-if ($USE_MYSQL_FEATURES) {
-  function db_prefix($dbname) {
-    return bracket($dbname) . ".";
-  }
-}
-else {
-  function db_prefix($dbname) {
-    return "";
-  }
 }
 
 /////// The following section is used only by table_edit.php and
@@ -204,12 +193,6 @@ foreach (array('array_intersect_key','array_diff_key','stripos',
 }
 
 ///////// Some formatting functions.  Only used in a couple of scripts.
-
-//TODELETE
-function make_numeric($str) {
-  settype($str,"int");
-  return $str;
-}
 
 //what you think
 function make_integer($str) {
@@ -321,7 +304,7 @@ function check_passwd($member_name = null, $passwd = null) {
       return null;
     }
     //what was the value?
-    if (make_numeric($row['res']) <= 0) {
+    if (make_integer($row['res']) <= 0) {
       return -2;
     }
     $row = $db->GetRow("SELECT `passwd` FROM `password_table` " .
@@ -336,13 +319,13 @@ function check_passwd($member_name = null, $passwd = null) {
     }
     //hash up our password -- password are stored hashed.
     $row2 = $db->GetRow("select md5(?) as pw",array($passwd));
-    return make_numeric($row['passwd'] == $row2['pw']);
+    return make_integer($row['passwd'] == $row2['pw']);
 }
 
 //set the password.  Password can be set if it hasn't been set yet, or
 //if oldpasswd matches.  Called in record_prefs.php and
 //set_passwd.php.  Hashes up password so snooping administrators can't
-//find it out.
+//find it out.  This sets officer passwords too, for no good reason.
 function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag = false,
                     $override = false) {
   global $db;
@@ -354,7 +337,8 @@ function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag = false,
       $check_res = check_officer_passwd($member_name,$oldpasswd);
     }
     if ($newpasswd == "") {
-      exit("You cannot set your password to be blank.  Press back and try again.");
+      exit("You cannot set your password to be blank.  " .
+           "Press back and try again.");
     }
   }
   else {
@@ -394,7 +378,7 @@ function check_officer_passwd($officer_name = null) {
   }
   $row2 = $db->GetRow("select md5(?) as `pw`",
                       array($_REQUEST['officer_passwd']));
-  return make_numeric($row['passwd'] == $row2['pw']);
+  return make_integer($row['passwd'] == $row2['pw']);
 }
 
 //just encapsulated for ease of use
@@ -636,6 +620,7 @@ function query_day($day,$week_date = null) {
 //just acts on the active database
 function get_static($var_name, $default_value=null) {
   global $db,$archive;
+//I have no idea why this goes to numeric mode, since we know column name
   $oldfetch = $db->SetFetchMode(ADODB_FETCH_NUM);
   $res = $db->Execute('SELECT `var_value` FROM ' .
 		     bracket($archive . 'static_data') .
@@ -645,7 +630,7 @@ function get_static($var_name, $default_value=null) {
   $row = $res->fields;
   if (is_empty($row)) {
     if ($default_value !== null) {
-      set_static($var_name,$default_value,$archive);
+      set_static($var_name,$default_value);
     }
     return $default_value;
   }
@@ -653,7 +638,7 @@ function get_static($var_name, $default_value=null) {
 }
 
 //set global config
-function set_static($var_name,$var_value,$dummyarchive='') {
+function set_static($var_name,$var_value) {
   global $db,$archive;
   $ret = $db->Execute('REPLACE INTO ' .
                       bracket($archive . 'static_data') .
@@ -892,10 +877,11 @@ function print_help($section=null,$span=false) {
     ($span?'span':'div') . ">";
 }
 
-//archived private tables shouldn't become public -- check the part
-//without the archive prepend
+//is the table in this list of tables?
 function check_tablename($arr,$tbl) {
   foreach ($arr as $key => $val) {
+//archived private tables shouldn't become public -- check the part
+//without the archive prepend
     if (substr($tbl,-1*strlen($key)) === $key) {
       return true;
     }
@@ -923,14 +909,10 @@ function access_table($tbl) {
     }
     else {
       $table_permissions = array('table_allow' => null,
-                                 'table_deny' => array_flip(array('password_table',
-                                                                  'elections_record',
-                                                                  'votes',
-                                                                  'voting_record',
-                                                                  'house_info',
-                                                                  'static_data',
-                                                                  'officer_password_table',
-                                                                  'session_data')));
+        'table_deny' => 
+        array_flip(array('password_table','elections_record','votes',
+          'voting_record','house_info','static_data','officer_password_table',
+          'session_data')));
     }
   }
   if ((array_key_exists('table_allow',$table_permissions) &&
@@ -1148,7 +1130,8 @@ function janak_errhandler($errno,$errstr,$errfile,
   $old_fat = janak_fatal_error_reporting(0);
   ob_start();
   print "error: " . $errstr;
-  print "\npage: " . $_SERVER['REQUEST_URI'] . " (this_url: " . this_url() . ")\nerrno: ";
+  print "\npage: " . $_SERVER['REQUEST_URI'] . " (this_url: " . this_url() 
+    . ")\nerrno: ";
   print $errno;
   if (isset($str)) {
     print "\nDebug backtrace:";
@@ -1219,82 +1202,85 @@ function set_mod_date($tbl,$timestamp = null) {
 
 //Functions which allow us to customize pieces of text.
 //This lets workshift managers modify text to be what they want.
-//For each piece of text, specified wildcards are allowed.
-function get_static_text($text_name,$def_val = null,
-                         $escape_seqs = array(),$is_html = null,$prestyle = null) {
-  global $db,$archive;
-  $row = $db->GetRow('SELECT `text_value`, `is_html`, `escape_seqs` ' .
-		     'FROM ' . 
-		     bracket($archive . 'static_text') .
-		     ' WHERE `text_name` = ?', 
-		     array($text_name));
-  if (is_empty($row)) {
-    if ($def_val !== null) {
-      set_static_text($text_name,$def_val,$is_html,$escape_seqs);
-    }
-    else {
-      return null;
-    }
-    $row['text_value'] = $def_val;
-    //escape_seqs is an array, and we're about to unserialize it
-    $row['escape_seqs'] = serialize($escape_seqs);
-    $row['is_html'] = $is_html;
-  }
-  //make array
-  $escape_seqs = unserialize($row['escape_seqs']);
-  //the key is the wildcard, the value is an array with replacement
-  //expression and then the description of the wildcard.
-  foreach ($escape_seqs as $esc => $seq) {
-    $seq = $seq[1];
-    //if the replacement starts with '*' it means we have to
-    //execute it as php code.  This is safe since users don't get
-    //to specify the code, only that it is to be executed.
-    if (is_string($seq) && strlen($seq) && $seq{0} == '*') {
-      $seq = substr($seq,1);
-      //set $seq to the result of the code.
-      eval("\$seq = $seq;");
-    }
-    else {
-      //if $seq is a string, it is just a variable
-      if (!is_array($seq)) {
-        $seq = $GLOBALS[$seq];
+//For each piece of text, specified wildcards are allowed, so a long piece of 
+//text doesn't need to be modified if the workshift manager is just 
+//changing, e.g., the date preference forms are due. 
+
+function get_static_text($text_name,$def_val = null,$escape_seqs = array(),
+  $is_html = null,$prestyle = null) {
+    global $db,$archive;
+    $row = $db->GetRow('SELECT `text_value`, `is_html`, `escape_seqs` ' .
+      'FROM ' . 
+      bracket($archive . 'static_text') .
+      ' WHERE `text_name` = ?', 
+      array($text_name));
+    if (is_empty($row)) {
+      if ($def_val !== null) {
+        set_static_text($text_name,$def_val,$is_html,$escape_seqs);
       }
-      //oh, but maybe it's buried in an array, so we have to descend.
       else {
-        $temp = $GLOBALS;
-        foreach ($seq as $ind) {
-          if (array_key_exists($ind,$temp)) {
-            $temp = $temp[$ind];
-          }
-          else {
-            break;
-          }
-        }
-        $seq = $temp;
+        return null;
       }
+      $row['text_value'] = $def_val;
+      //escape_seqs is an array, and we're about to unserialize it
+      $row['escape_seqs'] = serialize($escape_seqs);
+      $row['is_html'] = $is_html;
     }
-    //replace $esc with $seq
-    $row['text_value'] = str_replace($esc,$seq,$row['text_value']);
-  }
-  //if it's html (or, more precisely, if it shouldn't be escaped)
-  //output as is
-  if ($row['is_html']) {
-    return $row['text_value'];
-  }
-  else {
-    if ($prestyle) {
-      $ret = "<div style='" . white_space_css() . "'>";
+    //make array
+    $escape_seqs = unserialize($row['escape_seqs']);
+    //the key is the wildcard, the value is an array with replacement
+    //expression and then the description of the wildcard.
+    foreach ($escape_seqs as $esc => $seq) {
+      $seq = $seq[1];
+      //if the replacement starts with '*' it means we have to
+      //execute it as php code.  This is safe since users don't get
+      //to specify the code, only that it is to be executed.
+      if (is_string($seq) && strlen($seq) && $seq{0} == '*') {
+        $seq = substr($seq,1);
+        //set $seq to the result of the code.
+        eval("\$seq = $seq;");
+      }
+      else {
+        //if $seq is a string, it is just a variable
+        if (!is_array($seq)) {
+          $seq = $GLOBALS[$seq];
+        }
+        //oh, but maybe it's buried in an array, so we have to descend.
+        else {
+          $temp = $GLOBALS;
+          foreach ($seq as $ind) {
+            if (array_key_exists($ind,$temp)) {
+              $temp = $temp[$ind];
+            }
+            else {
+              break;
+            }
+          }
+          $seq = $temp;
+        }
+      }
+      //replace $esc with $seq
+      $row['text_value'] = str_replace($esc,$seq,$row['text_value']);
+    }
+    //if it's html (or, more precisely, if it shouldn't be escaped)
+    //output as is
+    if ($row['is_html']) {
+      return $row['text_value'];
     }
     else {
-      $ret = '';
+      if ($prestyle) {
+        $ret = "<div style='" . white_space_css() . "'>";
+      }
+      else {
+        $ret = '';
+      }
+      $ret .= escape_html($row['text_value']);
+      if ($prestyle) {
+        $ret .= "\n</div>";
+      }
+      return $ret;
     }
-    $ret .= escape_html($row['text_value']);
-    if ($prestyle) {
-      $ret .= "\n</div>";
-    }
-    return $ret;
   }
-}
 
 function set_static_text($text_name,$text_value = null,
                          $is_html = null,$escape_seqs = array()) {
@@ -1335,7 +1321,8 @@ function set_static_text($text_name,$text_value = null,
 
 //utility function, since usually we'll be printing static_text out.
 function print_static_text($text_name,$def_val = null, 
-                           $escape_seqs = array(), $is_html = null,$prestyle = null) {
+  $escape_seqs = array(), $is_html = null,
+  $prestyle = null) {
   print get_static_text($text_name,$def_val,$escape_seqs,$is_html,$prestyle);
 }
 
@@ -1361,7 +1348,7 @@ function get_raw_static_text($text_name,$def_val = null,
 }
 
 //get the escape arguments.  Each escape code has two vals, the description
-//and the 
+//and the code 
 function get_escapes_text($text_name) {
   global $db,$archive;
   $row = $db->GetRow('select `escape_seqs` from ' .
@@ -1399,7 +1386,8 @@ function get_election_attrib($attrib,$for_race=true) {
   global $db,$election_name,$race_name;
   $sqlargs = array($attrib,$election_name);
   if ($attrib == 'race_name') {
-    $row = $db->GetRow("select `race_name` as `attrib_value` from `elections_attribs` " .
+    $row = $db->GetRow("select `race_name` as `attrib_value` "
+      . "from `elections_attribs` " .
                        "where `attrib_name` = 'race_name' and " .
                        "`autoid` = ? and `election_name` = ?",
                        array($for_race,$election_name));
@@ -1473,7 +1461,8 @@ function elections_log($election_name,$subj_name,$attrib,$oldval,$val) {
 function authorized_user($member_name,$type) {
   global $db, $officer_name;
   $attribs = user_privileges($member_name);
-  return in_array($type,$attribs) || (isset($officer_name) && substr($officer_name,3) == $type);
+  return in_array($type,$attribs) || (isset($officer_name) && 
+    substr($officer_name,3) == $type);
 }
 
 //what are all the privileges this user has?
@@ -1936,8 +1925,9 @@ function white_space_css() {
 //function copied from:
 //http://techpatterns.com/downloads/php_browser_detection.php
 function browser_detection( $which_test ) {
-  static $dom_browser, $safe_browser, $browser_user_agent, $os, $browser_name, $s_browser, $ie_version, 
-    $version_number, $os_number, $b_repeat, $moz_version, $moz_version_number, $moz_rv, $moz_rv_full, $moz_release, 
+  static $dom_browser, $safe_browser, $browser_user_agent, $os, $browser_name,
+    $s_browser, $ie_version, $version_number, $os_number, $b_repeat,
+    $moz_version, $moz_version_number, $moz_rv, $moz_rv_full, $moz_release,
     $type, $math_version_number;
   
   if ( !$b_repeat )
@@ -1960,21 +1950,25 @@ function browser_detection( $which_test ) {
       $moz_release = '';
       $b_success = false;// boolean for if browser found in main test
       
-      //make navigator user agent string lower case to make sure all versions get caught
+      //make navigator user agent string lower case to make sure all 
+      //versions get caught
       // isset protects against blank user agent failure
-      $browser_user_agent = ( isset( $_SERVER['HTTP_USER_AGENT'] ) ) ? strtolower( $_SERVER['HTTP_USER_AGENT'] ) : '';
+      $browser_user_agent = ( isset( $_SERVER['HTTP_USER_AGENT'] ) ) ?
+        strtolower( $_SERVER['HTTP_USER_AGENT'] ) : '';
       
       /*
 		pack the browser type array, in this order
-		the order is important, because opera must be tested first, then omniweb [which has safari data in string],
-		same for konqueror, then safari, then gecko, since safari navigator user agent id's with 'gecko' in string.
-		note that $dom_browser is set for all  modern dom browsers, this gives you a default to use.
+    the order is important, because opera must be tested first, then omniweb
+    [which has safari data in string], same for konqueror, then safari, then
+    gecko,since safari navigator user agent id's with 'gecko' in string.
+    note that $dom_browser is set for all  modern dom browsers, this gives you
+    a default to use.
 
-		array[0] = id string for useragent, array[1] is if dom capable, array[2] is working name for browser, 
-		array[3] identifies navigator useragent type
+    array[0] = id string for useragent, array[1] is if dom capable, array[2]
+    is working name for browser, array[3] identifies navigator useragent type
 
-		Note: all browser strings are in lower case to match the strtolower output, this avoids possible detection
-		errors
+    Note: all browser strings are in lower case to match the strtolower
+    output, this avoids possible detection errors
 
 		Note: There are currently 5 navigator user agent types: 
 		bro - modern, css supporting browser.
@@ -1985,16 +1979,22 @@ function browser_detection( $which_test ) {
 		*/
 		// known browsers, list will be updated routinely, check back now and then
       $a_browser_types[] = array( 'opera', true, 'op', 'bro' );
-      $a_browser_types[] = array( 'omniweb', true, 'omni', 'bro' );// mac osx browser, now uses khtml engine:
+      // mac osx browser, now uses khtml engine:
+      $a_browser_types[] = array( 'omniweb', true, 'omni', 'bro' );
       $a_browser_types[] = array( 'msie', true, 'ie', 'bro' );
       $a_browser_types[] = array( 'konqueror', true, 'konq', 'bro' );
       $a_browser_types[] = array( 'safari', true, 'saf', 'bro' );
-      // covers Netscape 6-7, K-Meleon, Most linux versions, uses moz array below
+      // covers Netscape 6-7, K-Meleon, Most linux versions,
+      // uses moz array below
       $a_browser_types[] = array( 'gecko', true, 'moz', 'bro' );
-      $a_browser_types[] = array( 'netpositive', false, 'netp', 'bbro' );// beos browser
-      $a_browser_types[] = array( 'lynx', false, 'lynx', 'bbro' ); // command line browser
-      $a_browser_types[] = array( 'elinks ', false, 'elinks', 'bbro' ); // new version of links
-      $a_browser_types[] = array( 'elinks', false, 'elinks', 'bbro' ); // alternate id for it
+      // beos browser
+      $a_browser_types[] = array( 'netpositive', false, 'netp', 'bbro' );
+      // command line browser
+      $a_browser_types[] = array( 'lynx', false, 'lynx', 'bbro' ); 
+      // new version of links
+      $a_browser_types[] = array( 'elinks ', false, 'elinks', 'bbro' ); 
+      // alternate id for it
+      $a_browser_types[] = array( 'elinks', false, 'elinks', 'bbro' ); 
       $a_browser_types[] = array( 'links ', false, 'links', 'bbro' ); // old name for links
       $a_browser_types[] = array( 'links', false, 'links', 'bbro' ); // alternate id for it
       $a_browser_types[] = array( 'w3m', false, 'w3m', 'bbro' ); // open source browser, more features than lynx/links
@@ -2562,6 +2562,10 @@ function set_userconf($attrib,$val,$page_name = null) {
                              $attrib,$val)));
 }
 
+//some pages take so long to load that Apache (maybe PHP) craps out.  
+//This function sees whether the current script running has taken too 
+//much time.  Note that it must be called manually.  So scripts should 
+//call this when they're looping over large groups of things.
 function check_php_time() {
   global $php_start_time, $max_time_allowed;
   if (!isset($php_start_time)) {
