@@ -112,7 +112,7 @@ while ($row = $res->FetchRow()) {
   if (isset($pmap[$row['member_name']])) {
     $fine_weeks = array_keys($fining_periods);
     $new_fine_weeks = array();
-    for ($kk = 1; $kk <= 5; $kk++) {
+    for ($kk = 1; $kk <= count($fine_weeks); $kk++) {
       $new_week = $pmap[$row['member_name']]["fine_week_$kk"];
       if ($new_week != -1 && $new_week != ($old_week = $fine_weeks[$kk-1]) &&
           $new_week < $week_num) {

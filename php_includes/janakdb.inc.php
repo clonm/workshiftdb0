@@ -65,6 +65,10 @@ else {
   $secured = false;
 }
 
+if (!$house_name) {
+  exit("What house are you trying to access?  Something was wrong with your "
+    . "url.");
+}
 //hopefully, we got here through a php_includes, so we know where we are
 if (isset($php_includes)) {
   //the assumption is that the public_html directory is a sibling of php_includes
