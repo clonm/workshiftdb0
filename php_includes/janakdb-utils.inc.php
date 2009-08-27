@@ -127,7 +127,7 @@ function js_assoc_array($js_var,$arr) {
 //quote string that will be used in a "like" mysql query -- underscore
 //and percent must be quoted.
 function quote_mysqlreg($str) {
-  return addcslashes($str,'_%\\');
+  return addcslashes($str,'_%\\\'');
 }
 
 //quoting function for mysql column/table names.  Called bracket for

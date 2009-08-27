@@ -112,8 +112,9 @@ $fining_percent_fine = get_static('fining_percent_fine',null);
 if (!strlen($fining_percent_fine)) {
   $fining_percent_fine = 100;
 }
+$global_fining_percent_fine = $fining_percent_fine;
 //how much of your hours are zeroed after you're fined?
-$zero_partial = get_static('fining_zero_partial',null);
+$global_zero_partial = $zero_partial = get_static('fining_zero_partial',null);
 
 //legacy if, just in case archive we're looking at doesn't have
 //special_fining
@@ -133,7 +134,7 @@ function mung_whole_row(&$row) {
     $javascript_pre,$col_styles, $weekly_fining, $nonzeroed_total, 
     $backup_max_up_hours, $cash_hours_auto, $res, $cash_maxes,
     $fining_percent_fine,$zero_partial, $special_fining, $max_up_hours_fining,
-    $tot_weeks;
+    $tot_weeks, $global_zero_partial, $global_fining_percent_fine;
   //will contain the actual weeks that fining periods normally take place in
   static $key_weeks = null;
   $cur_fine = 0;
@@ -141,6 +142,8 @@ function mung_whole_row(&$row) {
   //zero everything out
  $row['Total Fines'] = $row['Other Fines'];
   $row['Total'] = 0;
+  $zero_partial = $global_zero_partial;
+  $fining_percent_fine = $global_fining_percent_fine;
   if ($nonzeroed_total) {
     $row['Nonzeroed Total'] = 0;
   }
@@ -201,7 +204,7 @@ function mung_whole_row(&$row) {
     //are we at the end of the semester?  CO-mandated rules.
     if ($ii == $tot_weeks) {
       $fining_percent_fine = 100;
-      $zero_partial = 0;
+      $zero_partial = 100;
     }
     if ($nonzeroed_total) {
       $row['Nonzeroed Total'] += $row["total $ii"];
@@ -292,7 +295,7 @@ function mung_whole_row(&$row) {
           //are we zeroing hours?
           if (($end_fine && $fine_weeks[$ii]['zero_hours']) || 
               ($weekly_fining && $fining_zero_hours)) {
-            //are we zeroing only partially?
+                //are we zeroing only partially?
             if (strlen($zero_partial)) {
               $row['Total'] = -$fin_floor + 
                 ($row['Total']+$fin_floor)*$zero_partial/100;

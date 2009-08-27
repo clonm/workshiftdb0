@@ -199,12 +199,13 @@ $fining_percent_fine = get_static('fining_percent_fine',null);
 if (!strlen($fining_percent_fine)) {
   $fining_percent_fine = 100;
 }
+$global_fining_percent_fine = $fining_percent_fine;
 
 $zero_partial = get_static('fining_zero_partial',null);
 if (!strlen($zero_partial)) {
   $zero_partial = 0;
 }
-
+$global_zero_partial = $zero_partial;
 
 //it's too slow when we call a function for each column, so this
 //does the whole row at once
@@ -214,10 +215,12 @@ function mung_whole_row(&$row) {
     $javascript_pre,$col_styles, $weekly_fining, $nonzeroed_total, 
     $backup_max_up_hours, $cash_hours_auto, $res, $cash_maxes,
     $fining_percent_fine,$zero_partial, $special_fining, $max_up_hours_fining,
-    $tot_weeks,$notes_col;
+    $tot_weeks,$notes_col,$global_fining_percent_fine,$global_zero_partial;
   static $key_weeks = null;
   $cash_hours = 0;
   $row['Total Fines'] = $row['Other Fines'];
+  $zero_partial = $global_zero_partial;
+  $fining_percent_fine = $global_fining_percent_fine;
   $javascript_pre = substr($javascript_pre,0,-9) . "other_fines[" . dbl_quote($row['member_name']) . "] = " . escape_html($row['Other Fines']) .
     ";\n</script>";
   $row['Total'] = 0;
