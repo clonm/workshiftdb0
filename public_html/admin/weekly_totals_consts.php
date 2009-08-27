@@ -291,7 +291,7 @@ fining rate unless you fill it in specially.
 <?php
 #}
 #';
-$res = $db->Execute("select * from `fining_periods` order by `week`");
+$res = $db->Execute("select * from `{$archive}fining_periods` order by `week`");
 $row = $res->FetchRow();
 $rate = $row['fining_rate'];
 $buffer = $row['fining_buffer'];
@@ -393,7 +393,7 @@ foreach ($_REQUEST as $key => $val) {
 }
 $tot_weeks = get_static('tot_weeks');
 for ($ii = 0; $ii <= $tot_weeks; $ii++) {
-  $db->Execute("delete from `fining_periods` where `week` = ?",
+  $db->Execute("delete from `{$archive}fining_periods` where `week` = ?",
                array($ii));
   if (!array_key_exists("fine_$ii",$_REQUEST)) {
     print("Week $ii does not end a fining period<br>");
@@ -405,7 +405,7 @@ for ($ii = 0; $ii <= $tot_weeks; $ii++) {
   if (!$_REQUEST["floor_$ii"]) {
     $_REQUEST["floor_$ii"] = 0;
   }
-  $db->Execute("insert into `fining_periods` values (null,?,?,?,?,?,?)",
+  $db->Execute("insert into `{$archive}fining_periods` values (null,?,?,?,?,?,?)",
                array($ii, $_REQUEST['fining_rate'], $_REQUEST["buffer_$ii"],
                      $_REQUEST["floor_$ii"], $_REQUEST["doublefloor_$ii"],
                      isset($_REQUEST["zero_hours_$ii"])?1:null));

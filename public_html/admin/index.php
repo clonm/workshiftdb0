@@ -61,12 +61,12 @@ preferences due date, etc.<br>
 workshifts</a><br>
 <a href="upload_workshift_doc.php">Upload a workshift policy
 document</a><br>
-<a href="weekly_totals_consts.php">Set buffer, floor, and fining rate for weekly totals</a><br>
 <a href="online_signoff_setup.php">Set up online signoffs, if you want
 your house to use them.</a><br/>
 <?php
 }
 ?>
+<a href="weekly_totals_consts.php<?=$archive?'?archive=' . escape_html($archive):''?>">Set buffer, floor, and fining rate for weekly totals</a><br>
 <ul><li><h4>Assigning workshifts</h4>
 <a href="assign_shifts.php<?=$archive?'?archive=' . escape_html($archive):''?>">with all warnings</a><br>
 <a href="assign_shifts.php<?=$archive?'?archive=' . escape_html($archive) . '&':'?'?>suppress_first">suppressing initial warnings</a><br>
