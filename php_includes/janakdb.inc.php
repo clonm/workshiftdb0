@@ -11,7 +11,7 @@ $html_includes = '/~bsccoo5/cvsworkshift/workshiftdb0/public_html/html_includes'
 //ours.  It is interpreted as a path relative to the php_includes dir.
 $php_utils = 'php_utils';
 
-$admin_email = 'janak@berkeley.edu';
+$admin_email = 'workshift.system@gmail.com';
 
 //these need to be changed if the bug tracking system changes.  They'll also
 //need to be changed in index.php (for the admin), since it doesn't include
