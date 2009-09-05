@@ -1,4 +1,26 @@
 <?php
+require_once('default.admin.inc.php');
+set_include_path(get_include_path() . PATH_SEPARATOR . "/home/bsccoo5/php");
+require('Mail.php');
+include('Mail/mime.php');
+$file = '/home/bsccoo5/payment.sql.gz';
+$crlf = "\n";
+$hdrs = array(
+              'From'    => 'bsccoo5 <webmaster@bsc.coop>',
+              'Subject' => 'Test mime message'
+              );
+
+$mime = new Mail_mime($crlf);
+
+$mime->addAttachment($file, 'application/octet-stream');
+
+//do not ever try to call these lines in reverse order
+$body = $mime->get();
+$hdrs = $mime->headers($hdrs);
+
+$mail =& Mail::factory('mail');
+$mail->send('workshiftadmin@gmail.com', $hdrs, $body);
+exit;
 /*
 if (array_key_exists('logout',$_REQUEST)) {
   setcookie('member_name',null,time()-3600);

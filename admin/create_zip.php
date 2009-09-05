@@ -1,7 +1,7 @@
 <?php
 $php_start_time = array_sum(split(' ',microtime()));
 require_once('default.admin.inc.php');
-$max_email_size = 9000000;
+$max_email_size = 3000000;
 ini_set('zlib.output_compression',false);
 if (!array_key_exists('REQUEST_URI',$_SERVER)) {
   $_REQUEST = array_flip($argv);
@@ -153,24 +153,27 @@ if (!array_key_exists('mail',$_REQUEST)) {
 else {
   $datestring = date('Y-m-d-H-i-s');
   $filename = addslashes($backup_dir) . "/" . $datestring . 
-    '-workshift-backup.zipfile';
+    '-workshift-backup.zip';
   system("zip -j $filename " . addslashes($backup_dir) . "/* 2>&1");
   //negative maybe because wraparound of integers
   if (filesize($filename) > $max_email_size || filesize($filename) < 0) {
-    system("chdir " . addslashes($backup_dir) . 
-           " && split --bytes=$max_email_size $filename $datestring-");
+    chdir($backup_dir);
+    system("cd " . addslashes($backup_dir) . 
+      " && split --bytes=$max_email_size $filename $datestring-part-");
     $ii = 1;
-    foreach (glob("$datestring-*") as $filetozip) {
-      system("mutt -s 'Backup for " . $datestring . " part $ii' -a " . 
-             $filetozip .
-             " workshiftadmin@gmail.com < /dev/null 2>&1");
+    foreach (glob("$datestring-part-*") as $filetozip) {
+      mail_backup($filetozip,$datestring,$ii);
+#      system("mutt -s 'Backup for " . $datestring . " part $ii' -a " .  
+      #      $filetozip .
+            # " workshiftadmin@gmail.com < /dev/null 2>&1");
       $ii++;
     }
   }
   else {
-    system("mutt -s 'Backup for " . $datestring . "' -a " . 
-           $filename .
-           " workshiftadmin@gmail.com < /dev/null 2>&1");
+  print "not oversize";
+  mail_backup($filename,$datestring);
+  #  system("mutt -s 'Backup for " . $datestring . "' -a " .  $filename .
+  #" workshiftadmin@gmail.com < /dev/null 2>&1");
   }
 }
 #*/;
@@ -191,4 +194,27 @@ function db_quote($str) {
   return $db->quote($str);
 }
 
+function mail_backup($filename, $datestring, $ii = 0) {
+  static $init = false;
+  static $crlf = "\n";
+  if (!$init) {
+    set_include_path(get_include_path() . PATH_SEPARATOR . "/home/bsccoo5/php");
+    require_once('Mail.php');
+    require_once('Mail/mime.php');
+    $init = true;
+  }
+  $hdrs = array(
+              'From'    => 'bsccoo5 <webmaster@bsc.coop>',
+              'Subject' => "Backup for $datestring" . ($ii?", part $ii":'')
+              );
+$mime = new Mail_mime($crlf);
+$mime->addAttachment($filename, 'application/octet-stream');
+
+//do not ever try to call these lines in reverse order
+$body = $mime->get();
+$hdrs = $mime->headers($hdrs);
+
+$mail =& Mail::factory('mail');
+$mail->send('workshiftadmin@gmail.com', $hdrs, $body);
+}
 ?>

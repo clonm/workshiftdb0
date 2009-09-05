@@ -1,4 +1,4 @@
 #!/bin/bash
-
-cd /home/usca/domains/usca.org/public_html/workshift/admin/
-/usr/local/bin/php /home/usca/domains/usca.org/public_html/workshift/admin/create_zip.php admin quick mail
+basedir='/home/bsccoo5/public_html/cvsworkshift/workshiftdb0'
+cd $basedir/admin/
+/usr/local/bin/php $basedir/admin/create_zip.php admin optimize quick mail
