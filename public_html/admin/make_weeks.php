@@ -30,7 +30,7 @@ if (!is_numeric($end_week)) {
 }
 #$db->debug = true;
 $db->SetFetchMode(ADODB_FETCH_NUM);
-$res = $db->Execute("show tables like ?",array(quote_mysqlreg('week_') . '%'));
+$res = $db->Execute("show tables like ?",array(quote_mysqlreg($archive . 'week_') . '%'));
 $db->SetFetchMode(ADODB_FETCH_ASSOC);
 if (!isset($_REQUEST['overwrite'])) {
   $week_exists = array();
@@ -74,7 +74,7 @@ for ($ii = $start_week; $ii <= $end_week; $ii++) {
   //the day the week started
   $week_date = date('Y-m-d',mktime(0,0,0,$start_date[1],
                                    $start_date[2]+7*$ii,$start_date[0]));
-  $tbl = "week_$ii";
+  $tbl = $archive . "week_$ii";
   $db->Execute("drop table if exists `$tbl`");
   if (!$db->Execute('CREATE TABLE if not exists ' . bracket($tbl) . ' (' . 
 		    bracket('autoid') . ' INT(11) AUTO_INCREMENT PRIMARY KEY, '
@@ -102,7 +102,7 @@ for ($ii = $start_week; $ii <= $end_week; $ii++) {
                "adddate('$week_date', interval case `day`" .
                join(" ",array_map('case_days_sql',$days,array_keys($days))) .
 " end day) AS `date`, `day`, `workshift`, `member_name`, `hours`, null as `notes`,`shift_id`, " .
-               "`start_time`, `end_time`, 0 as `online_signoff`, null as `verifier` FROM `master_week`");
+               "`start_time`, `end_time`, 0 as `online_signoff`, null as `verifier` FROM `{$archive}master_week`");
   set_mod_date($tbl);
   set_mod_date($tbl . '_zz_create');
   $db->CompleteTrans();
@@ -116,7 +116,8 @@ for ($ii = $start_week; $ii <= $end_week; $ii++) {
   }
 }
 $db->SetFetchMode(ADODB_FETCH_NUM); 
-$check_tables = $db->Execute("SHOW TABLES LIKE ?",array("week\_%"));
+$check_tables = $db->Execute("SHOW TABLES LIKE ?",
+  array(quote_mysqlreg($archive. "week_") . "%"));
 $db->SetFetchMode(ADODB_FETCH_ASSOC); 
 $week_tables = array();
 while ($tbl = $check_tables->FetchRow()) {
@@ -136,7 +137,8 @@ $final_week = $ii-1;
 
 //check to see if weekly_totals_data (which has the owed hours for each
 //person) exists
-if (!$db->Execute('CREATE TABLE if not exists' . bracket('weekly_totals_data') . ' (' .
+if (!$db->Execute('CREATE TABLE if not exists' .
+  bracket($archive . 'weekly_totals_data') . ' (' .
                   bracket('autoid') . 
                   ' INT(11) AUTO_INCREMENT PRIMARY KEY, ' . 
                   bracket('member_name') . ' VARCHAR(50) UNIQUE KEY, ' .
@@ -152,7 +154,7 @@ if ($USE_MYSQL_FEATURES) {
 //new table, but code is shorter this way, although SQL is probably slower
 //how many of the right columns do we have?
 $check_data = $db->Execute('SHOW COLUMNS FROM ' . 
-                           bracket('weekly_totals_data') . ' LIKE ' . 
+                           bracket($archive . 'weekly_totals_data') . ' LIKE ' . 
                            "'owed %'");
 //count how many columns we have
 $ii = 0;
@@ -167,19 +169,19 @@ if (!isset($owed_default)) {
 for (; $ii <= max($final_week,get_static('tot_weeks',18)); $ii++) {
   //they get inserted after the previous one
   if ($ii > 0) {
-    $db->Execute('ALTER TABLE ' . bracket('weekly_totals_data') . ' ADD ' . 
+    $db->Execute('ALTER TABLE ' . bracket($archive . 'weekly_totals_data') . ' ADD ' . 
                  bracket("owed $ii") . ' FLOAT(4) NOT NULL DEFAULT ? AFTER ' .
                  bracket('owed ' . ($ii-1)),array($owed_default));
   }
   //unless it's the first column, in which case they get inserted
   //after the name
   else {
-    $db->Execute('ALTER TABLE ' . bracket('weekly_totals_data') . ' ADD ' . 
+    $db->Execute('ALTER TABLE ' . bracket($archive . 'weekly_totals_data') . ' ADD ' . 
 		 bracket("owed 0") . ' FLOAT(4) NOT NULL DEFAULT ? AFTER ' . 
                  bracket('member_name'),array($owed_default));
   }
   //insert default hours owed
-  $db->Execute('UPDATE ' . bracket('weekly_totals_data') . ' SET ' . 
+  $db->Execute('UPDATE ' . bracket($archive . 'weekly_totals_data') . ' SET ' . 
                bracket("owed $ii") . ' = ?',array($owed_default));
 }
 
@@ -187,7 +189,7 @@ if (!isset($suppress_output)) {
   if ($start_week == $end_week) {
   ?>
 <script type='text/javascript'>
-document.location.href='week.php?week=<?=$start_week?>'
+    document.location.href='week.php?week=<?=$start_week?><?=$archive?'&archive=' . escape_html($archive):''?>'
 </script>
 <?php
    }

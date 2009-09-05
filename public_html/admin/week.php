@@ -46,7 +46,9 @@ $make_weeks_form = "<form action='make_weeks.php' method='GET'  onsubmit='" .
 "return confirm(\"Are you sure?\")}'>" .
     "<input type=hidden name='start_week' value=$week_num>" .
     "<input type=hidden name='end_week' value=$week_num>" .
-    "<input type=hidden name='overwrite' value='1'>";
+    "<input type=hidden name='overwrite' value='1'>" .
+    "<input type=hidden name='archive' value='" . escape_html($archive) .
+    "'>";
     if (!table_exists("week_$week_num")) {
 ?>
 <html><head><title>Week <?=$week_num?> does not exist yet</title></head>
