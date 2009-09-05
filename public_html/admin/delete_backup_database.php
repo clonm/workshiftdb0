@@ -1,5 +1,10 @@
+<?php
+$running_shell = !array_key_exists('REQUEST_URI',$_SERVER);
+if (!$running_shell) {
+?>
 <html><head><title>Delete backed-up database</title></head><body>
 <?php
+}
 //interface to delete backup database(s).  Main thing here is that the
 //script looks through backups and figures out which ones are
 //redundant, and/or corrupt.  Then user can press a button to select
@@ -15,8 +20,8 @@ require_once('default.inc.php');
 if (!isset($php_start_time)) {
   $php_start_time = array_sum(split(' ',microtime()));
 }
-$oldfetch = $db->fetchMode;
 //use numbered columns because columns have database name in them
+$oldfetch = $db->fetchMode;
 $db->SetFetchMode(ADODB_FETCH_NUM); 
 if (!isset($dbnames)) {
   $dbnames = get_backup_dbs();
@@ -24,7 +29,8 @@ if (!isset($dbnames)) {
 if (!isset($start_db_index) && isset($_REQUEST['start_db_index'])) {
   $start_db_index = $_REQUEST['start_db_index'];
 }
-if (!array_key_exists('backup_name',$_REQUEST)) {
+
+if (!$running_shell && !array_key_exists('backup_name',$_REQUEST)) {
   ?>
  If you are running low on space, or if you want to clean up very old backups,
 you can delete old backup sets here.  It's best just to delete the
@@ -46,8 +52,8 @@ title='double-click to view archive in a new window'>
 <input type=submit value='Delete backup database(s)'></form>
 <hr/>
 <?php
-   $delete_dbs = get_dbs_to_delete();
-   if ($delete_dbs[2] != count($dbnames)) {
+ $delete_dbs = get_dbs_to_delete();
+ if ($delete_dbs[2] != count($dbnames)) {
 ?>
 
 Due to the large number of backups, the buttons below will only work on the
@@ -63,7 +69,7 @@ size=3>
 </form>
 <?php
 }
-   if (count($delete_dbs[0])) {
+ if (count($delete_dbs[0])) {
 ?>
 <input id='button_redund' type=submit value='Select all <?=count($delete_dbs[0])?> redundant backups' 
 onclick='select_redundant()'><br/>
@@ -91,111 +97,119 @@ var button_redund = document.getElementById('button_redund');
 var button_corrupt = document.getElementById('button_corrupt');
 var redund_flag = false;
 var corrupt_flag = false;
- sel_elt.ondblclick = show_backup;
+sel_elt.ondblclick = show_backup;
 <?php
- //get redundant backups
+//get redundant backups
 $redunds = array_flip($delete_dbs[0]);
 //we're about to output a javascript array, and the javascript code
 //will test for value's.  Everything will be nonzero except for the
 //first one, but why take chances.
 foreach ($redunds as $key => $junk) {
-  $redunds[$key] = 1;
+$redunds[$key] = 1;
 }
 $corrupts = array_flip($delete_dbs[1]);
 foreach ($corrupts as $key => $junk) {
-  $corrupts[$key] = 1;
+$corrupts[$key] = 1;
 }
 
 js_assoc_array('redunds',$redunds);
 js_assoc_array('corrupts',$corrupts);
 ?>
 function select_redundant() {
-  redund_flag = !redund_flag;
-  for (var ii=sel_elt.options.length-1;ii>0;ii--) {
-    if (redunds[sel_elt.options[ii].value]) {
-      sel_elt.options[ii].selected = redund_flag;
-    }
+redund_flag = !redund_flag;
+for (var ii=sel_elt.options.length-1;ii>0;ii--) {
+  if (redunds[sel_elt.options[ii].value]) {
+    sel_elt.options[ii].selected = redund_flag;
   }
-  button_redund.value = (redund_flag?'Uns':'S') + 'elect all ' +
+}
+button_redund.value = (redund_flag?'Uns':'S') + 'elect all ' +
 '<?=count($delete_dbs[0])?> redundant backups';
 }
 
 function select_corrupt() {
-  corrupt_flag = !corrupt_flag;
-  for (var ii=sel_elt.options.length-1;ii>0;ii--) {
-    if (corrupts[sel_elt.options[ii].value]) {
-      sel_elt.options[ii].selected = corrupt_flag;
-    }
+corrupt_flag = !corrupt_flag;
+for (var ii=sel_elt.options.length-1;ii>0;ii--) {
+  if (corrupts[sel_elt.options[ii].value]) {
+    sel_elt.options[ii].selected = corrupt_flag;
   }
-  button_corrupt.value = (corrupt_flag?'Uns':'S') + 'elect all ' +
+}
+button_corrupt.value = (corrupt_flag?'Uns':'S') + 'elect all ' +
 '<?=count($delete_dbs[1])?> corrupt backups';
 }
 
 //function to display backup (via index.php) when clicked.
- function show_backup(e) {
-   if (!e) e = window.event;
-   if (!e) return true;
-  var code;
-  var targ;
-  if (e.target) targ = e.target;
-  else if (e.srcElement) targ = e.srcElement;
-  var show = window.open('index.php?archive=' + targ.value,'view_backup'); 
-  show.focus();
- }
+function show_backup(e) {
+ if (!e) e = window.event;
+ if (!e) return true;
+var code;
+var targ;
+if (e.target) targ = e.target;
+else if (e.srcElement) targ = e.srcElement;
+var show = window.open('index.php?archive=' + targ.value,'view_backup'); 
+show.focus();
+}
 </script>
 </html>
 <?php 
-    exit;
+  exit;
 }
 
 //ok, time to delete
 
 //here's what we're deleting
+$backup_arr = null;
+if (array_key_exists('backup_name',$_REQUEST)) {
 $backup_arr = $_REQUEST['backup_name'];
+}
 //always array, unless we're being included from another file, in
 //which case the other file wants us to delete everything redundant
 //that we can.
 if (!is_array($backup_arr)) {
-  $delete_dbs = get_dbs_to_delete();
-  $backup_arr = array_merge($delete_dbs[0],$delete_dbs[1]);
+$delete_dbs = get_dbs_to_delete();
+$backup_arr = array_merge($delete_dbs[0],$delete_dbs[1]);
 }
 
 $num_deleted = 0;
 //pretty standard deleting.
 foreach ($backup_arr as $backup) {
-  if (!check_php_time()) {
+if (!check_php_time()) {
 ?>
 <h2>Ran out of time deleting backups.</h2>
 <form action='<?=this_url()?>' method='post'>
 <?=print_gets_for_form() ?>
 <?php
-      for ($ii = $num_deleted; $ii < count($backup_arr); $ii++) {
+    for ($ii = $num_deleted; $ii < count($backup_arr); $ii++) {
 ?>
 <input type='hidden' name='backup_name[]'
 value='<?=escape_html($backup_arr[$ii])?>'/>
 
 <?php
-      }
+    }
 ?>
-      <input type='submit' value='Delete some more of the <?=count($backup_arr)-$num_deleted?> backups'>
+    <input type='submit' value='Delete some more of the <?=count($backup_arr)-$num_deleted?> backups'>
 </form>
 <?php
-    exit;
-  }
-  $num_deleted++;
-  $ret = true;
+  exit;
+}
+$num_deleted++;
+$ret = true;
+if ($running_shell) {
+  print $house_name . " " . $backup . "\n";
+}
+else {
   print "<h4>Deleting " . escape_html($backup) . "</h4>\n";
-  //quote whatever funky name they gave us to avoid mysql regular expressions
-  $res = $db->Execute("show tables like ?",
-                      array(quote_mysqlreg("$archive_pre$backup") . '_%'));
-  if (is_empty($res)) {
-    print("<h4>Backup " . escape_html($backup) . " does not exist.</h4>");
-    continue;
-  }
-  //we want to delete as much as possible, not dying ever
-  janak_fatal_error_reporting(0);
-  //did every single drop table succeed?
-  while ($row = $res->FetchRow()) {
+}
+//quote whatever funky name they gave us to avoid mysql regular expressions
+$res = $db->Execute("show tables like ?",
+                    array(quote_mysqlreg("$archive_pre$backup") . '_%'));
+if (is_empty($res)) {
+  print("<h4>Backup " . escape_html($backup) . " does not exist.</h4>");
+  continue;
+}
+//we want to delete as much as possible, not dying ever
+janak_fatal_error_reporting(0);
+//did every single drop table succeed?
+while ($row = $res->FetchRow()) {
     //delete house list last, so it will still show up in list of things to
     //delete if this fails
     if ($row[0] === "$archive_pre{$backup}_house_list") {
@@ -205,18 +219,22 @@ value='<?=escape_html($backup_arr[$ii])?>'/>
     $ret &= $rs->EOF;
   }
   if ($ret) {
-    $rs = $db->Execute("drop table " . 
-             bracket("$archive_pre{$backup}_house_list"));
+    $rs = $db->Execute("drop table " .  
+          bracket("$archive_pre{$backup}_house_list"));
     $ret &= $rs->EOF;
   }
   if ($ret) {
-    print "<h4>Done with " . escape_html($backup) . "</h4>\n";
+    if (!$running_shell) {
+      print "<h4>Done with " . escape_html($backup) . "</h4>\n";
+    }
   }
   else {
     janak_error("<h4>There was an error deleting the backup</h4>\n");
   }
 }
-echo "<h3>All done!\n</h3>";
+if (!$running_shell) {
+  echo "<h3>All done!\n</h3>";
+}
 
 
 //workhorse -- finds dbs that shouldn't be useful anymore
@@ -421,5 +439,9 @@ function comp_backup_dbs($arr1,$arr2) {
   }
   return $raw_comp1-$raw_comp2;
 }
+if (!$running_shell) {
 ?>
 </body></html>
+<?php
+}
+?>
