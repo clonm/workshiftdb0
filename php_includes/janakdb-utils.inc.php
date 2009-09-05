@@ -845,6 +845,10 @@ function user_timestamp($sec,$min,$hr,$day,$mo,$yr) {
 
 //Puts a help link at top of each admin page, when called
 function print_help($section=null,$span=false) {
+  //no printing if running from shell
+  if (!array_key_exists('REQUEST_URI',$_SERVER)) {
+    return;
+  }
   global $real_username,$bug_report_url,$feature_request_url,$project_url,
     $body_insert;
   static $done = false;

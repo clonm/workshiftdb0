@@ -63,6 +63,7 @@ else {
   $baseurl = '';
   //don't worry about passwords on the command line
   $secured = false;
+  $require_user = false;
 }
 
 if (!$house_name) {
@@ -219,7 +220,9 @@ if ($house_name !== 'admin') {
   //So we don't get to print our nice <hr/>.  We'll live.  The output
   //buffering might also not end until the script ends.
   require_user();
-  print "<hr/>";
+  if (!$running_shell) {
+    print "<hr/>";
+  }
   if (isset($body_insert)) {
     $body_insert .= ob_get_clean();
   }
