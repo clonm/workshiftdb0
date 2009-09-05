@@ -15,7 +15,6 @@ $dummy_string = 'XXXXX';
 $archive_pre = 'zz_archive_';
 //the kind of officer logins that there are
 $priv_types = array('workshift','house','president');
-
 //used to safely quote strings for javascript statements like
 // var aa = start_tag dbl_quote("nasty\nstring with </script> in it") end_tag;
 //frontslash and the angle brackets are escaped so we won't

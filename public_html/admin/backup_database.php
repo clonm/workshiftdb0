@@ -113,6 +113,10 @@ echo "backup name " . escape_html($backup_ext) . "<p>";
     if (!$recover && substr($tbl,0,strlen($archive_pre)) === $archive_pre) {
       continue;
     }
+    //don't backup GLOBAL tables
+    if (substr($tbl,0,strlen("GLOBAL")) === "GLOBAL") {
+      continue;
+    }
     //we're going to need the bracketed table over and over
     $btbl = bracket($tbl);
     if (!$recover) {

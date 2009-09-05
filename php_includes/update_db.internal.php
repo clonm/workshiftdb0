@@ -148,6 +148,7 @@ function make_quoting_mysqlt($irrelevant) {
 if (!isset($body_insert)) {
   $body_insert = '';
 }
+
 //this include comes here, after we've defined the above function, so that our
 //extended class will be used instead of the default
 require_once('janakdb.inc.php');
@@ -160,7 +161,6 @@ $table_name = $_REQUEST['table_name'];
 if (!access_table($table_name)) {
   exit("You cannot update table $table_name");
 }
- 
 $col_names = $_REQUEST['col_names'];
 //some problems with unset variables
 $data = array();
@@ -191,6 +191,9 @@ get_real_table_columns();
 if (!$_REQUEST['js_flag']) {
   echo "<h3>What follows is the output from the sql statements.  ";
   echo "There should be no errors, only sql statements.</h3><p>\n";
+  //this locking code has never been tested
+  $db->Execute("lock tables `$table_name` write, " .
+    "`{$archive}modified_dates` write" . $archive_lock_tables); 
   set_mod_date($table_name);
   //don't die on anything, because as much as we can should work
   janak_fatal_error_reporting(0);
@@ -229,10 +232,16 @@ if (!$_REQUEST['js_flag']) {
     }
   }
   echo "Updated $table_name";
+  //set mod date again for more accuracy
+  set_mod_date($table_name);
+  //this unlocking code was never tested
+  $db->Execute("unlock tables");
   exit;
 }
 
 $db->StartTrans();
+$db->Execute("lock tables `$table_name` write, " .
+    "`{$archive}modified_dates` write" . $archive_lock_tables); 
 //ok, we've been called by javascript.  Let's see what cells it's telling us
 //have been changed.  See table_edit.js for details on what was passed here
 $changed_cells = array();
@@ -338,6 +347,7 @@ if (count($del_array)) {
     print_r($del_array);
   }
 }
+$db->Execute("unlock tables");
 set_mod_date($table_name);
 $db->CompleteTrans();
 ?>

@@ -786,7 +786,7 @@ function submit_data () {
   var ii;
   var jj;
   //tell update_db we're using javascript, so it can be smart about sql
-  data += "js_flag=1&";
+  data += "js_flag=1&archive=" + encodeURIComponent(archive) + "&";
   if (ch_array_copy.length) {
     //each changed row is a separate array, so there are lots of 
     //changed_cells_ii arrays passed through

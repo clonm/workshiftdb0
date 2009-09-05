@@ -571,6 +571,7 @@ if (!$read_only) {
 //in all cases, but it's not worth disentangling them.
 ?></form>
 <script type="text/javascript">
+var archive = '<?=$archive?>';
 //the main table body
 var tbody_elt = document.getElementById("data_rows");
 var rows_array = tbody_elt.rows;

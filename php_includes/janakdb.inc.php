@@ -167,14 +167,18 @@ $real_username = get_real_username();
 //many scripts can be invoked with an archive argument, which will make them
 //access the backup database, instead of the current one.
 if (!isset($archive)) {
-  if (isset($_REQUEST['archive'])) {
+  if (isset($_REQUEST['archive']) && $_REQUEST['archive']) {
     $archive = $_REQUEST['archive'];
     if (substr($archive,0,strlen($archive_pre)) !== $archive_pre) {
       $archive = $archive_pre . $archive . '_';
     }
+  //the tables that need locking for archive updating -- see
+  //public_html/admin/delete_backup_database.php
+  $archive_lock_tables = ", `GLOBAL_archive_data` write";
   }
   else {
     $archive = '';
+    $archive_lock_tables = '';
   }
 }
 
