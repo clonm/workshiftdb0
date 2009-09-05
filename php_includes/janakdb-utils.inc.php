@@ -2567,6 +2567,10 @@ function set_userconf($attrib,$val,$page_name = null) {
 //much time.  Note that it must be called manually.  So scripts should 
 //call this when they're looping over large groups of things.
 function check_php_time() {
+  //no time limit if running from shell
+  if (!array_key_exists('REQUEST_URI',$_SERVER)) {
+    return true;
+  }
   global $php_start_time, $max_time_allowed;
   if (!isset($php_start_time)) {
     $php_start_time = array_sum(split(' ',microtime()));
