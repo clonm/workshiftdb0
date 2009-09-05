@@ -20,9 +20,6 @@ require_once('default.inc.php');
 if (!isset($php_start_time)) {
   $php_start_time = array_sum(split(' ',microtime()));
 }
-//use numbered columns because columns have database name in them
-$oldfetch = $db->fetchMode;
-$db->SetFetchMode(ADODB_FETCH_NUM); 
 if (!isset($dbnames)) {
   $dbnames = get_backup_dbs();
 }  
@@ -199,6 +196,11 @@ if ($running_shell) {
 else {
   print "<h4>Deleting " . escape_html($backup) . "</h4>\n";
 }
+
+//use numbered columns because columns have database name in them
+$oldfetch = $db->fetchMode;
+$db->SetFetchMode(ADODB_FETCH_NUM); 
+
 //quote whatever funky name they gave us to avoid mysql regular expressions
 $res = $db->Execute("show tables like ?",
                     array(quote_mysqlreg("$archive_pre$backup") . '_%'));
@@ -206,6 +208,7 @@ if (is_empty($res)) {
   print("<h4>Backup " . escape_html($backup) . " does not exist.</h4>");
   continue;
 }
+$db->SetFetchMode($oldfetch);
 //we want to delete as much as possible, not dying ever
 janak_fatal_error_reporting(0);
 //did every single drop table succeed?
