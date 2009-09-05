@@ -5,7 +5,10 @@ $max_email_size = 3000000;
 ini_set('zlib.output_compression',false);
 if (!array_key_exists('REQUEST_URI',$_SERVER)) {
   $_REQUEST = array_flip($argv);
-  $_REQUEST['houses'] = $houses;
+  $_REQUEST['houses'] = getopt('h::');
+  if (!isset($_REQUEST['houses'])) {
+    $_REQUEST['houses'] = $houses;
+  }
   $command_line = true;
 }
 else {
