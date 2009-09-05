@@ -67,6 +67,8 @@ your house to use them.</a><br/>
 }
 ?>
 <a href="weekly_totals_consts.php<?=$archive?'?archive=' . escape_html($archive):''?>">Set buffer, floor, and fining rate for weekly totals</a><br>
+<?php if (!$archive) {
+?>
 <ul><li><h4>Assigning workshifts</h4>
 <a href="assign_shifts.php<?=$archive?'?archive=' . escape_html($archive):''?>">with all warnings</a><br>
 <a href="assign_shifts.php<?=$archive?'?archive=' . escape_html($archive) . '&':'?'?>suppress_first">suppressing initial warnings</a><br>
@@ -77,6 +79,9 @@ suppressing initial warnings</a><br>
 <a href="master_shifts.php<?=$archive?'?archive=' . escape_html($archive) . '&':'?'?>suppress_all">without sidebar of names,
 with no warnings</a><br>
 </ul>
+<?php //end of archive if
+}
+?>
 <a href="show_prefs.php<?=$archive?'?archive=' . escape_html($archive):''?>">View the preference form of a member</a><br>
 <a href="../public_utils/master_shifts_print.php<?=$archive?'?archive=' . escape_html($archive):''?>">Print out master
 table of workshifts (you may have to change Page Setup to print
