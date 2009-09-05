@@ -53,6 +53,7 @@ if (array_key_exists('REQUEST_URI',$_SERVER)) {
   //where administrative php scripts are
   $secured = ($url_components[$house_name_component+1] === 'admin');
   $baseurl = join('/',array_slice($url_components,0,$house_name_component+1));
+  $running_shell = false;
 }
 else {
   //usually, the compression is set by apache -- not on the command line
@@ -64,6 +65,7 @@ else {
   //don't worry about passwords on the command line
   $secured = false;
   $require_user = false;
+  $running_shell = true;
 }
 
 if (!$house_name) {
