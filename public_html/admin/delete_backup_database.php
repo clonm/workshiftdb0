@@ -245,6 +245,10 @@ function get_dbs_to_delete() {
   global $db,
     $archive,$dummy_string,$days,$archive_pre,$dbnames,$start_db_index,
     $max_time_allowed, $php_start_time;
+  //use numbered columns because columns have database name in them
+  $oldfetch = $db->fetchMode;
+  $db->SetFetchMode(ADODB_FETCH_NUM); 
+
   if (!isset($start_db_index)) {
     $start_db_index = 0;
   }
@@ -296,7 +300,7 @@ function get_dbs_to_delete() {
     //the archive was set above, so this is the archive's modified date
     if (table_exists('modified_dates')) {
       $mod_row = $db->_Execute("select unix_timestamp(max(`mod_date`)) " .
-                             "from " . bracket($archive . 'modified_dates'));
+        "from " . bracket($archive . 'modified_dates'));
       $db_props['mod_date'] = $mod_row->fields[0];
     }
     else {
@@ -396,6 +400,9 @@ function get_dbs_to_delete() {
       }
     }
   }
+$db->SetFetchMode($oldfetch); 
+
+
   return array($to_delete,$corrupt,$num_done);
 }
 
