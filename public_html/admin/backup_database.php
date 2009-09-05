@@ -95,7 +95,7 @@ echo "backup name " . escape_html($backup_ext) . "<p>";
 //this array has all salient information
 $db_props = array();
 $db_props['semester_start'] = get_static('semester_start');
-  $db->SetFetchMode(ADODB_FETCH_NUM);
+  $oldfetch = $db->SetFetchMode(ADODB_FETCH_NUM);
 $mod_row = $db->_Execute("select max(`mod_date`) " .
   "from " . bracket('modified_dates'));
 $db_props['mod_date'] = $mod_row->fields[0];
@@ -128,8 +128,6 @@ $db->Execute("insert into `GLOBAL_archive_data` " .
   $db->debug = true;
   //we're getting the table names, but now there is only one column, so we can
   //use numbers to index into it
-  $oldfetch = $db->fetchMode;
-  $db->SetFetchMode(ADODB_FETCH_NUM);
 //show all tables (or, if recovering, show all tables in backup)
   $tables = $db->Execute("show tables like ?",
                          array(($recover?
