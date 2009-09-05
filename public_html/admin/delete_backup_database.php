@@ -223,7 +223,9 @@ while ($row = $res->FetchRow()) {
   }
   if ($ret) {
     $rs = $db->Execute("drop table " .  
-          bracket("$archive_pre{$backup}_house_list"));
+      bracket("$archive_pre{$backup}_house_list"));
+    $db->Execute("delete from `GLOBAL_archive_data` where `archive` = ?",
+      array($backup));
     $ret &= $rs->EOF;
   }
   if ($ret) {
@@ -239,109 +241,26 @@ if (!$running_shell) {
   echo "<h3>All done!\n</h3>";
 }
 
-
 //workhorse -- finds dbs that shouldn't be useful anymore
 function get_dbs_to_delete() {
-  global $db,
-    $archive,$dummy_string,$days,$archive_pre,$dbnames,$start_db_index,
-    $max_time_allowed, $php_start_time;
-  //use numbered columns because columns have database name in them
-  $oldfetch = $db->fetchMode;
-  $db->SetFetchMode(ADODB_FETCH_NUM); 
-
-  if (!isset($start_db_index)) {
-    $start_db_index = 0;
-  }
+  global $db,$sem_start;
   $corrupt = array();
-  //get all archives
-  //go through and get info on each backup
-  //don't want to delete things from current semester
-  $sem_start = get_static('semester_start');
   $num_done = 0;
-  foreach (array_slice($dbnames,$start_db_index) as $backup) {
-    //don't keep on going if we've run out of time
-    if (!check_php_time()) {
-      break;
-    }
+  $archive_res = $db->Execute("select `archive`, " .
+    "`semester_start` as `semester`, " .
+    "unix_timestamp(`mod_date`) as `mod_date`,`cur_week` as `week`, " .
+    "`num_wanted` as `wanted`, " .
+    "`num_assigned` as `master`, unix_timestamp(`creation`) as `time`, " .
+    "`autobackup` from `GLOBAL_archive_data`");
+  while ($row = $archive_res->FetchRow()) {
     $num_done++;
-    //the fact that we're setting the $archive variable means that all
-    //$archive-dependent functions will now be accessing the archive,
-    //not the current db
-    $archive = $archive_pre . $backup . '_';
-    $matches = array();
-    //setting this makes all functions think we're in this archived db
-    //this array has all salient information
-    $db_props = array();
-    $db_props['archive'] = $archive;
-    if (!table_exists('static_data')) {
-      $corrupt[] = substr($db_props['archive'],strlen($archive_pre),-1);
-      continue;
+    if (!isset($backups)) {
+      $backups = array();
     }
-    $db_props['semester'] = get_static('semester_start');
-    if ($db_props['semester'] == $sem_start) {
-      continue;
+    if (!isset($backups[$row['semester']])) {
+      $backups[$row['semester']] = array();
     }
-    //did the user not name this him/herself (conforms to autoname scheme)?
-    if ($db_props['autobackup'] = preg_match('/^' . $archive_pre . '([0-9]{4,4})_' .
-                                             '([0-9]{2,2})_([0-9]{2,2})_' .
-                                             '([0-9]{2,2})_([0-9]{2,2})_' .
-                                             '([0-9]{2,2})_$/',
-                                             $archive,$matches)) {
-      //here's the timestamp
-      //9/13/08 -- Janak increased indices of $matches, because
-      //apparently it was always wrong, and $matches[0] always contains
-      //the full string.
-      $db_props['time'] = mktime($matches[4],$matches[5],$matches[6],
-                                 $matches[2],$matches[3],$matches[1]);
-    }
-    else {
-      $db_props['time'] = null;
-    }
-    //the archive was set above, so this is the archive's modified date
-    if (table_exists('modified_dates')) {
-      $mod_row = $db->_Execute("select unix_timestamp(max(`mod_date`)) " .
-        "from " . bracket($archive . 'modified_dates'));
-      $db_props['mod_date'] = $mod_row->fields[0];
-    }
-    else {
-      $db_props['mod_date'] = null;
-    }
-    if (table_exists('wanted_shifts')) {
-      $wanted_row = $db->_Execute("select count(*) from " .
-                                bracket($archive . 'wanted_shifts'));
-      $db_props['wanted'] = $wanted_row->fields[0];
-    }
-    else {
-      $db_props['wanted'] = -1;
-    }
-    if (table_exists('master_shifts')) {
-      $db_props['master'] = 0;
-      foreach ($days as $day) {
-        $master_row = $db->GetRow("select count(*) from " .
-                                  bracket($archive . 'master_shifts') .
-                                  " where `$day` is not null and `$day` != ?",
-                                  array($dummy_string));
-        $db_props['master'] += $master_row[0];
-      }
-    }
-    else {
-      $db_props['master'] = null;
-    }
-    $db_props['week'] = get_cur_week();
-    if (!strlen($db_props['semester']) || !strlen($db_props['mod_date']) ||
-        !strlen($db_props['master'])) {
-      $corrupt[] = substr($db_props['archive'],strlen($archive_pre),-1);
-      continue;
-    }
-    else {
-      if (!isset($backups)) {
-        $backups = array();
-      }
-      if (!isset($backups[$db_props['semester']])) {
-        $backups[$db_props['semester']] = array();
-      }
-      $backups[$db_props['semester']][] = $db_props;
-    }
+    $backups[$row['semester']][] = $row;
   }
   if (!isset($backups)) {
     return array(array(),$corrupt, $num_done);
@@ -393,16 +312,13 @@ function get_dbs_to_delete() {
 /*         var_dump(comp_backup_dbs($backupsems[$ii],$backupsems[$jj])); */
         //is this backup less than later one?
         if (comp_backup_dbs($backupsems[$ii],$backupsems[$jj]) < 0) {
-          $to_delete[] = substr($backupsems[$ii]['archive'],strlen($archive_pre),-1);
+          $to_delete[] = $backupsems[$ii]['archive'];
           $curct--;
           break;
         }
       }
     }
   }
-$db->SetFetchMode($oldfetch); 
-
-
   return array($to_delete,$corrupt,$num_done);
 }
 

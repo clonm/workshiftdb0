@@ -11,7 +11,7 @@ $days = array('Monday','Tuesday','Wednesday',
               'Thursday','Friday','Saturday','Sunday','Weeklong');
 //name for empty shifts
 $dummy_string = 'XXXXX';
-//all backups are prefixed with this string
+//all backups are prefixed with this string.  See transform_archive below too
 $archive_pre = 'zz_archive_';
 //the kind of officer logins that there are
 $priv_types = array('workshift','house','president');
@@ -23,6 +23,11 @@ $priv_types = array('workshift','house','president');
 //obvious reasons.
 function dbl_quote($str) {
   return '"' . addcslashes($str,"/<>\n\\\"") . '"';
+}
+
+function transform_archive($archive) {
+  $archive_pre = 'zz_archive_';
+  return substr($archive,strlen($archive_pre),-1);
 }
 
 //escapes any string so we can put it in a web page safely (though escapes
@@ -722,19 +727,12 @@ function get_houselist() {
 //get a list of all the backups, without the backup prefix, for
 //deletion, recovery, etc.
 function get_backup_dbs() {
-  global $db,$archive_pre;
-  //"show tables like " gives awful column names, so we go numeric
-  $oldfetch = $db->fetchMode;
-  $db->SetFetchMode(ADODB_FETCH_NUM);
-  //every backup should have a house list
-  $res = $db->Execute("show tables like ?",array('%\_house\_list'));
-  //get the names without the archive prefix or the house_list
-  $archive_pre_length = strlen($archive_pre);
-  $house_list_length = -1*strlen('_house_list');
+  global $db;
+  $oldfetch = $db->SetFetchMode(ADODB_FETCH_ASSOC);
+  $res = $db->Execute("SELECT `archive` from `GLOBAL_archive_data`");
   $dbnames = array();
-  while ($row = $res->FetchRow()) { 
-    $dbnames[] = substr($row[0],$archive_pre_length, 
-                        $house_list_length); 
+  while ($row = $res->FetchRow()) {
+    $dbnames[] = $row['archive'];
   }
   $db->SetFetchMode($oldfetch);
   return $dbnames;
@@ -1186,6 +1184,11 @@ function get_mod_date($tbl,$tell_missing = true) {
 
 function set_mod_date($tbl,$timestamp = null) {
   global $db,$archive;
+  $temp = $archive;
+  //strip prefix if it's there.  Mainly for update-db
+  if (substr($tbl,0,strlen($archive)) === $archive) {
+    $tbl = substr($tbl,strlen($archive));
+  }
   if ($timestamp === null) {
     $db->Execute("replace into " .
                  bracket("{$archive}modified_dates") .
@@ -1200,6 +1203,17 @@ function set_mod_date($tbl,$timestamp = null) {
                  bracket("{$archive}modified_dates") .
                  " values (null,?,?)",
                  array($tbl,$timestamp));
+  }
+  //deal with GLOBAL_archive_data
+  if ($archive) {
+    $oldfetch = $db->SetFetchMode(ADODB_FETCH_NUM);
+    $mod_date = $db->_Execute("select max(mod_date) from " .
+      "`{$archive}modified_dates`");
+    $db->Execute("update `GLOBAL_archive_data` set `mod_date` = ?, " .
+      "`cur_week` = ? where `archive` = ?",
+      array($mod_date->fields[0],get_cur_week(),
+      transform_archive($archive)));
+    $db->SetFetchMode($oldfetch);
   }
 }
 

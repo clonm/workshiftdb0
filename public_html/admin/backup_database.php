@@ -89,6 +89,37 @@ if (preg_match('/\/|\\|:|\*|\?|"|<|>|\|/',$backup_ext)) {
 }
 janak_fatal_error_reporting(E_ALL);
 echo "backup name " . escape_html($backup_ext) . "<p>";
+
+//put this backup's information into the archive_data table, so it can
+//be seen.
+//this array has all salient information
+$db_props = array();
+$db_props['semester_start'] = get_static('semester_start');
+  $db->SetFetchMode(ADODB_FETCH_NUM);
+$mod_row = $db->_Execute("select max(`mod_date`) " .
+  "from " . bracket('modified_dates'));
+$db_props['mod_date'] = $mod_row->fields[0];
+$db_props['cur_week'] = get_cur_week();
+$wanted_row = $db->_Execute("select count(*) from " .
+  bracket('wanted_shifts'));
+$db_props['num_wanted'] = $wanted_row->fields[0];
+$db_props['num_assigned'] = 0;
+foreach ($days as $day) {
+  $master_row = $db->GetRow("select count(*) from " .
+    bracket($archive . 'master_shifts') .
+    " where `$day` is not null and `$day` != ?",
+    array($dummy_string));
+  $db_props['num_assigned'] += $master_row[0];
+}
+//did the user not name this him/herself
+$db_props['autobackup'] = !$_REQUEST['backup_ext'];
+$db->Execute("insert into `GLOBAL_archive_data` " .
+  "(`archive`,`semester_start`,`mod_date`,`cur_week`,`num_wanted`, " .
+  "`num_assigned`,`autobackup`,`creation`) VALUES (?,?,?,?,?,?,?,NOW())",
+    array($backup_ext,$db_props['semester_start'],
+    $db_props['mod_date'],$db_props['cur_week'],$db_props['num_wanted'],
+    $db_props['num_assigned'],$db_props['autobackup']));
+    
 //tell user what's going on, in a hidden div, so admin can see if necessary
   echo "<div style='display: none' id=" .
   ($recover?'recover':'backup') . "_messages>";
