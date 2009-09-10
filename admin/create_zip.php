@@ -6,7 +6,8 @@ ini_set('zlib.output_compression',false);
 if (!array_key_exists('REQUEST_URI',$_SERVER)) {
   $_REQUEST = array_flip($argv);
   $_REQUEST['houses'] = getopt('h::');
-  if (!isset($_REQUEST['houses'])) {
+  if (!isset($_REQUEST['houses']) || !is_array($_REQUEST['houses']) ||
+  !count($_REQUEST['houses'])) {
     $_REQUEST['houses'] = $houses;
   }
   $command_line = true;
