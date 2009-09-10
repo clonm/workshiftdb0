@@ -7,6 +7,6 @@ foreach ($houses as $house) {
   $db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshift$house");
   print "<h1>$house</h1>";
   $db->Execute("ALTER TABLE `GLOBAL_archive_data` add column " .
-  "`creation` timestamp DEFAULT 0");
+  "`owed_default` int(11) DEFAULT 5");
 }
 

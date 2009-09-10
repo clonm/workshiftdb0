@@ -113,12 +113,16 @@ foreach ($days as $day) {
 }
 //did the user not name this him/herself
 $db_props['autobackup'] = !$_REQUEST['backup_ext'];
+$db_props['owed_default'] = get_static('owed_default');
+//store these parameters in archive data
 $db->Execute("insert into `GLOBAL_archive_data` " .
   "(`archive`,`semester_start`,`mod_date`,`cur_week`,`num_wanted`, " .
-  "`num_assigned`,`autobackup`,`creation`) VALUES (?,?,?,?,?,?,?,NOW())",
+  "`num_assigned`,`autobackup`,`creation`,`owed_default`) " .
+  "VALUES (?,?,?,?,?,?,?,NOW(),?)",
     array($backup_ext,$db_props['semester_start'],
     $db_props['mod_date'],$db_props['cur_week'],$db_props['num_wanted'],
-    $db_props['num_assigned'],$db_props['autobackup']));
+    $db_props['num_assigned'],$db_props['autobackup'],
+    $db_props['owed_default']));
     
 //tell user what's going on, in a hidden div, so admin can see if necessary
   echo "<div style='display: none' id=" .
