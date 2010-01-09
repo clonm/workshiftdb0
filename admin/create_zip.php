@@ -71,6 +71,7 @@ foreach ($houses as $house_name) {
      //     print "doing house $house_name\n";
    }
    else {
+     fwrite(STDERR,"ran out of time");
      break;
    }
   $url_array['user'] = "bsccoo5_wkshift";
@@ -112,10 +113,8 @@ foreach ($houses as $house_name) {
         janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
       ($res = $db->Execute("select * from `$tbl`")) ||
         janak_error("Couldn't select from $tbl");
-      //have to do line by line because there are issues with too-long lines
-      $tbl_rows = $res->GetRows();
-      foreach ($tbl_rows as $data_row) {
-        fwrite($handle,
+    while ($data_row = $res->FetchRow()) {
+      fwrite($handle,
                "INSERT INTO `$tbl` VALUES (" . 
                join(',',array_map('db_quote',$data_row)) . ");\n") ||
           janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
@@ -125,6 +124,7 @@ foreach ($houses as $house_name) {
     $db->Execute("set autocommit=1");
     fwrite($handle,"commit;\nset autocommit=1;\n") ||
       janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
+
   }
   else {
     $exec_string = "mysqldump " .
