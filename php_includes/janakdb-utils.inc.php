@@ -1092,73 +1092,73 @@ function janak_fatal_error_reporting($errlevel = null) {
 //the message to users might be a little scary, because I want them to
 //email me with the message.
 function janak_errhandler($errno,$errstr,$errfile,
-                          $errline,$errcontext) {
-  global $user_errmsg, $admin_email, $house_name,$bug_report_url;
-  if (!($errno & janak_error_reporting()) &&
+  $errline,$errcontext) {
+    global $user_errmsg, $admin_email, $house_name,$bug_report_url;
+    if (!($errno & janak_error_reporting()) &&
       !($errno & janak_fatal_error_reporting())) {
-    return;
-  }
-  $script_name = script_name();
-  print("<h3>Sorry, there was an error.  " .
-        "You can check the <a href='help.html#" .
-        escape_html($script_name) . 
-        "' target='workshiftdb_help'>general helpfile</a>.  Please <a href='" .
-        escape_html($bug_report_url) .
-        "'>submit a bug report</a>.  You can also email the administrator (" .
-        admin_email() . ") with the url of the page you're at, (in the " .
-        "address bar) and the following message.  </h3><p>\n");
-  if ($errno & janak_error_reporting()) {
-    //the error string is printed out, but the full backtrace is
-    //hidden from the users, unless they view source
-    print($errstr . "<!--\n(In " . basename($errfile) . 
-          " on line $errline.  ");
-    $arr = debug_backtrace();
-    ob_start();
-    while (count($arr) > 1) {
-      $outer = $arr[count($arr)-1];
-      print("\nCalled in " . basename($outer['file']) . 
-            ' on line ' . $outer['line']);
-      array_pop($arr);
+        return;
+      }
+    $script_name = script_name();
+    print("<h3>Sorry, there was an error.  " .
+      "You can check the <a href='help.html#" .
+      escape_html($script_name) . 
+      "' target='workshiftdb_help'>general helpfile</a>.  Please <a href='" .
+      escape_html($bug_report_url) .
+      "'>submit a bug report</a>.  You can also email the administrator (" .
+      admin_email() . ") with the url of the page you're at, (in the " .
+      "address bar) and the following message.  </h3><p>\n");
+    if ($errno & janak_error_reporting()) {
+      //the error string is printed out, but the full backtrace is
+      //hidden from the users, unless they view source
+      print($errstr . "<!--\n(In " . basename($errfile) . 
+        " on line $errline.  ");
+      $arr = debug_backtrace();
+      ob_start();
+      while (count($arr) > 1) {
+        $outer = $arr[count($arr)-1];
+        print("\nCalled in " . basename($outer['file']) . 
+          ' on line ' . $outer['line']);
+        array_pop($arr);
+      }
+      $str = ob_get_clean();
+      print $str;
+      print (")-->\n");
     }
+    elseif ($user_errmsg) {
+      print($user_errmsg);
+    }
+    $old_rep = janak_error_reporting(0);
+    $old_fat = janak_fatal_error_reporting(0);
+    ob_start();
+    print "error: " . $errstr;
+    print "\npage: " . $_SERVER['REQUEST_URI'] . " (this_url: " . this_url() 
+      . ")\nerrno: ";
+    print $errno;
+    if (isset($str)) {
+      print "\nDebug backtrace:";
+      print($str);
+    }
+    print "\nerrfile: " . $errfile . "\nerrcontext: ";
+    print_r($errcontext);
+    print "Globals:\n";
+    print_r($GLOBALS);
+    print "\nEND GLOBALS\n";
+    print "var_dump Globals";
+    var_dump($GLOBALS);
+    print "\nEND var_dump GLOBALS\n";
+    $arr = debug_backtrace();
+    print_r($arr);
     $str = ob_get_clean();
-    print $str;
-    print (")-->\n");
-  }
-  elseif ($user_errmsg) {
-    print($user_errmsg);
-  }
-  $old_rep = janak_error_reporting(0);
-  $old_fat = janak_fatal_error_reporting(0);
-  ob_start();
-  print "error: " . $errstr;
-  print "\npage: " . $_SERVER['REQUEST_URI'] . " (this_url: " . this_url() 
-    . ")\nerrno: ";
-  print $errno;
-  if (isset($str)) {
-    print "\nDebug backtrace:";
-    print($str);
-  }
-  print "\nerrfile: " . $errfile . "\nerrcontext: ";
-  print_r($errcontext);
-  print "Globals:\n";
-  print_r($GLOBALS);
-  print "\nEND GLOBALS\n";
-  print "var_dump Globals";
-  var_dump($GLOBALS);
-  print "\nEND var_dump GLOBALS\n";
-  $arr = debug_backtrace();
-  print_r($arr);
-  $str = ob_get_clean();
-  if (!mail($admin_email,"Workshift db error, $house_name in " .
-            basename($errfile) . " at $errline",$str)) {
-    print "Couldn't email administrator $admin_email";
-  }
-  janak_error_reporting($old_rep);
-  janak_fatal_error_reporting($old_fat);
-  if ($errno & janak_fatal_error_reporting()) {
-    exit;
-  }
-} 
+    if (!mail($admin_email,"Workshift db error, $house_name in " .
+      basename($errfile) . " at $errline",$str)) {
+        print "Couldn't email administrator $admin_email";
+      }
+    janak_error_reporting($old_rep);
+    janak_fatal_error_reporting($old_fat);
+    if ($errno & janak_fatal_error_reporting()) {
+      exit;
+    }
+  } 
 
 //Functions so we know whether tables are up-to-date
 
@@ -1400,12 +1400,12 @@ function get_is_html_text($text_name) {
 //etc.  If this attribute is the attribute of a particular race in the
 //election, specify the race in for_race
 function get_election_attrib($attrib,$for_race=true) {
-  global $db,$election_name,$race_name;
+  global $db,$election_name,$race_name,$archive;
   $sqlargs = array($attrib,$election_name);
   if ($attrib == 'race_name') {
     $row = $db->GetRow("select `race_name` as `attrib_value` "
-      . "from `elections_attribs` " .
-                       "where `attrib_name` = 'race_name' and " .
+      . "from " . bracket($archive . "elections_attribs") . 
+                       " where `attrib_name` = 'race_name' and " .
                        "`autoid` = ? and `election_name` = ?",
                        array($for_race,$election_name));
     if (is_empty($row)) {
@@ -1416,12 +1416,12 @@ function get_election_attrib($attrib,$for_race=true) {
   if ($for_race) {
     $sqlargs[] = $race_name;
   }
-  $row = $db->GetRow('SELECT `attrib_value` FROM `elections_attribs` ' .
-                     ' WHERE `attrib_name` = ? and ' .
-                     '`election_name` = ?' . 
-                     ($for_race?' and `race_name` = ?':''),
-                     $sqlargs);
-  return $row['attrib_value'];
+  $row = $db->GetRow('SELECT `attrib_value` FROM ' .
+    bracket($archive . "elections_attribs") .
+    ' WHERE `attrib_name` = ? and `election_name` = ?' . 
+    ($for_race?' and `race_name` = ?':''),
+    $sqlargs);
+  return (array_key_exists('attrib_value',$row) && $row['attrib_value']);
 }
 
 //To help prevent elections fraud, this function is called to log any
