@@ -4,8 +4,12 @@
 
 ////////////  OPTIONS THAT NEED TO BE CHANGED ON SITE CHANGES ///////////////
 
-//location of html_includes directory -- will vary site to site
-$html_includes = '/~bsccoo5/cvsworkshift/workshiftdb0/public_html/html_includes';
+//location of html_includes directory -- could vary site to site
+$html_includes = '/public_html/html_includes';
+
+//this is what it could look like too
+#$html_includes='/~bsccoo5/cvsworkshift/workshiftdb0/public_html/html_includes';
+
 //php_utils is a directory containing source files with functions that
 //are defined in later versions of php, but may not be defined in
 //ours.  It is interpreted as a path relative to the php_includes dir.
