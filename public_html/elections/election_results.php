@@ -7,7 +7,7 @@ if (!array_key_exists('election_name',$_REQUEST)) {
   //get elections that have ended and been finalized, along with
   //elections which allow the viewing of interim results
   $res = $db->Execute('SELECT ' . bracket('election_name') . ' FROM ' .
-                      bracket('elections_record') . 
+                      bracket($archive . 'elections_record') . 
                       ' WHERE unix_timestamp() >= `end_date` and ' .
                       '`anon_voting` > 1 union ' .
                       'select `election_name` from `elections_attribs` ' .
@@ -45,13 +45,16 @@ $elect_row = $db->GetRow("select " .
                          "`anon_voting`, `anon_voting` < 2 as `open`, " .
                          "`end_date` > unix_timestamp() as `time_open`, " .
                          "`end_date` " .
-                         "from `elections_record` where `election_name` = ? ",
+                         "from " . bracket($archive . "elections_record") .
+                         " where `election_name` = ? ",
                          array($election_name));
 if (is_empty($elect_row)) {
   print escape_html($election_name) . " is not a valid election. ";
   print "<a href='election_results.php'>Click here to choose one</a>.";
   exit;
 }
+
+if (!$archive) {
 //deal with member comments, member add
 foreach ($_REQUEST as $key => $val) {
   if (!$val) {
@@ -107,6 +110,7 @@ foreach ($_REQUEST as $key => $val) {
   $db->Execute("update `elections_attribs` set `attrib_value` = ? where " .
                "`election_name` = ? and `race_name` = ? and `attrib_name` = ?",
                array($cur_text,$election_name,$race_name,$race[1]));
+}
 }
 ?>
 <html><head>
@@ -771,28 +775,32 @@ while ($namerow = $nameres->FetchRow()) {
       $str .= escape_html($row['member_comments']);
       $str .= "</pre>\n";
     }
+    if (!$archive) {
     $str .= "Add a comment other people will see.<br>" .
       "<textarea rows=5 cols=30 name='" . $race . 
       "-member_comments'></textarea><br>";
+    }
   }
-  if ($row['member_add']) {
+  if (!$archive && $row['member_add']) {
     $str .= "<br>Add a candidate (make sure your candidate does " .
       "not already appear above!)<br>";
     $str .= "<input name='" . $race . "-member_add'>";
   }
-  if ($row['member_add'] || isset($row['member_comments'])) {
+  if ((!$archive && $row['member_add']) || isset($row['member_comments'])) {
     print $str;
-    print "<br><input type=submit value='Add a ";
-    if ($row['member_add']) {
-      print 'candidate';
-      if ($row['member_comments'] !== null) {
-        print ' and/or comment';
+    if (!$archive) {
+      print "<br><input type=submit value='Add a ";
+      if ($row['member_add']) {
+        print 'candidate';
+        if ($row['member_comments'] !== null) {
+          print ' and/or comment';
+        }
       }
+      else {
+        print 'comment';
+      }
+      print "'>";
     }
-    else {
-      print 'comment';
-    }
-    print "'>";
   }
   //if there were other methods, and we're being asked for everything:
   if ($full_results && $other_methods) {
