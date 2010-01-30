@@ -928,27 +928,18 @@ function processReqChange () {
 	//success!
 	statustext.innerHTML = "Table updated!";
 	//the page is no longer reliable if rows were added or deleted
-        var reload_flag = false;
-        if (!unloading_process) {
-	  reload_flag = (del_rows_copy.length != 0);
-          if (!reload_flag) {
-	    for (ii in ch_array_copy) {
-	      if (!ch_array_copy[ii].length) {
-	        reload_flag = true;
-                break;
-	      }
-	    }
-          }
-        }
+        var reload_flag = (!unloading_process) && 
+          (del_rows_copy.length != 0 || added_rows_copy.length != 0); 
         if (ch_array_copy.length) {
 	  for (ii in ch_array_copy) {
-            var cell_elt;
-            if (ch_array_copy[ii].length) {
-              cell_elt = get_elt_by_id("autoid-" + autoid_row_table[ii]);
-            }
-            else {
-              cell_elt = get_cell_elt(autoid_row_table[ii],0);
-            }
+            var cell_elt = get_elt_by_id("autoid-" + autoid_row_table[ii]);
+            color_row(cell_elt.parentNode.parentNode,
+                      "black");
+          }
+        }
+        if (added_rows_copy.length) {
+          for (ii in added_rows_copy) {
+            var cell_elt = get_elt_by_id("autoid-" + autoid_row_table[ii]);
             color_row(cell_elt.parentNode.parentNode,
                       "black");
           }

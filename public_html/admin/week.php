@@ -43,7 +43,7 @@ $table_name = "${archive}week_$week_num";
 //does this table even exist?
 $make_weeks_form = "<form action='make_weeks.php' method='GET'  onsubmit='" .
     "if (typeof(confirm_create) != \"undefined\") {" .
-"return confirm(\"Are you sure?\")}'>" .
+"return confirm(\"Are you sure?\")}; return true;'>" .
     "<input type=hidden name='start_week' value=$week_num>" .
     "<input type=hidden name='end_week' value=$week_num>" .
     "<input type=hidden name='overwrite' value='1'>" .
