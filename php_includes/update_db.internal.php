@@ -154,6 +154,7 @@ if (!isset($body_insert)) {
 require_once('janakdb.inc.php');
 #$db->debug = true;
 
+//See table_edit.js for details on what was passed here
 $num_cols = $_REQUEST['num_cols'];
 $num_rows = $_REQUEST['num_rows'];
 $table_name = $_REQUEST['table_name'];
@@ -164,111 +165,56 @@ if (!access_table($table_name)) {
 $col_names = $_REQUEST['col_names'];
 //some problems with unset variables
 $data = array();
-$temp = array();
 //get the cells, row by row
-for ($ii = 0; $ii < $num_rows; $ii++) {
-  for ($jj = 0; $jj < $num_cols; $jj++) {
-    if (array_key_exists("cell-{$ii}-{$jj}",$_REQUEST)) {
-      $temp[] = $_REQUEST["cell-{$ii}-{$jj}"];
-    }
-    else {
-      $temp[] = null;
+if (array_key_exists('changed_rows',$_REQUEST)) {
+  $changed_rows = $_REQUEST['changed_rows'];  
+  for ($ii = 0; $ii < count($changed_rows); $ii++) {
+    $id = $changed_rows[$ii];
+    $data[$id] = array();
+    $changed_cells = $_REQUEST["changed_row-$id"];
+    for ($jj = 0; $jj < count($changed_cells); $jj++) {
+      $col = $changed_cells[$jj];
+      $data[$id][$col] = $_REQUEST["cell-{$id}-{$col}"];
     }
   }
-  $data[] = $temp;
-  $temp = array();
 }
-$autoid = array();
-//get the autoids -- there has to be an autoid for updatable tables
-for ($ii = 0; $ii < $num_rows; $ii++) {
-  if (array_key_exists("autoid-$ii",$_REQUEST)) {
-    $autoid[$ii] = $_REQUEST["autoid-$ii"];
-  }
+
+$added = array();
+$num_added = $_REQUEST['num_added'];
+for ($ii = 0; $ii < $num_added; $ii++) {
+  $added[$ii] = $_REQUEST["added-{$ii}"];
 }
-#do the virtual column thing
-get_real_table_columns();
-//we were called outside of javascript -- output what we're doing
+
+//what rows are we deleting?
+$deleted_rows = $_REQUEST['deleted_rows'];
+
+//we were called outside of javascript
 if (!$_REQUEST['js_flag']) {
-  echo "<h3>What follows is the output from the sql statements.  ";
-  echo "There should be no errors, only sql statements.</h3><p>\n";
-  //this locking code has never been tested
-  $db->Execute("lock tables `$table_name` write, " .
-    "`{$archive}modified_dates` write" . $archive_lock_tables); 
-  set_mod_date($table_name);
-  //don't die on anything, because as much as we can should work
-  janak_fatal_error_reporting(0);
-  $db->debug = true;
-  //loop through rows
-  for ($ii=0; $ii<$num_rows; $ii++) {
-    $row = $data[$ii];
-    //loop through cols
-    for ($jj = 0; $jj < $num_cols; $jj++) {
-      //is there something here, and is it a real column?
-      if (!is_null($row[$jj]) && array_key_exists($col_names[$jj],$col_reals)) {
-	$arr[bracket($col_names[$jj])] = $row[$jj];
-      }
-    }
-    if (isset($autoid[$ii])) {
-      $arr['autoid'] = $autoid[$ii];
-    }
-    else {
-      $arr['autoid'] = null;
-    }
-    //insert or update this row
-    $db->Replace(bracket($table_name),$arr,'autoid',true);
-  }
-  //delete rows that we were supposed to delete
-  for ($ii = 0; $ii <$num_rows; $ii++) {
-    $del = array_key_exists("delete_$ii",$_REQUEST) && $_REQUEST["delete_$ii"];
-    if ($del) {
-      if (!array_key_exists($ii,$autoid)) {
-	echo "<h3>Error! couldn't delete row $ii (contents: ";
-	print_r($data[$ii]);
-	echo ") -- it has no id.  Perhaps you just added it?  ";
-	echo "Reload the table and try deleting it again.</h3>";
-      }
-      $db->Execute('DELETE FROM ' . bracket($table_name) . ' WHERE ' . 
-		   bracket('autoid') . ' = ?',array($autoid[$ii]));
-    }
-  }
-  echo "Updated $table_name";
-  //set mod date again for more accuracy
-  set_mod_date($table_name);
-  //this unlocking code was never tested
-  $db->Execute("unlock tables");
-  exit;
+  exit("Tables cannot be updated in this way.  Please use the Update database button.");
 }
 
 $db->StartTrans();
 $db->Execute("lock tables `$table_name` write, " .
     "`{$archive}modified_dates` write" . $archive_lock_tables); 
-//ok, we've been called by javascript.  Let's see what cells it's telling us
-//have been changed.  See table_edit.js for details on what was passed here
-$changed_cells = array();
-for ($ii = 0; $ii < $num_rows; $ii++) {
-  if (array_key_exists("changed_cells_$ii",$_REQUEST)) {
-    $temp =&$_REQUEST["changed_cells_$ii"];
-    //if this isn't an array, the whole row is being changed (inserted)
-    if (!is_array($temp)) {
-      $changed_cells[$ii] = 1;
-    }
-    else {
-      //put the indices in order
-      sort($temp);
-      //and make them the keys
-      $changed_cells[$ii] = array_flip($temp);
-    }
+
+//update changed cells
+foreach ($data as $ii => $changed) {
+  $changed_cols = array_keys($changed);
+  //this is the last question mark in execute
+  //Janak changed 1/18/10 to deal with autoid bugs
+  $changed[] = $ii;
+  //bracketqind indexes into the $col_names array for us
+  $query_string = "UPDATE " . bracket($table_name) . " SET " . 
+    implode(", ",array_map("bracketqind",$changed_cols))
+    . " WHERE " . bracket('autoid') . " = ?";
+  if (!$db->Execute($query_string,
+		    $changed)) { 
+    echo "error executing update query<br>";
+    echo $query_string;
+    print_r($changed);
+    echo $db->ErrorMsg();
   }
 }
-//what rows are we deleting?
-$deleted_rows = $_REQUEST['deleted_rows'];
-
-//find out what kind of columns we have
-$res = $db->Execute('SHOW COLUMNS FROM ' . bracket($table_name));
-while ($cols = $res->FetchRow()) {
-  $col_types[$cols['Field'] ] = $cols['Type'];
-}
-
 
 //utility function for below
 function bracketqind($ind) {
@@ -276,57 +222,31 @@ function bracketqind($ind) {
   return bracket($col_names[$ind]) . " = ?";
 }
 
-//update cells, or get ready to insert whole rows (we can insert wholesale
-//at the end)
-$ins_array = array();
-foreach ($changed_cells as $ii => $changed) {
-  //going to insert whole row?
-  if ($changed === 1) {
-    //how many rows are we inserting already?
-    $ind = count($ins_array);
-    //here's the data we'll insert
-    for ($jj = 0; $jj < $num_cols; $jj++) {
-      if (isset($col_reals[$col_names[$jj]])) {
-	$ins_array[$ind][] =& $data[$ii][$jj];
-      }
-    }
-    continue;
-  }
-  //which columns were changed?
-  foreach ($changed as $key => $junk) {
-    if (!isset($col_reals[$col_names[$key]])) {
-      unset($changed[$key]);
-    }
-  }
-  if (!count($changed)) {
-    continue;
-  }
-  $changed_vars = array_intersect_key($data[$ii],$changed);
-  //this is the last question mark in execute
-  $changed_vars[] = $autoid[$ii];
-  //bracketqind indexes into the $col_names array for us
-  $query_string = "UPDATE " . bracket($table_name) . " SET " . 
-    implode(", ",array_map("bracketqind",array_keys($changed)))
-    . " WHERE " . bracket('autoid') . " = ?";
-  if (!$db->Execute($query_string,
-		    $changed_vars)) { 
-    echo "error executing update query<br>";
-    echo $query_string;
-    print_r($changed_vars);
-    echo $db->ErrorMsg();
-  }
+function real_col_filter($arr) {
+  global $real_col_inds;
+  return array_intersect_key($arr,$real_col_inds);;
 }
+#do the virtual column thing
+get_real_table_columns();
 
 //adodb Execute can take a 2-d array and execute the command on each element
 //in turn.  Very useful here.
-if (count($ins_array)) {
-  $temp_cols = array_intersect($col_names,array_keys($col_reals));
+if ($num_added) {
+  $real_col_inds = array();
+  $update_cols = array();
+  for ($ii = 0; $ii < $num_cols; $ii++) {
+    if (array_key_exists($col_names[$ii],$col_reals)) {
+      $update_cols[] = $col_names[$ii];
+      $real_col_inds[$ii] = 1;
+    }
+  }
+  $added = array_map('real_col_filter',$added);
   $query_string = "INSERT INTO " . bracket($table_name) ." (" .
-    implode(", ",array_map("bracketvirt",$temp_cols)) .
-    ") VALUES (" . str_repeat("?,",count($temp_cols)-1) . "?)";
-  if (!$db->Execute($query_string,$ins_array)) {
+    implode(", ",array_map("bracket",$update_cols)) .
+    ") VALUES (" . str_repeat("?,",count($update_cols)-1) . "?)";
+  if (!$db->Execute($query_string,$added)) {
     echo "error executing insert query: $query_string";
-    print_r($ins_array);
+    print_r($added);
     print_r($db->ErrorMsg());
     
   }
@@ -337,7 +257,7 @@ foreach ($deleted_rows as $ii) {
   //does this row exist?  not sure why this is here
   if (strlen($ii)) {
     //I don't know why $num_cols is here, as opposed to just 0
-    $del_array[] = array($num_cols => $autoid[$ii]);
+    $del_array[] = array($num_cols => $ii);
   }
 }
 if (count($del_array)) {
@@ -347,7 +267,7 @@ if (count($del_array)) {
     print_r($del_array);
   }
 }
-$db->Execute("unlock tables");
 set_mod_date($table_name);
+$db->Execute("unlock tables");
 $db->CompleteTrans();
 ?>

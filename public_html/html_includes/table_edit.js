@@ -70,10 +70,14 @@ var key_modifier = 0;
 var req = 0;
 //changed cells, for submission
 var change_array = new Array();
+//added rows, for submission
+var added_rows = new Array();
 //deleted rows, for submission
 var deleted_rows = new Array();
 //backup of changed cells, so we can restore it if submission fails
 var ch_array_copy = new Array();
+//same for added
+var added_rows_copy = new Array();
 //same for deleted
 var del_rows_copy = new Array();
 //way to detect if enter was pressed, and thus not submit form
@@ -411,7 +415,7 @@ function restrict_rows(elt,col,dir) {
     }
     match = get_value(elt);
   }
-  old_restrict_cols = restrict_cols;
+  var old_restrict_cols = restrict_cols;
   if (col != null) {
     restrict_cols = new Array();
     restrict_cols[0] = col;
@@ -577,11 +581,21 @@ function add_row() {
   //checkbox, but we can't reliably delete cells which were
   //just created, and I don't care enough to make a workaround
   var new_td = document.createElement('td');
+  //however, we can add an artificial autoid here for keeping track
+  //added by Janak 1/19/10 to deal with autoid issue
+  new_in = document.createElement('input');
+  new_in.id = 'autoid-' + num_rows;
+  new_in.setAttribute('type','hidden');
+  new_in.setAttribute("value",'add-' + num_rows);
+  new_td.appendChild(new_in);
   new_row.appendChild(new_td);
   //color this row, since it's new, and so should be red
   color_row(new_row,"red");
   tbody_elt.appendChild(new_row);
-  change_array[num_rows] = 1;
+  //commented out by Janak 1/18 to do autoid properly  
+//  change_array[num_rows] = 1;
+  added_rows[num_rows] = 1;
+  autoid_row_table['add-' + num_rows] = num_rows;
   //if user submits page without javascript, this row will be counted
   document.getElementById('num_rows').value = ++num_rows;
   last_row_vis = num_rows-1;
@@ -589,7 +603,7 @@ function add_row() {
 }
 
 function check_changed() {
-  if (!deleted_rows.length && !change_array.length) {
+  if (!deleted_rows.length && !added_rows.length && !change_array.length) {
     statustext.innerHTML = "Ready -- remember to reload page (CTRL-F5) before you start editing";
     return false;
   }
@@ -603,15 +617,16 @@ function check_changed() {
 function default_delete_row_handler(elt) {
   var flag = false;
   var ii;
-  var rownum = elt.parentNode.parentNode.rowIndex-1;
-  var rw = rows_array[rownum];
+  var rowid = get_value(elt.parentNode.previousSibling);
+    //parentNode.parentNode.rowIndex-1;
+  var rw = elt.parentNode.parentNode;
   if (elt.checked) {
-    deleted_rows[rownum] = 1;
+    deleted_rows[rowid] = 1;
     color_row(rw,"blue");
     statustext.innerHTML = "Press CTRL-s to save your work.";
   }
   else {
-    deleted_rows.splice(rownum,1);
+    deleted_rows.splice(rowid,1);
     color_row(rw,"black");
     check_changed();
   }
@@ -636,18 +651,19 @@ function default_change_handler (elt) {
       elt.parentNode.style.width = (get_value(elt).length/2) + "em";
   }
   //get element describing this row's changes
-  var ch = change_array[elts[0]];
+  var autoid = get_value_by_id("autoid-" + elts[0]);
+  //elements in rows just added don't need to be recorded as "changed"
+  if (autoid.indexOf("add-") == 0) {
+    return true;
+  }
+  var ch = change_array[autoid];
   if (ch) {
-    //is this an array?
-    if (ch.length) {
-      ch[ch.length] = elts[1];
-    }
-    //else whole row is being done, so don't bother adding this
+      ch[elts[1]] = 1;
   }
   else {
     //first change of this row
-    change_array[elts[0]] = new Array(1);
-    change_array[elts[0]][0]=elts[1];
+    change_array[autoid] = new Array(num_cols);
+    change_array[autoid][elts[1]] = 1;
   }
   statustext.innerHTML = "Press CTRL-s to save your work.";
   return true;
@@ -770,6 +786,11 @@ function submit_data () {
     ch_array_copy[ii] = change_array[ii];
   }
   change_array = [];
+  added_rows_copy = new Array();
+  for (ii in added_rows) {
+    added_rows_copy[ii] = added_rows[ii];
+  }
+  added_rows = [];
   del_rows_copy = new Array();
   for (ii in deleted_rows) {
     del_rows_copy[ii] = deleted_rows[ii];
@@ -785,42 +806,42 @@ function submit_data () {
   var data = "";
   var ii;
   var jj;
+  var num_added = 0;
   //tell update_db we're using javascript, so it can be smart about sql
   data += "js_flag=1&archive=" + encodeURIComponent(archive) + "&";
   if (ch_array_copy.length) {
-    //each changed row is a separate array, so there are lots of 
-    //changed_cells_ii arrays passed through
-    for (ii in ch_array_copy) {
-      var ch = ch_array_copy[ii];
-      //were individual cells changed?
-        if (ch.length) {
-          for (jj = 0; jj< ch.length; jj++) {
-            data += "changed_cells_" + ii + "[]=" + ch[jj] + "&";
-            data += "cell-" + ii + "-" + ch[jj] + "=" + 
-              val_of(get_cell_elt(ii,ch[jj])) + "&";
-          }
-          data += "autoid-" + ii + "=" + 
-            val_of(get_elt_by_id("autoid-" + ii)) + "&";
-        }
-      else {
-        //whole row modified?
-          data += "changed_cells_" + ii + "=1&";
-        for (jj = 0; jj < num_cols; jj++) {
-          data += "cell-" + ii + "-" + jj + "=" + 
-            val_of(get_cell_elt(ii,jj)) + "&";
+    for (id in ch_array_copy) {
+      var irow = autoid_row_table[id];
+      var ch = ch_array_copy[id];
+      data += "changed_rows[]=" + id + "&";
+      for (jj = 0; jj< ch.length; jj++) {
+        if (ch[jj]) {
+          data += "changed_row-" + id + "[] =" + jj + "&";
+          data += "cell-" + id + "-" + jj + "=" + 
+            val_of(get_cell_elt(irow,jj)) + "&";
         }
       }
     }
   }
+  var num_added = 0;
+  if (added_rows_copy.length) {
+    for (ii in added_rows_copy) {
+      for (jj = 0; jj < num_cols; jj++) {
+        data += "added-" + num_added + "[]=" +
+          val_of(get_cell_elt(autoid_row_table['add-' + ii],jj)) + "&";
+      }
+      num_added++;
+    }
+  }
+  //tell how many rows added
+  data += "num_added=" + num_added + "&";
   //throw in deleted rows
   if (!del_rows_copy.length) {
     data += "deleted_rows[]=&";
   }
   else {
-    for (ii in del_rows_copy) {
-      data += "deleted_rows[]=" + ii + "&";
-      data += "autoid-" + ii + "=" + 
-        val_of(get_elt_by_id("autoid-" + ii)) + "&";
+    for (id in del_rows_copy) {
+      data += "deleted_rows[]=" + id + "&";
     }
   }
   // we send the data more efficiently above
@@ -875,23 +896,22 @@ function processReqChange () {
 	//for each old changed index,
         if (ch_array_copy.length) {
 	  for (ii in ch_array_copy) {
-	    //if we don't have that index anymore, 
-            //or it was the whole row, just set it here
-	    if (!change_array[ii] || !ch_array_copy[ii].length) {
+	    //if we don't have that index anymore, just set it here
+	    if (!change_array[ii]) {
 	      change_array[ii] = ch_array_copy[ii];
-	      continue;
-	    }
-	    //if the user has changed the whole row anyway, continue
-	    if (!change_array[ii].length) {
 	      continue;
 	    }
 	    //merge changes user made since updating with the ones before
 	    var ch = ch_array_copy[ii];
-	    var arr = change_array[ii];
 	    for (jj in ch) {
-	      arr[arr.length] = ch[jj];
-	    }
-	  }
+                change_array[ii][jj] |= ch[jj];
+            }
+          }
+        }
+        if (added_rows_copy.length) {
+          for (ii in added_rows_copy) {
+            added_rows[ii] = 1;
+          }
         }
         if (del_rows_copy.length) {
 	  //deleted rows are easier
@@ -899,7 +919,11 @@ function processReqChange () {
 	    deleted_rows[ii] = 1;
 	  }
         }
-      }
+        req = 0; 
+        statustext.innerHTML = "Last save unsuccessful.  You should contact " +
+          "<a href='mailto:workshift.system@gmail.com'>workshift.system@gmail.com</a>" +
+          " for help.  You can also try saving again.";
+     }
       else {
 	//success!
 	statustext.innerHTML = "Table updated!";
@@ -920,16 +944,16 @@ function processReqChange () {
 	  for (ii in ch_array_copy) {
             var cell_elt;
             if (ch_array_copy[ii].length) {
-              cell_elt = get_elt_by_id("autoid-" + ii);
+              cell_elt = get_elt_by_id("autoid-" + autoid_row_table[ii]);
             }
             else {
-              cell_elt = get_cell_elt(ii,0);
+              cell_elt = get_cell_elt(autoid_row_table[ii],0);
             }
             color_row(cell_elt.parentNode.parentNode,
                       "black");
           }
         }
-        hide_elts = document.getElementsByTagName("div");
+        var hide_elts = document.getElementsByTagName("div");
         for (var ii in hide_elts) {
           if (hide_elts[ii].className) {
             var classes = hide_elts[ii].className.split(" ");
@@ -985,24 +1009,26 @@ function process_beforeunload() {
   while (req != 0 && confirm(
     "Please wait to press OK until the page says 'Ready' again.  If it "
       + "has hung, then press Cancel.")) {};
+  req = 0;
   if (check_changed()) {
-    return "You have unsaved data.  If you press OK, you will be prompted to " +
-      "save your data.  If you are reloading the page, you may have to reload " + 
-      "it again to see your changes.";
+    return "You have unsaved data.  If you press OK, you will be " +
+      "prompted to save your data.  If you are reloading the page, " +
+      "you may have to reload it again to see your changes.";
   }
-  return;  
+  //if no problems, return no value so user isn't prompted
+  return null;  
 }
 //if php script has not already generated javascript handlers, register these
-if (!self.focus_handler) {
+if (!('focus_handler' in self)) {
   self.focus_handler = default_focus_handler;
 }
-if (!self.change_handler) {
+if (!('change_handler' in self)) {
   self.change_handler = default_change_handler;
 }
-if (!self.blur_handler) {
+if (!('blur_handler' in self)) {
   self.blur_handler = default_blur_handler;
 }
-if (!self.delete_row_handler) {
+if (!('delete_row_handler' in self)) {
   self.delete_row_handler = default_delete_row_handler;
 }
 
@@ -1033,7 +1059,7 @@ function color_rows() {
 var ASCEND;  
 //sortable stuff
 function ts_resortTable(lnk,clid) {
-  if (change_array.length || deleted_rows.length) {
+  if (change_array.length || deleted_rows.length || added_rows.length) {
     alert("Sorry, you can currently only sort columns after you have saved " +
           "all changes.  Please save your work and try again.");
     return;
@@ -1042,54 +1068,65 @@ function ts_resortTable(lnk,clid) {
   var _t0 = new Date();
   var span = lnk.nextSibling;
   var spantext = get_value(span);
-    var td = lnk.parentNode;
-    var column = clid || td.cellIndex;
-    var table = document.getElementById('bodytable');
-    
-    // Work out a type for the column
-    if (table.rows.length <= 1) return;
-    if (col_sortable[clid]) {
-      pre_process = window[col_sortable[clid]];
+  var td = lnk.parentNode;
+  var column = clid || td.cellIndex;
+  var table = document.getElementById('bodytable');
+  
+  // Work out a type for the column
+  if (table.rows.length <= 1) return;
+  if (col_sortable[clid]) {
+    var pre_process = window[col_sortable[clid]];
+  }
+  else {
+    var itm = get_value(table.rows[1].cells[column]);
+    sortfn = ts_sort_caseinsensitive;
+    if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d\d\d$/)) sortfn = ts_sort_date;
+    if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d$/)) sortfn = ts_sort_date;
+    if (itm.match(/^[£$]/)) sortfn = ts_sort_currency;
+    if (itm.match(/^[\d\.]+$/)) sortfn = ts_sort_numeric;
+  }
+  var firstRow = new Array();
+  var newRows = new Array();
+  for (var i=0;i<table.rows[0].length;i++) {
+    firstRow[i] = table.rows[0][i];
+  }
+  for (var j=1;j<table.rows.length;j++) {
+    newRows[j-1] = new Array(
+      pre_process(get_value(table.rows[j].cells[column])),table.rows[j],j);
+  }
+  var ARROW;
+  if (span.getAttribute("sortdir") == 'down') {
+    ARROW = '&nbsp;&nbsp;&uarr;';
+    span.setAttribute('sortdir','up');
+    ASCEND = -1;
+  } else {
+    ARROW = '&nbsp;&nbsp;&darr;';
+    span.setAttribute('sortdir','down');
+    ASCEND = 1;
+  }
+  newRows.sort(mysort);
+  for (ii=0; ii < newRows.length; ii++) {
+    //subtract one because we were 1-indexing and autoids are 0-indexed
+    autoid_row_table[get_value_by_id("autoid-" + (newRows[ii][2]-1))] = ii;
+  }
+  // We appendChild rows that already exist to the tbody,
+  //so it moves them rather than creating new ones
+  // don't do sortbottom rows
+  for (i=0;i<newRows.length;i++) {
+    table.tBodies[0].appendChild(newRows[i][1]);
+  }
+  color_rows();
+  var cols = header_row.cells;
+  for (var ii = 0; ii < num_cols; ii++) {
+    if (cols[ii].childNodes &&
+        cols[ii].childNodes[1] && cols[ii].childNodes[1].className &&
+        cols[ii].childNodes[1].className == 'sortarrow' &&
+        cols[ii].childNodes[1].innerHTML.charAt(0) == '*') {
+      cols[ii].childNodes[1].innerHTML = cols[ii].childNodes[1].innerHTML.substring(1,cols[ii].childNodes[1].innerHTML.length);
     }
-    else {
-      var itm = get_value(table.rows[1].cells[column]);
-      sortfn = ts_sort_caseinsensitive;
-      if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d\d\d$/)) sortfn = ts_sort_date;
-      if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d$/)) sortfn = ts_sort_date;
-      if (itm.match(/^[£$]/)) sortfn = ts_sort_currency;
-      if (itm.match(/^[\d\.]+$/)) sortfn = ts_sort_numeric;
-    }
-    var firstRow = new Array();
-    var newRows = new Array();
-    for (i=0;i<table.rows[0].length;i++) { firstRow[i] = table.rows[0][i]; }
-    for (j=1;j<table.rows.length;j++) { newRows[j-1] = new Array(pre_process(get_value(table.rows[j].cells[column])),table.rows[j],j); }
-    if (span.getAttribute("sortdir") == 'down') {
-        ARROW = '&nbsp;&nbsp;&uarr;';
-        span.setAttribute('sortdir','up');
-        ASCEND = -1;
-    } else {
-        ARROW = '&nbsp;&nbsp;&darr;';
-        span.setAttribute('sortdir','down');
-        ASCEND = 1;
-    }
-    newRows.sort(mysort);
-    // We appendChild rows that already exist to the tbody, so it moves them rather than creating new ones
-    // don't do sortbottom rows
-    for (i=0;i<newRows.length;i++) {
-      table.tBodies[0].appendChild(newRows[i][1]);
-    }
-    color_rows();
-    cols = header_row.cells;
-    for (var ii = 0; ii < num_cols; ii++) {
-      if (cols[ii].childNodes &&
-          cols[ii].childNodes[1] && cols[ii].childNodes[1].className &&
-          cols[ii].childNodes[1].className == 'sortarrow' &&
-          cols[ii].childNodes[1].innerHTML.charAt(0) == '*') {
-        cols[ii].childNodes[1].innerHTML = cols[ii].childNodes[1].innerHTML.substring(1,cols[ii].childNodes[1].innerHTML.length);
-      }
-    }
-    span.innerHTML = '*' + ARROW;
-    sorting_flag = true;
+  }
+  span.innerHTML = '*' + ARROW;
+  sorting_flag = true;
 }
 
 function mysort(a,b) {
@@ -1220,6 +1257,7 @@ function pre_process_num(a) {
     return a;
   }
   a = String(a);
+  var tmp;
   if ((tmp = a.indexOf('.')) == -1) {
     a += '.';
     tmp = a.length-1;

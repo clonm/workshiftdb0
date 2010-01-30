@@ -139,6 +139,9 @@ $class_handlers['delete_check'] = array('onclick' => 'delete_row_handler',
                                         'onfocus' => $empty_function,
                                         'onblur' => $empty_function);
 
+//for keeping track of rows in javascript
+$autoid_row_table = array();
+
 if (!isset($table_edit_query)) {
   //here goes the big query
   $sql = "SELECT ";
@@ -381,11 +384,11 @@ if (count($restrict_cols)) {
      } 
 ?><td><input type=checkbox id='color_rows_checkbox' checked onclick='color_rows();'></td></tr></table>
 <?php 
-//should we display submit buttons?
+//should we display submit button?
 if (!$read_only) { 
 ?><input class="button" id="update_button" type=button onClick="submit_data()" value="Update database (CTRL-S)">
-<input class="button" id="update_button_backup" type="submit" value="Update database without Javascript (don't use unless error occurs)" 
-onClick="if ('yes' == prompt('Are you sure you want to submit this way?  Type yes into the box below if you do (you do not want to do this unless you have been told to).  Email janak@post.harvard.edu before you do this.')) {window.onbeforeunload=''; return true;} return false;">
+<!-- <input class="button" id="update_button_backup" type="submit" value="Update database without Javascript (don't use unless error occurs)" 
+onClick="if ('yes' == prompt('Are you sure you want to submit this way?  Type yes into the box below if you do (you do not want to do this unless you have been told to).  Email janak@janak.org before you do this.')) {window.onbeforeunload=''; return true;} return false;"> -->
 <?php 
      } 
 //from here on out, spaces between html elements become important.
@@ -525,6 +528,7 @@ while ($row =& $res->FetchRow()) {
     echo "<td class='autoid'><input type=hidden id=\"autoid-{$num_rows}\" " .
       "name=\"autoid-{$num_rows}\" value=\"" . 
       escape_html($row['autoid']) . "\"></td>";
+    $autoid_row_table[$row['autoid']] = $num_rows;
   }
   //tack on delete checkbox if we can delete
   if ($delete_flag) {
@@ -579,10 +583,12 @@ var header_row = document.getElementById("header_row");
 var statustext = document.getElementById("statustext");
 var num_rows = <?=$num_rows?>;
 var num_cols = <?=$num_cols?>;
-<?php if ($delete_flag) { ?>
+<?php if (!$read_only) { ?>
 var col_styles = [<?=js_array($col_styles)?>];
 var col_sizes = [<?=js_array($col_sizes)?>];
- <?php } ?>
+//lookup table of autoids to row numbers, for use after sorting
+<?php js_assoc_array('autoid_row_table',$autoid_row_table); ?>
+<?php } ?>
 <?php js_assoc_array('col_sortable',$col_sortable); ?>
 var name_array = [<?= js_array($name_array)?>];
 var restrict_cols = [<?=js_array($restrict_cols)?>];
