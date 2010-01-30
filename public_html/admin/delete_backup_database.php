@@ -22,10 +22,12 @@ if (!isset($php_start_time)) {
 }
 if (!isset($dbnames)) {
   $dbnames = get_backup_dbs();
-}  
-if (!isset($start_db_index) && isset($_REQUEST['start_db_index'])) {
-  $start_db_index = $_REQUEST['start_db_index'];
 }
+//no longer functional, and shouldn't be necessary, since we now cache
+//archive data in a global table, so processing is speedy
+//if (!isset($start_db_index) && isset($_REQUEST['start_db_index'])) {
+//  $start_db_index = $_REQUEST['start_db_index'];
+//}
 
 if (!$running_shell && !array_key_exists('backup_name',$_REQUEST)) {
   ?>
@@ -57,13 +59,16 @@ Due to the large number of backups, the buttons below will only work on the
 first <?=$delete_dbs[2]?> backups in the list above.  Delete some backups and
 the selections will extend to later backups.<br/>
 
-You can also enter a number here and submit, so that the system will skip
-the first so many backups, and look for redundant ones after that.<br/>
-<form action=<?=this_url()?> method=get>
-<input name='start_db_index' value='<?=escape_html($start_db_index)?>'
-size=3>
-<input type=submit value='Start looking for redundant databases here'/>
-</form>
+<?php
+//You can also enter a number here and submit, so that the system will skip
+//the first so many backups, and look for redundant ones after that.<br/>
+//<form action=<?=this_url()?> method=get>
+//<input name='start_db_index' value='<?=escape_html($start_db_index)?>'
+//size=3>
+//<input type=submit value='Start looking for redundant databases here'/>
+//</form>
+?>
+
 <?php
 }
  if (count($delete_dbs[0])) {
