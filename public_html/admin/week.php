@@ -176,7 +176,6 @@ else if ($mod_date == $create_date) {
 <input id='unmod_blank_week' class=pushbutton type=submit value='Make this week a temp week (blank out all member names)'
 onclick='blank_names()'>
 <script type='text/javascript'>
-  var prev_val;
 
     function blank_names(silent_flag) {
       if (!silent_flag && !confirm("Are you sure you want to erase all member names for this week?")) {
@@ -229,6 +228,7 @@ if (!isset($javascript_pre)) {
 $javascript_pre .= "<script>\n";
 $javascript_pre .= "var week_dates = new Array(" . js_array($week_dates) . ");\n";
 $javascript_pre .= <<<JAVASCRIPT_PRE
+  var prev_val;
 
     function change_cell(elt,new_val) {
       if (get_value(elt) != new_val) {
