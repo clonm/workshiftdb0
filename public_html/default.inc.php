@@ -12,7 +12,7 @@ foreach (array('DOCUMENT_ROOT','PATH_TRANSLATED','SCRIPT_FILENAME','PWD') as $ke
     if (!$basedir) {
       break;
     }
-    $comps = explode('/',$basedir);
+    $comps = explode(DIRECTORY_SEPARATOR,$basedir);
     while (count($comps)) {
       if (file_exists(implode('/',$comps) . '/php_includes')) {
         $success = true;
