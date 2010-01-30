@@ -37,6 +37,10 @@ while ($row = $res->FetchRow()) {
   $member_info[$row['app_number']] = array($row['member_name'],$row['email']);
 }
 if ($_REQUEST['emails_status'] == 'file') {
+  //this should never happen, but it happened once, so might as well check
+  if (!array_key_exists('email_csv',$_FILES)) {
+    exit("You didn't choose a file to upload.  Please go back and do that.");
+  }
 ?>
 <h4>No changes have been made yet.  To confirm changes, press "submit"
 button at bottom of page.</h4>
