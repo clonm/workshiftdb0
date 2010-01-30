@@ -1096,7 +1096,7 @@ function ts_resortTable(lnk,clid) {
     ASCEND = 1;
   }
   newRows.sort(mysort);
-  if (autoid_row_table) {
+  if (typeof(autoid_row_table) != 'undefined') {
     for (ii=0; ii < newRows.length; ii++) {
       //subtract one because we were 1-indexing and autoids are 0-indexed
       autoid_row_table[get_value_by_id("autoid-" + (newRows[ii][2]-1))] = ii;
