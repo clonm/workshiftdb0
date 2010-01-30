@@ -1096,9 +1096,11 @@ function ts_resortTable(lnk,clid) {
     ASCEND = 1;
   }
   newRows.sort(mysort);
-  for (ii=0; ii < newRows.length; ii++) {
-    //subtract one because we were 1-indexing and autoids are 0-indexed
-    autoid_row_table[get_value_by_id("autoid-" + (newRows[ii][2]-1))] = ii;
+  if (autoid_row_table) {
+    for (ii=0; ii < newRows.length; ii++) {
+      //subtract one because we were 1-indexing and autoids are 0-indexed
+      autoid_row_table[get_value_by_id("autoid-" + (newRows[ii][2]-1))] = ii;
+    }
   }
   // We appendChild rows that already exist to the tbody,
   //so it moves them rather than creating new ones
