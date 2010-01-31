@@ -604,7 +604,7 @@ function add_row() {
 
 function check_changed() {
   if (!deleted_rows.length && !added_rows.length && !change_array.length) {
-    statustext.innerHTML = "Ready -- remember to reload page (CTRL-F5) before you start editing";
+    statustext.innerHTML = "Ready -- remember to reload page (CTRL-F5 or SHIFT-Refresh) before you start editing";
     return false;
   }
   else {
@@ -806,7 +806,6 @@ function submit_data () {
   var data = "";
   var ii;
   var jj;
-  var num_added = 0;
   //tell update_db we're using javascript, so it can be smart about sql
   data += "js_flag=1&archive=" + encodeURIComponent(archive) + "&";
   if (ch_array_copy.length) {
@@ -872,7 +871,7 @@ function submit_data () {
 //was registered above in submit_data
 function processReqChange () {
   if (req == 0) {
-    statustext.innerHTML = "Ready -- remember to reload page (CTRL-F5) before you start editing";
+    statustext.innerHTML = "Ready -- remember to reload page (CTRL-F5 or SHIFT-Refresh) before you start editing";
     return false;
   }
   //let user know what's up
@@ -957,7 +956,7 @@ function processReqChange () {
           }
         }
         req = 0;
-        statustext.innerHTML = "Ready -- remember to reload page (CTRL-F5) before you start editing";
+        statustext.innerHTML = "Ready -- remember to reload page (CTRL-F5 or SHIFT-Refresh) before you start editing";
         if (typeof(change_text_on_update) != 'undefined') {
           document.getElementById('change_text_on_update').innerHTML = change_text_on_update;
         }
