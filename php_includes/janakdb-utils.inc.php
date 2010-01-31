@@ -1421,7 +1421,10 @@ function get_election_attrib($attrib,$for_race=true) {
     ' WHERE `attrib_name` = ? and `election_name` = ?' . 
     ($for_race?' and `race_name` = ?':''),
     $sqlargs);
-  return (array_key_exists('attrib_value',$row) && $row['attrib_value']);
+  if (array_key_exists('attrib_value',$row)) {
+    return $row['attrib_value'];
+  }
+  return null;
 }
 
 //To help prevent elections fraud, this function is called to log any
