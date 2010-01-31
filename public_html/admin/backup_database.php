@@ -90,13 +90,14 @@ if (preg_match('/\/|\\|:|\*|\?|"|<|>|\|/',$backup_ext)) {
 janak_fatal_error_reporting(E_ALL);
 echo "backup name " . escape_html($backup_ext) . "<p>";
 
+  $oldfetch = $db->SetFetchMode(ADODB_FETCH_NUM);
+
 if (!$recover) {
   //put this backup's information into the archive_data table, so it can
   //be seen.
   //this array has all salient information
   $db_props = array();
   $db_props['semester_start'] = get_static('semester_start');
-  $oldfetch = $db->SetFetchMode(ADODB_FETCH_NUM);
   $mod_row = $db->_Execute("select max(`mod_date`) " .
     "from " . bracket('modified_dates'));
   $db_props['mod_date'] = $mod_row->fields[0];
@@ -160,7 +161,7 @@ if (!$recover) {
     }
     else {
       //the new table name if we're recovering
-      $bnewtbl = substr($tbl,strlen("$archive_pre{$backup_ext}_"));
+      $bnewtbl = bracket(substr($tbl,strlen("$archive_pre{$backup_ext}_")));
     }
     $db->Execute("drop table if exists $bnewtbl");
     //this code is now no longer strictly necessary -- our version of
