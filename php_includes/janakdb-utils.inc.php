@@ -846,8 +846,7 @@ function print_help($section=null,$span=false) {
   if (!array_key_exists('REQUEST_URI',$_SERVER)) {
     return;
   }
-  global $real_username,$bug_report_url,$feature_request_url,$project_url,
-    $body_insert;
+  global $bug_report_url,$feature_request_url,$project_url,$body_insert;
   static $done = false;
   if ($done) {
     return;
@@ -931,20 +930,6 @@ function access_table($tbl) {
 function get_username() {
   global $url_name;
   return $url_name . 'laborczar';
-}
-
-//what is the actual username being used to access the site?
-function get_real_username() {
-  $username = null;
-  //if php is not in safe mode, then we get the username from php
-  if (array_key_exists('PHP_AUTH_USER',$_SERVER)) {
-    $username = $_SERVER['PHP_AUTH_USER'];
-  }
-  //maybe we'll get it from the apache environment
-  if (!$username && array_key_exists('REMOTE_USER',$_SERVER)) {
-    $username = $_SERVER['REMOTE_USER'];
-  }
-  return $username;
 }
 
 function admin_email() {

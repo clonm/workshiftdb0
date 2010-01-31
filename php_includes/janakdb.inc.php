@@ -155,19 +155,6 @@ $url_array = array('db' => "bsccoo5_workshift$house_name",
                    'server' => $default_server,
 );
 
-//username is the username from the apache security login.  Since
-//there is only one real physical directory, apache can't keep
-//different workshift managers out of each other's sites, so we need
-//to check the authentication here.
-$real_username = get_real_username();
-#//secured means we're in the ...admin/ portion
-#if ($secured && $real_username !== get_username() && 
-#    $real_username !== 'workshiftadmin') {
-#  trigger_error("You are trying to access with the wrong username/password " .
-#                "for this database: $real_username",E_USER_ERROR);
-#}
-
-
 //many scripts can be invoked with an archive argument, which will make them
 //access the backup database, instead of the current one.
 if (!isset($archive)) {
