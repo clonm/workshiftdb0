@@ -192,9 +192,6 @@ if ($dh = opendir($backup_dir)) {
 
 function db_quote($str) {
   global $db;
-  if ($str == null) {
-    return 'NULL';
-  }
   return $db->quote($str);
 }
 
