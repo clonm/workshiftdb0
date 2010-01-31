@@ -55,6 +55,7 @@ while ($row = $res->FetchRow()) {
     $col_styles[] = 'input';
   }
 }
+
 #var_dump($read_only);
 if (array_key_exists('view_only',$_REQUEST)) {
   require_once("$php_includes/table_view.php");
