@@ -1,6 +1,7 @@
 <?php
-#print_r($_SERVER);
-#exit;
+//File Janak used in 2008 to upload missing data -- originally to cloyne, but 
+//apparently also to Sherman.  Probably doesn't work, but maybe it could be 
+//useful to someone for guidance.
 $php_includes = '../php_includes/';
 require_once($php_includes . 'adodb/adodb.inc.php');
 require_once($php_includes . 'adodb/drivers/adodb-mysqlt.inc.php');
