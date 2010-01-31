@@ -313,7 +313,7 @@ if (isset($onload_function)) {
 }
 ?>
 >
-<?php 
+<?php
 if (!isset($suppress_help)) {
   print_help();
 }
@@ -326,7 +326,7 @@ if (isset($body_insert)) {
 ?>
 <p class="status" <?=$read_only?"style='display: none'":''?>
 id="statustext">
-Ready -- remember to reload page (CTRL-F5 or SHIFT-Refresh) before you start editing</p>
+Ready -- (Refresh to latest version using CTRL-F5 or SHIFT-Refresh)</p>
 <form 
 <?php if (!$read_only) { ?>
 method="POST" action="<?=escape_html($update_db_url)?>" 

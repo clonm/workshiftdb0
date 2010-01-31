@@ -604,7 +604,7 @@ function add_row() {
 
 function check_changed() {
   if (!deleted_rows.length && !added_rows.length && !change_array.length) {
-    statustext.innerHTML = "Ready -- remember to reload page (CTRL-F5 or SHIFT-Refresh) before you start editing";
+    statustext.innerHTML = "Ready -- (Refresh to latest version using CTRL-F5 or SHIFT-Refresh)";
     return false;
   }
   else {
@@ -871,7 +871,7 @@ function submit_data () {
 //was registered above in submit_data
 function processReqChange () {
   if (req == 0) {
-    statustext.innerHTML = "Ready -- remember to reload page (CTRL-F5 or SHIFT-Refresh) before you start editing";
+    statustext.innerHTML = "Ready -- (Refresh to latest version using CTRL-F5 or SHIFT-Refresh)";
     return false;
   }
   //let user know what's up
@@ -956,7 +956,7 @@ function processReqChange () {
           }
         }
         req = 0;
-        statustext.innerHTML = "Ready -- remember to reload page (CTRL-F5 or SHIFT-Refresh) before you start editing";
+        statustext.innerHTML = "Ready -- (Refresh to latest version using CTRL-F5 or SHIFT-Refresh)";
         if (typeof(change_text_on_update) != 'undefined') {
           document.getElementById('change_text_on_update').innerHTML = change_text_on_update;
         }
