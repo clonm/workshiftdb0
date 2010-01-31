@@ -1,6 +1,21 @@
 <?php
 require_once('default.admin.inc.php');
-
+  $db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshiftstb");
+$res = $db->Execute("select * from `voting_record` order by `election_name`,`member_name`,`autoid`");
+$duplicate_ids = array();
+$duplicate_hash = array();
+while ($row = $res->FetchRow()) {
+  if (!array_key_exists($row['member_name'] . "-" . $row['election_name'],
+    $duplicate_hash)) {
+      $duplicate_hash[$row['member_name'] . "-" . $row['election_name']] = 1;
+    }
+  else {
+    $duplicate_ids[] = array(0 => $row['autoid']);
+  }
+}
+$db->Execute("delete from `voting_record` where autoid = ?",
+  $duplicate_ids);
+exit;
 /*
 if (array_key_exists('logout',$_REQUEST)) {
   setcookie('member_name',null,time()-3600);
