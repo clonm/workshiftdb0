@@ -1,16 +1,21 @@
 <?php
+//Basic utility script that resets any officer's password.
+//Commented by Janak 31 Jan 2010
+//
 require_once('default.admin.inc.php');
-if (!isset($_REQUEST['house']) || !isset($_REQUEST['officer'])) {
 ?>
 <html><head><title>Reset Officer Password</title></head><body>
+<?php
+if (!isset($_REQUEST['house']) || !isset($_REQUEST['officer'])) {
+?>
     Reset password for:<br/>
-<form action='<?=this_url()?>' method=post>
+<form action='<?=this_url()?>' method='post'>
    House: <select name='house'>
 <option>
 <?php
-   $houses[] = 'nsc';
     foreach ($houses as $house) {
-    print "<option value='" . escape_html($house) . "'>" . escape_html($house) . "\n";
+      print "<option value='" . escape_html($house) . "'>" .
+        escape_html($house) . "\n";
   }
 ?>
 </select>
@@ -34,3 +39,4 @@ $db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshift$house"
 set_passwd($house . $officer,null,'',true,true);
 print "Success resetting password for " . escape_html($house . $officer);
 ?>
+</body></html>
