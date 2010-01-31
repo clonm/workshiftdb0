@@ -262,8 +262,8 @@ $javascript_pre .= <<<JAVASCRIPT_PRE
           set_value(unassigned_hours,Number(get_value(unassigned_hours))-Number(hrs));
         }
         else if (!get_value(elt)) {
-          set_value(unassigned_hours,Number(get_value(assigned_hours))+Number(hrs));
-          set_value(assigned_hours,Number(get_value(unassigned_hours))+Number(hrs));
+          set_value(unassigned_hours,Number(get_value(unassigned_hours))+Number(hrs));
+          set_value(assigned_hours,Number(get_value(assigned_hours))-Number(hrs));
         }
       }
       else {
