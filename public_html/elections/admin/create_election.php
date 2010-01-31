@@ -663,7 +663,7 @@ function make_insert($val) {
   global $election_name;
   return array($val,$election_name,-1);
 }
-$db->execute("insert into `voting_record` " .
+$db->execute("insert ignore into `voting_record` " .
   "(`member_name`,`election_name`,`manual_entry`) values (?,?,?)",
     array_map('make_insert',get_houselist()));
 
