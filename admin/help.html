@@ -570,10 +570,19 @@ name="php_includes/update_db.internal.php"><h4>update_db.internal.php</h4></a>
 <li><a
 name="php_includes/weekly_totals.inc.php"><h4>weekly_totals.inc.php</h4></a>
 </ul>
-<a name="system/active_houses.php"><h4>active_houses.php</h4></a>
+<li><a name="system/active_houses.php"><h4>active_houses.php</h4></a>
 Displays the last time each house used the system.  Mostly an ego boost.  Useful
 if you majorly screwed something up and need to see which houses' systems need
 to be fixed.
+<li><a name="system/default.admin.inc.php"><h4>default.admin.inc.php</h4></a>
+Default include file for all system administrator scripts.  Sets some variables
+the administrator should have (currently just $houses) and then does its main
+task which it has in common with default.inc.php -- try to figure out where
+php_includes lives.  If this script cannot find php_includes, then you can set
+it manually here to the correct absolute path.<br/>
+TODO 1: get list of houses automatically from dir listing of /workshift
+
+
 </ul>
 
 </body></html>
