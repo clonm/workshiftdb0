@@ -73,7 +73,7 @@ the selections will extend to later backups.<br/>
 }
  if (count($delete_dbs[0])) {
 ?>
-<input id='button_redund' type=submit value='Select all <?=count($delete_dbs[0])?> redundant backups' 
+<input id='button_redund' type='button' value='Select all <?=count($delete_dbs[0])?> redundant backup(s)' 
 onclick='select_redundant()'><br/>
 (Pressing this button will select backups which seem to just be intermediate
 backups, made automatically by the system when you changed things, and not
@@ -83,7 +83,7 @@ and make sure that this is the case.)<br/>
 }
 if (count($delete_dbs[1])) {
 ?>
-<input id='button_corrupt' type=submit value='Select all <?=count($delete_dbs[1])?> corrupt backups'
+<input id='button_corrupt' type='button' value='Select all <?=count($delete_dbs[1])?> corrupt backup(s)'
 onclick='select_corrupt()'><br/>
 (This will select backups that do not seem to be complete -- they may be from an
 earlier version of the program, or something may have gone wrong with them.  They
@@ -119,24 +119,26 @@ js_assoc_array('corrupts',$corrupts);
 ?>
 function select_redundant() {
 redund_flag = !redund_flag;
-for (var ii=sel_elt.options.length-1;ii>0;ii--) {
+for (var ii=sel_elt.options.length-1;ii>=0;ii--) {
   if (redunds[sel_elt.options[ii].value]) {
     sel_elt.options[ii].selected = redund_flag;
   }
 }
 button_redund.value = (redund_flag?'Uns':'S') + 'elect all ' +
 '<?=count($delete_dbs[0])?> redundant backups';
+return true;
 }
 
 function select_corrupt() {
 corrupt_flag = !corrupt_flag;
-for (var ii=sel_elt.options.length-1;ii>0;ii--) {
+for (var ii=sel_elt.options.length-1;ii>=0;ii--) {
   if (corrupts[sel_elt.options[ii].value]) {
     sel_elt.options[ii].selected = corrupt_flag;
   }
 }
 button_corrupt.value = (corrupt_flag?'Uns':'S') + 'elect all ' +
 '<?=count($delete_dbs[1])?> corrupt backups';
+return true;
 }
 
 //function to display backup (via index.php) when clicked.
@@ -149,6 +151,7 @@ if (e.target) targ = e.target;
 else if (e.srcElement) targ = e.srcElement;
 var show = window.open('index.php?archive=' + targ.value,'view_backup'); 
 show.focus();
+return true;
 }
 </script>
 </html>
