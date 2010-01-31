@@ -90,6 +90,7 @@ if (preg_match('/\/|\\|:|\*|\?|"|<|>|\|/',$backup_ext)) {
 janak_fatal_error_reporting(E_ALL);
 echo "backup name " . escape_html($backup_ext) . "<p>";
 
+if (!$recover) {
 //put this backup's information into the archive_data table, so it can
 //be seen.
 //this array has all salient information
@@ -123,7 +124,8 @@ $db->Execute("insert into `GLOBAL_archive_data` " .
     $db_props['mod_date'],$db_props['cur_week'],$db_props['num_wanted'],
     $db_props['num_assigned'],$db_props['autobackup'],
     $db_props['owed_default']));
-    
+}
+
 //tell user what's going on, in a hidden div, so admin can see if necessary
   echo "<div style='display: none' id=" .
   ($recover?'recover':'backup') . "_messages>";
@@ -175,6 +177,10 @@ $db->Execute($sqlcode);
     $db->StartTrans();
 $db->Execute("insert into $bnewtbl select * from $btbl");
     $db->CompleteTrans();
+  }
+  if ($recover) {
+    $db->Execute("delete from `GLOBAL_archive_data` where `archive` = ?",
+      array($backup_ext));
   }
   echo "</div>";
 echo "<h4>" . ($recover?"Restore":"Backup") . " succeeded!</h4>";
