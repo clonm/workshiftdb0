@@ -70,19 +70,31 @@ escape_html(rawurlencode($_REQUEST['election_name']))?>'
 if (array_key_exists('count_voter',$_REQUEST) &&
     $_REQUEST['count_voter']) {
   $row = $db->GetRow("select count(*) as ct from `voting_record` where " .
-                     "`member_name` = ? and `election_name` = ?",
+    "`member_name` = ? and `election_name` = ? " .
+    "and `manual_entry` != -1",
                      array($_REQUEST['voter_name'],
                            $election_name));
   if ($row['ct']) {
     exit("Error!  This person is listed as already having voted</body></html>");
   }
-  $db->Execute("INSERT INTO voting_record VALUES (NULL,?,?,?)",
-               array($_REQUEST['voter_name'],
-                     $election_name,
-                     1)); 
+  $db->Execute("update voting_record set `manual_entry` = 1 where " .
+    "`election_name` = ? and `member_name` = ?",
+               array($election_name,$member_name)); 
   print "Recorded voter " . escape_html($_REQUEST['voter_name']);
   exit("</body></html>");
 }
+
+if (array_key_exists('add_eligible_voters',$_REQUEST)) {
+  $add_voters = $_REQUEST['add_voter_name'];
+  foreach ($add_voters as $person) {
+    $db->Execute("insert ignore into `voting_record` " .
+      "(`member_name`,`election_name`,`manual_entry`) values (?,?,?)",
+        array($person,$election_name,-1));
+    print "Added " . escape_html($person) . " to the list of eligible " .
+      "voters for election " . escape_html($election_name) . "<br/>\n";
+  }
+}
+
 if (array_key_exists('delete_election',$_REQUEST)) {
   $witnesses = require_witnesses(2);
   $tables_array = array('votes','voting_record','elections_record','elections_attribs',
@@ -104,7 +116,8 @@ if (array_key_exists('delete_election',$_REQUEST)) {
 }
 
 $res = $db->Execute("select `member_name`, `manual_entry` from voting_record " .
-                   "where election_name = ? order by `member_name`",
+  "where election_name = ? and `manual_entry` != -1 " .
+  "order by `member_name`",
                     array($election_name));
 echo "<h4>List of voters for $election_name:</h4>";
 ?>
@@ -168,6 +181,32 @@ print "<option>" . escape_html($person) . "\n";
 }
 ?>
 <hr>
+<?php
+$res = $db->Execute("select `member_name` from `voting_record` " .
+  "where `election_name` = ?",array($election_name));
+$missing_list = $houselist;
+while ($row = $res->FetchRow()) {
+  unset($missing_list[$row['member_name']]);
+}
+if (count($missing_list)) {
+?>
+Make the following new members eligible to vote in this election
+(they will also become eligible if you modify the election through
+the link below).<br/>
+<form action=<?=this_url()?> method='post'>
+<input type='hidden' name='election_name'
+  value='<?=escape_html($election_name)?>'>
+<input type='hidden' name='add_eligible_voters'>
+<select name='add_voter_name[]' multiple>
+<?php
+  foreach (array_keys($missing_list) as $person) {
+    print "<option>" . escape_html($person) . "\n";
+  }
+?>
+</select><input type='submit' value='Submit'/>
+<hr/>
+<?php }
+?>
 <a href='create_election.php?modify_election&election_name=<?=
                                     escape_html(rawurlencode($election_name))?>'>
 Modify election</a><p>

@@ -615,8 +615,9 @@ $db->StartTrans();
 //an error, the rollback there will roll back all the commands.  Note
 //that I don't think this would work with MyIsam tables, but that
 //should never happen -- we really need transactional tables.
-$db->Execute("lock tables `elections_record` write,`elections_attribs` write, " .
-             "`elections_log` write, `modified_dates` write");
+$db->Execute("lock tables `elections_record` write," .
+  "`elections_attribs` write,`elections_log` write," .
+  "`voting_record` write, `modified_dates` write, `house_list` read");
 
 //do we have the election already?  elections_record keeps basic data
 //about elections a little more handy than elections_attribs.
@@ -656,6 +657,15 @@ else {
                  array($election_name));
   }
 }
+
+//insert elements into votes so that administrator can't tell order of votes
+function make_insert($val) {
+  global $election_name;
+  return array($val,$election_name,-1);
+}
+$db->execute("insert into `voting_record` " .
+  "(`member_name`,`election_name`,`manual_entry`) values (?,?,?)",
+    array_map('make_insert',get_houselist()));
 
 //auxilary function which simplifies setting election attributes.  It
 //gets complicated because of the race_name variable.  If race_name is

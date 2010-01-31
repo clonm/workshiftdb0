@@ -87,6 +87,13 @@ if (is_empty($row)) {
   list_elections(null,$manual_entry);
 }
 
+if (is_empty($db->Execute("select `member_name` from `voting_record` " .
+  "where `election_name` = ? and `member_name` = ?",
+  array($election_name,$member_name)))) {
+  exit("Sorry, you're not on the list of voters.  Please contact your " .
+    "president to be added to this list.");
+}
+
 //the ballot can still be viewed even if the user isn't eligible to vote.
 if ((!$manual_entry && $row['open']) || 
     ($manual_entry && !$row['open'] && $row['status'])) {
@@ -107,7 +114,7 @@ $anon_voting = $row['anon_voting']%2;
 //if anonymous and already voted, not votable
 if ($anon_voting && !$manual_entry) {
   $row = $db->GetRow("select count(*) as ct from `voting_record`
-where `election_name` = ? and member_name = ?"
+where `election_name` = ? and member_name = ? and `manual_entry` != -1"
                      ,array($election_name,$member_name));
   if ($row['ct'] > 0) {
     $votable = false;
@@ -725,7 +732,7 @@ if ($_REQUEST['page_type'] == 'review_vote') {
   if ($anon_voting && !$manual_entry) {
     $row = $db->GetRow(<<<SQLSTMT
 select count(*) as ct from `voting_record`
-where `election_name` = ? and member_name = ?
+where `election_name` = ? and member_name = ? and `manual_entry` != -1
 SQLSTMT
                        ,array($election_name,$member_name));
     if ($row['ct'] > 0) {
@@ -1011,7 +1018,7 @@ SQLSTMT
     if (!$manual_entry) {
       $row = $db->GetRow(<<<SQLSTMT
 select count(*) as ct from `voting_record`
-where `election_name` = ? and member_name = ?
+where `election_name` = ? and `member_name` = ? and `manual_entry` != -1
 SQLSTMT
                          ,array($election_name,$member_name));
       if ($row['ct'] > 0) {
@@ -1060,15 +1067,14 @@ SQLSTMT
                    election_name = ?
 SQLSTMT
                    ,array($member_name,$election_name));
-      $db->Execute("delete from `voting_record` where `member_name` = ? and " .
-                   "election_name = ?",array($member_name,$election_name));
     }
     $voting_name = $member_name;
   }
   //voting_record gets put in unless this is a manual entry for anon election
   if ($member_name != $dummy_string) {
-    $db->Execute("insert into `voting_record` values(null,?,?,?)",
-                 array($member_name,$election_name,$manual_entry));
+    $db->Execute("update `voting_record` set `manual_entry` = ? " .
+      "where `member_name` = ? and `election_name` = ?",
+                 array($manual_entry,$member_name,$election_name));
   }
   //user gets this so they can track their vote, make sure it's right
   if ($voting_name !== $member_name) {
