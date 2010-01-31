@@ -105,7 +105,7 @@ if (!isset($col_styles)) {
 //col_sortable, if set for a given column, says that that column can be sorted,
 //using the specified function.  If null, the page will guess.
 if (!isset($col_sortable)) {
-  $col_sortable = array();
+  $col_sortable = array_fill(0,count($col_formats),'pre_process_default');
 }
 
 //restrict_cols goes to table_edit.js so it knows which columns to restrict on
