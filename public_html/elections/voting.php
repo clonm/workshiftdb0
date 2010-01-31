@@ -93,7 +93,6 @@ if (is_empty($db->Execute("select `member_name` from `voting_record` " .
   exit("Sorry, you're not on the list of voters.  Please contact your " .
     "president to be added to this list.");
 }
-
 //the ballot can still be viewed even if the user isn't eligible to vote.
 if ((!$manual_entry && $row['open']) || 
     ($manual_entry && !$row['open'] && $row['status'])) {
@@ -112,14 +111,12 @@ $row = $db->GetRow("select `anon_voting` from `elections_record` " .
 //finalized, so this ballot is never votable.
 $anon_voting = $row['anon_voting']%2;
 //if anonymous and already voted, not votable
-if ($anon_voting && !$manual_entry) {
-  $row = $db->GetRow("select count(*) as ct from `voting_record`
+if ($anon_voting && !$manual_entry &&
+  !is_empty($db->GetRow("select 1 from `voting_record`
 where `election_name` = ? and member_name = ? and `manual_entry` != -1"
-                     ,array($election_name,$member_name));
-  if ($row['ct'] > 0) {
-    $votable = false;
-  }
-}
+,array($election_name,$member_name)))) {
+  $votable = false;
+                     }
 else if ($manual_entry && !$anon_voting) {
   if (isset($_REQUEST['member_name_vote'])) {
     $member_name = $_REQUEST['member_name_vote'];
@@ -159,7 +156,7 @@ if (!array_key_exists('page_type',$_REQUEST) ||
   //returns a frameset and then gets called again inside that
   //frameset, but this time with the internal flag (to avoid an
   //infinite descending frameset).
-  $descript_file = get_election_attrib('descript_filename',null,false);
+  $descript_file = get_election_attrib('descript_filename',null);
   if ($descript_file && !array_key_exists('internal',$_REQUEST)) {
     $internal = false;
     //this_url constructs the url using the get array, so this is
@@ -351,9 +348,9 @@ pre {
 <body>
 <?php
 print $body_insert;
-$description = get_election_attrib('descript',null,false);
+$description = get_election_attrib('descript',null);
 //if not html, escape it and pre-space it
-if (!get_election_attrib('descript_html',null,false)) {
+if (!get_election_attrib('descript_html',null)) {
   $description = "<div style='" . white_space_css() . "'>" . 
     escape_html($description) . "</div>";
 }
