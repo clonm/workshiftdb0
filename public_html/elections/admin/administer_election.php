@@ -67,33 +67,6 @@ escape_html(rawurlencode($_REQUEST['election_name']))?>'
 <?php
   exit;
 }
-if (array_key_exists('count_voter',$_REQUEST) &&
-    $_REQUEST['count_voter']) {
-  $row = $db->GetRow("select count(*) as ct from `voting_record` where " .
-    "`member_name` = ? and `election_name` = ? " .
-    "and `manual_entry` != -1",
-                     array($_REQUEST['voter_name'],
-                           $election_name));
-  if ($row['ct']) {
-    exit("Error!  This person is listed as already having voted</body></html>");
-  }
-  $db->Execute("update voting_record set `manual_entry` = 1 where " .
-    "`election_name` = ? and `member_name` = ?",
-               array($election_name,$member_name)); 
-  print "Recorded voter " . escape_html($_REQUEST['voter_name']);
-  exit("</body></html>");
-}
-
-if (array_key_exists('add_eligible_voters',$_REQUEST)) {
-  $add_voters = $_REQUEST['add_voter_name'];
-  foreach ($add_voters as $person) {
-    $db->Execute("insert ignore into `voting_record` " .
-      "(`member_name`,`election_name`,`manual_entry`) values (?,?,?)",
-        array($person,$election_name,-1));
-    print "Added " . escape_html($person) . " to the list of eligible " .
-      "voters for election " . escape_html($election_name) . "<br/>\n";
-  }
-}
 
 if (array_key_exists('delete_election',$_REQUEST)) {
   $witnesses = require_witnesses(2);
@@ -115,6 +88,49 @@ if (array_key_exists('delete_election',$_REQUEST)) {
   exit("Deleted!</body></html>");  
 }
 
+//list of all people who can theoretically vote
+$houselist_keys = array_flip(get_houselist());
+$nonvoters = array_flip(users_with_privileges('nonvoter'));
+$houselist_keys = array_diff_key($houselist_keys,$nonvoters);
+
+if (array_key_exists('count_voter',$_REQUEST) &&
+  $_REQUEST['count_voter']) {
+    $count_voters = $_REQUEST['voter_name'];
+    foreach ($count_voters as $mem_name) {
+      $mem_name = $_REQUEST['voter_name'];
+      if (!array_key_exists($mem_name,$houselist_keys)) {
+        print("<strong>Error! " . escape_html($mem_name) .
+          " is not a valid voter.</strong><br/>\n");
+      }
+      if (!is_empty($db->GetRow("select 1 from `voting_record` where " .
+        "`member_name` = ? and `election_name` = ? and `manual_entry` != -1",
+        array($mem_name,$election_name)))) {
+          exit("Error!  " . escape_html($mem_name) .
+            " is listed as already having voted</body></html>");
+        }
+      $db->Execute("update voting_record set `manual_entry` = 1 where " .
+        "`election_name` = ? and `member_name` = ?",
+        array($election_name,$mem_name)); 
+      print("Recorded voter " . escape_html($mem_name) . "</br>\n");
+    }
+    }
+
+if (array_key_exists('add_eligible_voters',$_REQUEST)) {
+  $add_voters = $_REQUEST['add_voter_name'];
+  foreach ($add_voters as $person) {
+    if (!array_key_exists($person,$houselist_keys)) {
+      print "<strong>Error! " . escape_html($person) .
+        " is not a valid voter.</strong><br/>\n";
+      continue;
+    }
+    $db->Execute("insert ignore into `voting_record` " .
+      "(`member_name`,`election_name`,`manual_entry`) values (?,?,?)",
+        array($person,$election_name,-1));
+    print "Added " . escape_html($person) . " to the list of eligible " .
+      "voters for election " . escape_html($election_name) . "<br/>\n";
+  }
+}
+
 $res = $db->Execute("select `member_name`, `manual_entry` from voting_record " .
   "where election_name = ? and `manual_entry` != -1 " .
   "order by `member_name`",
@@ -125,13 +141,13 @@ echo "<h4>List of voters for $election_name:</h4>";
 <tr><td>Member name</td><td>Manually entered?</td></tr>
 <?php
 $ii = 0;
-$houselist = array_flip(get_houselist());
+$voted_list = $houselist_keys;
 while ($row = $res->FetchRow()) {
 ?>
   <tr><td><?=escape_html($row['member_name'])?></td>
     <td><?=$row['manual_entry']?'yes':'no'?></td></tr>
 <?php
-    unset($houselist[$row['member_name'] ]);
+    unset($voted_list[$row['member_name'] ]);
     $ii++;
 }
 ?>
@@ -144,7 +160,7 @@ while ($row = $res->FetchRow()) {
 $res = $db->Execute("select `member_name`, `room`, `email` " .
                     "from `house_info` order by `member_name`");
 while ($row = $res->FetchRow()) {
-  if (array_key_exists($row['member_name'],$houselist)) {
+  if (array_key_exists($row['member_name'],$voted_list)) {
     $member_name = $row['member_name'];
     $names = explode(', ',$member_name);
     if (count($names) > 1) {
@@ -165,10 +181,9 @@ if ($elect_row['anon_voting']%2) {
 <hr>
 <h4>Enter a member who voted manually (so they can't vote online as well):</h4>
 <form action='<?=this_url()?>' method='post'>
-<select name='voter_name'>
-<option>
+<select name='voter_name[]' multiple size=10>
 <?php
-foreach (array_keys($houselist) as $person) {
+foreach (array_keys($voted_list) as $person) {
 print "<option>" . escape_html($person) . "\n";
 }
 ?>
@@ -184,14 +199,15 @@ print "<option>" . escape_html($person) . "\n";
 <?php
 $res = $db->Execute("select `member_name` from `voting_record` " .
   "where `election_name` = ?",array($election_name));
-$missing_list = $houselist;
+$missing_list = $houselist_keys;
 while ($row = $res->FetchRow()) {
   unset($missing_list[$row['member_name']]);
 }
+
 if (count($missing_list)) {
 ?>
-Make the following new members eligible to vote in this election
-(they will also become eligible if you modify the election through
+Choose new members who should be eligible to vote in this election
+(all of them will also become eligible if you modify the election through
 the link below).<br/>
 <form action=<?=this_url()?> method='post'>
 <input type='hidden' name='election_name'
