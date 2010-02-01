@@ -1467,7 +1467,8 @@ function authorized_user($member_name,$type) {
   global $db, $officer_name,$house_name;
   $attribs = user_privileges($member_name);
   return in_array($type,$attribs) || (isset($officer_name) && 
-    substr($officer_name,strlen($house_name)) == $type);
+    substr($officer_name,strlen($house_name)) == $type) ||
+    check_admin_priv();
 }
 
 //what are all the privileges this user has?

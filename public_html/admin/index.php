@@ -1,11 +1,36 @@
 <?php
 #emacs comment';
 $require_user = array('workshift','house','president');
+$officer_level = 0;
 $body_insert = '';
 require_once('default.inc.php');
+if (authorized_user($member_name,'workshift')) {
+  $officer_level = 3;
+}
+else if (authorized_user($member_name,'house')) {
+  $officer_level = 2;
+}
+else if (authorized_user($member_name,'president')) {
+  $officer_level = 1;
+}
 ?>
-<html><head><title>Workshift Manager's links</title></head><body>
+  <html><head><title><?php
+switch($officer_level) {
+case 3: print 'Workshift Manager'; break;
+case 2: print 'House Manager'; break;
+case 1: print 'President';
+}
+?>'s links</title></head><body>
 <?=$body_insert?>
+<?php if ($officer_level == 1) {
+?>
+<p>  Your main President's page is at
+  <a href='../elections/admin/'>http://<?=
+  escape_html($_SERVER['HTTP_HOST'] . "/" . $house_name)
+?>/elections/admin/</a></p>
+<?php
+}
+?>
 <h4><a href='help.html' target='help'>Read the help</a>
 for how to get started.</h4>
 <?php
@@ -24,6 +49,9 @@ print "<h2>Viewing backup " . escape_html($archive) . "</h2>";
 }
 ?>
 <ul>
+<?php
+if ($officer_level == 3) {
+?>
 <li><h3>Daily/Weekly actions</h3>
 <form action='week.php<?=$archive?'?archive=' . escape_html($archive):''?>' method=get>
 <input type=submit value='Edit week '>
@@ -34,13 +62,26 @@ if ($archive) {
 }
 ?>
 </form>
+<?php
+}
+?>
 <a href="../public_utils/weekly_totals_print.php<?=$archive?'?archive=' . escape_html($archive):''?>">Print out weekly totals</a><br>
+<?php if ($officer_level == 3) {
+?>
 <a href="weekly_totals_update.php<?=$archive?'?archive=' . escape_html($archive):''?>">Update hours owed and notes for
 weekly totals</a><br>
-<li><h3>Semi-regular actions</h3>
-<a href='person.admin.php<?=$archive?'?archive=' . escape_html($archive):''?>'>View a person's shift history at a glance</a><br>
+  <li><h3>Semi-regular actions</h3>
+  <a href='person.admin.php<?=$archive?'?archive=' . escape_html($archive):''?>'>View a person's shift history at a glance</a><br/>
+<?php
+}
+if ($officer_level >= 2) {
+?>
 <a href='house_fines.php<?=$archive?'?archive=' . escape_html($archive):''?>'>View/print/download the fines for the house</a><br>
 <a href="fining_data.php<?=$archive?'?archive=' . escape_html($archive):''?>">Manually enter a fine for a member</a><br>
+<?php
+}
+if ($officer_level == 3) {
+?>
 <a href='special_fining.php<?=$archive?'?archive=' . escape_html($archive):''?>'>Change the week a fining period ends for
 a specific member</a><br>
 <li><h3>Beginning of semester</h3>
@@ -92,6 +133,7 @@ if (!$archive) {
 ?>
 <a href="signoff.php<?=$archive?'?archive=' . escape_html($archive):''?>">Print out signoff sheets</a><br>
 <?php
+}
 }
 ?>
 <li><h3>Utilities</h3>

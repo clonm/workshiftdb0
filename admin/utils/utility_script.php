@@ -1,7 +1,15 @@
 <?php
+  var_dump(preg_match('/[0-9][0-9][0-9][0-9](_[0-9][0-9]){5}/',"2006_08_25_20_30_41") == 1);
+exit;
 require_once('default.admin.inc.php');
-  $db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshiftstb");
-$res = $db->Execute("select * from `voting_record` order by `election_name`,`member_name`,`autoid`");
+$db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshiftco");
+$res = $db->Execute("select * from `janak_test`");
+while ($row = $res->FetchRow()) {
+  var_dump($row);
+}
+exit;
+/* $res = $db->Execute("select * from `voting_record` order by 
+ * `election_name`,`member_name`,`autoid`");
 $duplicate_ids = array();
 $duplicate_hash = array();
 while ($row = $res->FetchRow()) {
@@ -15,6 +23,7 @@ while ($row = $res->FetchRow()) {
 }
 $db->Execute("delete from `voting_record` where autoid = ?",
   $duplicate_ids);
+ */
 exit;
 /*
 if (array_key_exists('logout',$_REQUEST)) {
