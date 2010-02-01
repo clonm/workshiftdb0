@@ -97,8 +97,51 @@ while ($fname = readdir($dh)) {
     continue;
   }
   print("<h1>Restoring $fname</h1>");
-  restore_db($restore_dir,$fname) ||
+  $server = server_from_db($fname);
+  $user = user_from_db($fname);
+  $db->Connect($server,$user,$url_array['pwd'],$fname);
+  $row = $db->GetRow("select version() as vs");
+  $temp = $row['vs'];
+  $temp = explode('.',$temp);
+  $MYSQL_VERSION = 10000*$temp[0];
+  $MYSQL_VERSION += 1000*$temp[1];
+  $temp = explode('-',$temp[2]);
+  $MYSQL_VERSION += $temp[0];
+  $MYSQL_VERSION = 0;
+  $db->debug = true;
+#  $db->clientFlags += 65536;
+#  $db->debug = true;
+  // Return associative arrays
+  $db->SetFetchMode(ADODB_FETCH_ASSOC); 
+  //enable transactions -- MyISAM doesn't have transactions
+  $db->Execute("set table_type = 'InnoDB'");
+  //are there any tables anyway?
+  if (!is_empty($db->GetRow("show tables"))) {
+    $_REQUEST['backup_ext'] = '';
+    print("<h3>Backing up old $fname</h3>");
+    require("../public_html/admin/backup_database.php");
+  }
+  $db->debug = true;
+  if ($MYSQL_VERSION >= 41000) {
+    //this command will screw up the mysql connection, but it's ok because
+    //we're about to close and re-open it
+    $retval = $db->Execute(file_get_contents("$restore_dir/$fname"));
+  }
+  else {
+    $retval = system("mysql -u" .escapeshellarg($user) . " -p" .
+                     escapeshellarg($url_array['pwd']) . " -h" . escapeshellarg($server) .
+                     " " . escapeshellarg($fname) . 
+                     " < " . escapeshellarg($restore_dir) . "/" . 
+                     escapeshellarg($fname) . " 2>&1");
+    $retval = !$retval;
+  }
+  $db->Close();
+  if ($retval) {
+    print("<h4>Restore succeeded!</h4>");
+  }
+  else {
     janak_error("Couldn't restore $fname");
+  }
 }
 clean_up(null,null,null,null,null);
 
@@ -144,52 +187,5 @@ function server_from_db($db) {
 function user_from_db($db) {
   global $url_array;
   return $url_array['user'];
-}
-
-function restore_db($restore_dir,$fname) {
-  global $db,$url_array, $php_includes, $USE_MYSQL_FEATURES, $archive_pre;
-  $server = server_from_db($fname);
-  $user = user_from_db($fname);
-  $db->Connect($server,$user,$url_array['pwd'],$fname);
-  $row = $db->GetRow("select version() as vs");
-  $temp = $row['vs'];
-  $temp = explode('.',$temp);
-  $MYSQL_VERSION = 10000*$temp[0];
-  $MYSQL_VERSION += 1000*$temp[1];
-  $temp = explode('-',$temp[2]);
-  $MYSQL_VERSION += $temp[0];
-  $MYSQL_VERSION = 0;
-  $db->debug = true;
-#  $db->clientFlags += 65536;
-#  $db->debug = true;
-  // Return associative arrays
-  $db->SetFetchMode(ADODB_FETCH_ASSOC); 
-  //enable transactions -- MyISAM doesn't have transactions
-  $db->Execute("set table_type = 'InnoDB'");
-  //are there any tables anyway?
-  if (!is_empty($db->GetRow("show tables"))) {
-    $_REQUEST['backup_ext'] = '';
-    print("<h3>Backing up old $fname</h3>");
-    require("../public_html/admin/backup_database.php");
-  }
-  $db->debug = true;
-  if ($MYSQL_VERSION >= 41000) {
-    //this command will screw up the mysql connection, but it's ok because
-    //we're about to close and re-open it
-    $retval = $db->Execute(file_get_contents("$restore_dir/$fname"));
-  }
-  else {
-    $retval = system("mysql -u" .escapeshellarg($user) . " -p" .
-                     escapeshellarg($url_array['pwd']) . " -h" . escapeshellarg($server) .
-                     " " . escapeshellarg($fname) . 
-                     " < " . escapeshellarg($restore_dir) . "/" . 
-                     escapeshellarg($fname) . " 2>&1");
-    $retval = !$retval;
-  }
-  $db->Close();
-  if ($retval) {
-    print("<h4>Restore succeeded!</h4>");
-  }
-  return $retval;
 }
 ?>
