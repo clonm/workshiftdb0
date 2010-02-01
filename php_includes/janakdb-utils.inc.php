@@ -1464,10 +1464,10 @@ function elections_log($election_name,$subj_name,$attrib,$oldval,$val) {
 
 //is this user of this type?
 function authorized_user($member_name,$type) {
-  global $db, $officer_name;
+  global $db, $officer_name,$house_name;
   $attribs = user_privileges($member_name);
   return in_array($type,$attribs) || (isset($officer_name) && 
-    substr($officer_name,3) == $type);
+    substr($officer_name,strlen($house_name)) == $type);
 }
 
 //what are all the privileges this user has?
