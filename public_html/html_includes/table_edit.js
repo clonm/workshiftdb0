@@ -1050,11 +1050,6 @@ function color_rows() {
 var ASCEND;  
 //sortable stuff
 function ts_resortTable(lnk,clid) {
-  if (change_array.length || deleted_rows.length || added_rows.length) {
-    alert("Sorry, you can currently only sort columns after you have saved " +
-          "all changes.  Please save your work and try again.");
-    return;
-  }
     // get the span
   var _t0 = new Date();
   var span = lnk.nextSibling;
