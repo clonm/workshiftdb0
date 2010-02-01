@@ -815,7 +815,7 @@ function submit_data () {
       data += "changed_rows[]=" + id + "&";
       for (jj = 0; jj< ch.length; jj++) {
         if (ch[jj]) {
-          data += "changed_row-" + id + "[] =" + jj + "&";
+          data += "changed_row-" + id + "[]=" + jj + "&";
           data += "cell-" + id + "-" + jj + "=" + 
             val_of(get_cell_elt(irow,jj)) + "&";
         }
@@ -930,15 +930,16 @@ function processReqChange () {
         var reload_flag = (!unloading_process) && 
           (del_rows_copy.length != 0 || added_rows_copy.length != 0); 
         if (ch_array_copy.length) {
-	  for (ii in ch_array_copy) {
-            var cell_elt = get_elt_by_id("autoid-" + autoid_row_table[ii]);
+	  for (id in ch_array_copy) {
+            var cell_elt = get_elt_by_id("autoid-" + autoid_row_table[id]);
             color_row(cell_elt.parentNode.parentNode,
                       "black");
           }
         }
         if (added_rows_copy.length) {
           for (ii in added_rows_copy) {
-            var cell_elt = get_elt_by_id("autoid-" + autoid_row_table[ii]);
+            var cell_elt = get_elt_by_id("autoid-" +
+                                         autoid_row_table['add-' + ii]);
             color_row(cell_elt.parentNode.parentNode,
                       "black");
           }
@@ -1095,12 +1096,6 @@ function ts_resortTable(lnk,clid) {
     ASCEND = 1;
   }
   newRows.sort(mysort);
-  if (typeof(autoid_row_table) != 'undefined') {
-    for (ii=0; ii < newRows.length; ii++) {
-      //subtract one because we were 1-indexing and autoids are 0-indexed
-      autoid_row_table[get_value_by_id("autoid-" + (newRows[ii][2]-1))] = ii;
-    }
-  }
   // We appendChild rows that already exist to the tbody,
   //so it moves them rather than creating new ones
   // don't do sortbottom rows
@@ -1165,7 +1160,7 @@ function pre_process_time(a) {
     //no, rest of it is whole thing -- no spaces
     rest = a;
   }
-  minute = '00';
+  var minute = '00';
   if (rest != a) {
     //do we have a number?
     if (rest.match(/^\d\d/)) {
@@ -1174,10 +1169,10 @@ function pre_process_time(a) {
     }
   }
   //is there an am?
-  am = rest.indexOf('a');
+  var am = rest.indexOf('a');
   //no?
   if (am == -1) {
-    pm = rest.indexOf('p');
+    var pm = rest.indexOf('p');
     //is there a pm?
     if (pm != -1) {
       if (hour == a) {
@@ -1202,6 +1197,7 @@ function pre_process_time(a) {
   }
   return hour + minute;
 }
+
 function pre_process_date(a) {
   if (!a) {
     return a;
