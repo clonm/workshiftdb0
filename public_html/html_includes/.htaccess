@@ -1,0 +1,15 @@
+#This forces users' browsers to check if these files have been updated
+#every time they go to a page that uses them.  This is because otherwise any
+#changes made to these files are often not reflected on the users' end
+#for some time, especially on the assign workshifts page, which doesn't
+#refresh these auxiliary files even on a hard reload.  This adds a little bit to
+#the server load and slows down the users a tiny bit, but given the mysql
+#hammering and the huge table downloads, it shouldn't matter too much.  More
+#seriously, if the web server we're on does not allow these headers to be sent,
+#then there will be an error.  In that case, this file can be removed/commented
+#out without any great harm being done.
+#Commented by Janak 1 Feb 2010
+
+<FilesMatch ".*">
+Header set Cache-Control "max-age=0, no-cache, public"
+</FilesMatch>
