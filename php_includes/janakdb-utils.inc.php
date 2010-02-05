@@ -1194,10 +1194,12 @@ function set_mod_date($tbl,$timestamp = null) {
     $oldfetch = $db->SetFetchMode(ADODB_FETCH_NUM);
     $mod_date = $db->_Execute("select max(mod_date) from " .
       "`{$archive}modified_dates`");
-    $db->Execute("update `GLOBAL_archive_data` set `mod_date` = ?, " .
-      "`cur_week` = ? where `archive` = ?",
-      array($mod_date->fields[0],get_cur_week(),
-      transform_archive($archive)));
+    //used to update the current week here too, but this is not the place to 
+    //check for a changed week.  It should be checked by the script that 
+    //changed whatever value.
+    $db->Execute("update `GLOBAL_archive_data` set `mod_date` = ? " .
+      "where `archive` = ?",
+      array($mod_date->fields[0],transform_archive($archive)));
     $db->SetFetchMode($oldfetch);
   }
 }
