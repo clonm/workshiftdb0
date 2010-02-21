@@ -174,7 +174,6 @@ else {
     }
   }
   else {
-  print "not oversize";
   mail_backup($filename,$datestring);
   #  system("mutt -s 'Backup for " . $datestring . "' -a " .  $filename .
   #" workshiftadmin@gmail.com < /dev/null 2>&1");
@@ -196,6 +195,7 @@ function db_quote($str) {
 }
 
 function mail_backup($filename, $datestring, $ii = 0) {
+  global $houses,$house_name;
   static $init = false;
   static $crlf = "\n";
   if (!$init) {
@@ -206,7 +206,9 @@ function mail_backup($filename, $datestring, $ii = 0) {
   }
   $hdrs = array(
               'From'    => 'bsccoo5 <webmaster@bsc.coop>',
-              'Subject' => "Backup for $datestring" . ($ii?", part $ii":'')
+              'Subject' => "Backup for " .
+              (count($houses) == 1? "$house_name " : '') .
+              $datestring . ($ii?", part $ii":'')
               );
 $mime = new Mail_mime($crlf);
 $mime->addAttachment($filename, 'application/octet-stream');
