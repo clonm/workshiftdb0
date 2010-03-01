@@ -1,5 +1,7 @@
 <?php
-  var_dump(preg_match('/[0-9][0-9][0-9][0-9](_[0-9][0-9]){5}/',"2006_08_25_20_30_41") == 1);
+readgzfile("index.html");
+exit;
+var_dump(preg_match('/[0-9][0-9][0-9][0-9](_[0-9][0-9]){5}/',"2006_08_25_20_30_41") == 1);
 exit;
 require_once('default.admin.inc.php');
 $db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshiftco");

@@ -97,7 +97,6 @@ if (array_key_exists('count_voter',$_REQUEST) &&
   $_REQUEST['count_voter']) {
     $count_voters = $_REQUEST['voter_name'];
     foreach ($count_voters as $mem_name) {
-      $mem_name = $_REQUEST['voter_name'];
       if (!array_key_exists($mem_name,$houselist_keys)) {
         print("<strong>Error! " . escape_html($mem_name) .
           " is not a valid voter.</strong><br/>\n");
