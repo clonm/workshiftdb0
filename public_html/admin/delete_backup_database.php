@@ -259,7 +259,7 @@ function get_dbs_to_delete() {
     "unix_timestamp(`mod_date`) as `mod_date`,`cur_week` as `week`, " .
     "`num_wanted` as `wanted`, " .
     "`num_assigned` as `master`, unix_timestamp(`creation`) as `time`, " .
-    "`autobackup` from `GLOBAL_archive_data`");
+    "`autobackup`+0 as `autobackup` from `GLOBAL_archive_data`");
   while ($row = $archive_res->FetchRow()) {
     $num_done++;
     if (!isset($backups)) {
