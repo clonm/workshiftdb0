@@ -14,3 +14,4 @@ RewriteRule ^/workshift/(.*) http://workshift.usca.org/$1 [L,R]
 Options +ExecCGI
 AddHandler cgi-script cgi
 AddHandler cgi-script .sh
+AddHandler cgi-script .cgi .py .pyc

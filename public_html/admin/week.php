@@ -143,7 +143,10 @@ $col_sizes = array_fill(0,count($col_formats),2);
 $col_sizes[5] = '*';
 //rows can be added/deleted
 $delete_flag = true;
-$body_insert = '';
+//changed by Janak 7 May 2011 because help text not showing on week pages
+if (!isset($body_insert)) {
+  $body_insert = '';
+}
 if (!$archive) {
   $create_date = get_mod_date($table_name . '_zz_create',true);
   $mod_date = get_mod_date($table_name,true);
