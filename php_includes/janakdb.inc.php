@@ -53,6 +53,9 @@ if (array_key_exists('REQUEST_URI',$_SERVER)) {
   if ($url_name == 'workshift') {
     $url_name = $url_components[++$house_name_component];
   }
+  if ($url_name == 'cvsworkshift') {
+    exit("Do not access the site through http://..../cvsworkshift/... Use http://cvsworkshift..../ instead.");
+}
   $house_name = $url_name;
   //where administrative php scripts are
   $secured = ($url_components[$house_name_component+1] === 'admin');
