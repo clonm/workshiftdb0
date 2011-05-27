@@ -1,4 +1,34 @@
-<?php
+<table border=0><tr><td width=220 valign=top><script src="http://widgets.twimg.com/j/2/widget.js"></script>
+<script>
+new TWTR.Widget({
+  version: 2,
+  type: 'profile',
+  rpp: 20,
+  interval: 6000,
+  width: 200,
+  height: 800,
+  theme: {
+    shell: {
+      background: '#ffffff',
+      color: '#ffffff'
+    },
+    tweets: {
+      background: '#ffffff',
+      color: '#000000',
+      links: '#8d9fb3'
+    }
+  },
+  features: {
+    scrollbar: false,
+    loop: false,
+    live: false,
+    hashtags: false,
+    timestamp: false,
+    avatars: false,
+    behavior: 'all'
+  }
+}).render().setUser('bscannounce').start();
+</script></td><td><?php
 //Janak -- tofix -- verify shift signoff within hours limits for all shifts
 //it's ok not to be signed in when you go to this page
 $require_user = 'ok_nouser';
@@ -923,4 +953,4 @@ print "</td>";
 print "</table>";
 }
 ?>
-</body></html>
+</td></tr></table></body></html>

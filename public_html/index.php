@@ -1,4 +1,4 @@
-<?php
+<table border=0><tr><td width=650><?php
 $php_start_time = array_sum(split(' ',microtime()));
 $require_user = false;
 require_once('default.inc.php');
@@ -165,5 +165,35 @@ while ($row = $res->FetchRow()) {
 PHP generated this page in 
 <?=escape_html(round(array_sum(split(' ',microtime()))-$php_start_time,2))?>
  seconds.
-</body>
+</td><td width=420 valign=top><script src="http://widgets.twimg.com/j/2/widget.js"></script>
+<script>
+new TWTR.Widget({
+  version: 2,
+  type: 'profile',
+  rpp: 20,
+  interval: 6000,
+  width: 400,
+  height: 600,
+  theme: {
+    shell: {
+      background: '#ffffff',
+      color: '#ffffff'
+    },
+    tweets: {
+      background: '#ffffff',
+      color: '#000000',
+      links: '#8d9fb3'
+    }
+  },
+  features: {
+    scrollbar: false,
+    loop: false,
+    live: false,
+    hashtags: false,
+    timestamp: false,
+    avatars: false,
+    behavior: 'all'
+  }
+}).render().setUser('bscannounce').start();
+</script></td></tr></table></body>
 </html>
