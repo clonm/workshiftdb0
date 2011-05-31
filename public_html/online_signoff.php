@@ -1,3 +1,20 @@
+<?php
+//Janak -- tofix -- verify shift signoff within hours limits for all shifts
+//it's ok not to be signed in when you go to this page
+$require_user = 'ok_nouser';
+//the help should be printed into body_insert
+$body_insert = '';
+require_once('default.inc.php');
+if (!get_static('online_signoff',null)) {
+  exit("Online signoffs are not active for your house!");
+}
+?>
+<html><head><title>Online Signoff</title>
+<?=$body_insert?>
+For more help if you need it, click on the "help" link above,
+or you can check out
+<a href='http://docs.google.com/Presentation?id=dhcp4ck8_29g4698bf8'>this presentation</a>
+by the Wilde workshift manager.<hr/>
 <table border=0><tr><td width=220 valign=top><script src="http://widgets.twimg.com/j/2/widget.js"></script>
 <script>
 new TWTR.Widget({
@@ -28,23 +45,7 @@ new TWTR.Widget({
     behavior: 'all'
   }
 }).render().setUser('bscannounce').start();
-</script></td><td><?php
-//Janak -- tofix -- verify shift signoff within hours limits for all shifts
-//it's ok not to be signed in when you go to this page
-$require_user = 'ok_nouser';
-//the help should be printed into body_insert
-$body_insert = '';
-require_once('default.inc.php');
-if (!get_static('online_signoff',null)) {
-  exit("Online signoffs are not active for your house!");
-}
-?>
-<html><head><title>Online Signoff</title>
-<?=$body_insert?>
-For more help if you need it, click on the "help" link above,
-or you can check out
-<a href='http://docs.google.com/Presentation?id=dhcp4ck8_29g4698bf8'>this presentation</a>
-by the Wilde workshift manager.<hr/>
+</script></td><td>
 <?
 $cur_week = get_cur_week();
 if ($cur_week == -2) {
