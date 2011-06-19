@@ -9,7 +9,8 @@ if (!get_static('online_signoff',null)) {
   exit("Online signoffs are not active for your house!");
 }
 ?>
-<html><head><title>Online Signoff</title>
+<html><head><title>Online Signoff</title></head>
+<body>
 <?=$body_insert?>
 For more help if you need it, click on the "help" link above,
 or you can check out
@@ -45,7 +46,7 @@ new TWTR.Widget({
     behavior: 'all'
   }
 }).render().setUser('bscannounce').start();
-</script></td><td>
+</script></td><td valign=top>
 <?
 $cur_week = get_cur_week();
 if ($cur_week == -2) {
@@ -104,6 +105,9 @@ if (isset($_REQUEST['mem_name'])) {
       }
       //the mem_shift has the week and the autoid of the shift, separated by .
       $signoff_autoid = explode('.',$_REQUEST['mem_shift']);
+      if (count($signoff_autoid) < 2) {
+        print "<h3>A mysterious error has occurred. Go back and try resubmitting. But then email " . admin_email() . " and say what shift you were trying to sign off for, what your browser and OS are, and if anything else strange was happening -- were there connection problems, for instance? Thanks.</h3>";
+}
       $signoff_weeknum = $signoff_autoid[1];
       //check the week number for validity -- it's quoted in the mysql query,
       //but who knows
@@ -171,6 +175,9 @@ if (isset($_REQUEST['mem_name'])) {
     //signing off of someone else's
     else if (array_key_exists('all_shift_submit',$_REQUEST)) {
       $signoff_autoid = explode('.',$_REQUEST['all_which_shift']);
+      if (count($signoff_autoid) < 2) {
+        print "<h3>A mysterious error has occurred. Go back and try resubmitting. But then email " . admin_email() . " and say what shift you were trying to sign off for, what your browser and OS are, and if anything else strange was happening -- were there connection problems, for instance? Thanks.</h3>";
+}
       $signoff_weeknum = $signoff_autoid[1];
       $signoff_autoid = $signoff_autoid[0];
       //check the week number for validity -- it's quoted in the mysql query,
@@ -436,8 +443,7 @@ while ($row = $res->FetchRow()) {
 //var_dump($day_shifts);
 $cur_day = user_time(time()-3600,'l');
 ?>
-</script></head>
-<body>
+</script>
 <form action='<?=escape_html($_SERVER['REQUEST_URI'])?>' method=post>
 Workshifter: <select name='mem_name' id='mem_name' onchange='change_member()'>
 <option>

@@ -1,4 +1,4 @@
-<table border=0><tr><td width=650><?php
+<?php
 $php_start_time = array_sum(split(' ',microtime()));
 $require_user = false;
 require_once('default.inc.php');
@@ -9,7 +9,7 @@ TD.first { vertical-align: top; padding-right: 3em}
 TH { vertical-align: top; text-align: left; padding-right: 3em}
 </style>
 </head><body>
-<h3>First Things First</h3>
+<table border=0><tr><td width=650><h3>First Things First</h3>
 Fill out your <a href="preferences.php">preference form</a>.<p>
 <a href="person.php">Your personal page</a><p>
 <hr>
@@ -166,6 +166,36 @@ PHP generated this page in
 <?=escape_html(round(array_sum(split(' ',microtime()))-$php_start_time,2))?>
  seconds.
 </td><td width=420 valign=top><script src="http://widgets.twimg.com/j/2/widget.js"></script>
+<script>
+new TWTR.Widget({
+  version: 2,
+  type: 'profile',
+  rpp: 2,
+  interval: 6000,
+  width: 400,
+  height: 100,
+  theme: {
+    shell: {
+      background: '#ffffff',
+      color: '#ffffff'
+    },
+    tweets: {
+      background: '#ffffff',
+      color: '#000000',
+      links: '#8d9fb3'
+    }
+  },
+  features: {
+    scrollbar: false,
+    loop: false,
+    live: false,
+    hashtags: false,
+    timestamp: false,
+    avatars: false,
+    behavior: 'all'
+  }
+}).render().setUser('sub4pay').start();
+</script><script src="http://widgets.twimg.com/j/2/widget.js"></script>
 <script>
 new TWTR.Widget({
   version: 2,
