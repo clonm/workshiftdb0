@@ -398,7 +398,7 @@ for ($ii = 0; $ii <= $week_num; $ii++) {
       //here's the fine
       $fine = $temptotal*$fin_rate;
       //do we have a meaningful doublefining policy?
-      if ($fin_doublefloor && $fin_doublefloor >= $fin_floor) {
+      if (strlen($fin_doublefloor) && $fin_doublefloor >= $fin_floor) {
         //take out the part we already fined for
         $fin_doublefloor -= $fin_floor;
         //add in another fine of the remainder

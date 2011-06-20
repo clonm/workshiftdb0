@@ -263,7 +263,7 @@ function mung_whole_row(&$row) {
         //times whatever percentage is being fined.
         $row["fines $ii"] = $temptotal*$fin_rate*$fining_percent_fine/100;
         //maybe there's also a double-fine.  Make sure it makes sense
-        if ($fin_doublefloor && $fin_doublefloor >= $fin_floor) {
+        if (strlen($fin_doublefloor) && $fin_doublefloor >= $fin_floor) {
           //only double-fining for the difference
           $fin_doublefloor -= $fin_floor;
           //we subtracted the fining-floor from temptotal before, so

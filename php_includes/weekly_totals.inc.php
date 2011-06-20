@@ -308,7 +308,7 @@ function mung_whole_row(&$row) {
           $temptotal *= $fining_percent_fine/100;
         }
         $fine = $temptotal*$fin_rate;
-        if ($fin_doublefloor && $fin_doublefloor >= $fin_floor) {
+        if (strlen($fin_doublefloor) && $fin_doublefloor >= $fin_floor) {
           $fin_doublefloor -= $fin_floor;
           $fine += max($temptotal-$fin_doublefloor,0)*$fin_rate;
         }
