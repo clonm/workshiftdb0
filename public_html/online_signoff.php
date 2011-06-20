@@ -53,6 +53,9 @@ if ($cur_week == -2) {
   exit("<h3>Your workshift manager has not set up " .
        "when the semester starts yet.</h3>");
 }
+if ($cur_week < 0) {
+   exit("<h3>The semester apparently hasn't started yet, so online signoffs are not available. Contact your workshift manager if this is incorrect.</h3>");
+}
 //make all weeks that don't exist yet
 if (!table_exists("week_$cur_week")) {
   $_REQUEST['start_week'] = $cur_week;
