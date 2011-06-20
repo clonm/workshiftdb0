@@ -10,14 +10,13 @@ $require_user = array('house', 'workshift');
 require_once('default.inc.php');
 //this page is archive-compatible.
 $table_name = "{$archive}fining_data";
-$col_styles = array('member_name','double','double','input','input','input');
-$col_formats = array('member_name' => '','fine' => '','hours' => '','date' => 'dateformat',
-                     'description' => '','week_cashed' => '');
+$col_styles = array('member_name','double','input','input');
+$col_formats = array('member_name' => '','fine' => '','date' => 'dateformat',
+                     'description' => '');
 $body_insert = 
 <<<BODYINSERT
 <span style='font-size: 10pt'>
-Negative numbers are credits.  The hours and week_cashed sections will be operational soon,
-but for now you can just fine money.</span>
+Negative numbers are credits.</span>
 BODYINSERT
 ;
 //this commented-out section's feature was never implemented
