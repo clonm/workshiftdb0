@@ -15,10 +15,12 @@ else {
 <?php
 foreach ($houselist as $name) {
   if ($name !== $member_name) {
-    print "<OPTION>" . escape_html($name) . "\n";
+    print "<OPTION value='" . escape_html($name) . "'>" .
+    escape_html($name) . "\n";
   }
   else {
-    print "<OPTION selected>" . escape_html($name) . "\n";
+    print "<OPTION selected value='" . escape_html($name) . "'>" . 
+    escape_html($name) . "\n";
   }
 }
 ?>

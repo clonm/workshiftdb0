@@ -24,7 +24,8 @@ if (array_key_exists('member_name_view',$_REQUEST)) {
    Name: <select name='member_name_view'>
 <?php
 foreach ($houselist as $name) {
-  print "<OPTION>" . escape_html($name) . "\n";
+  print "<OPTION value='" . escape_html($name) . "'>" . 
+  escape_html($name) . "\n";
 }
 ?>
 </SELECT>

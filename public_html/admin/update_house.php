@@ -65,8 +65,11 @@ Add members ("Lastname, Firstname" [without quotes], or however you do it, one p
 <form action='<?=$_SERVER['REQUEST_URI']?>' method='POST'>
 <input type=hidden name='house_submitting_bool' value=1>
 Delete members: <select multiple size=5 name="delete_members[]">
-<option>
-<?=implode("\n<option>",$name_array)?>
+<?php
+foreach ($name_array as $name) {
+?>
+<option value='<?=escape_html($name)?>'><?=escape_html($name)?>
+<?php } ?>
 </select><br>
 <input type=submit value='Delete members'></form>
  <hr>
