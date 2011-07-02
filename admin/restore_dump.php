@@ -4,6 +4,7 @@ if (!array_key_exists('REQUEST_URI',$_SERVER)) {
   $_FILES['userfile'] = array('tmp_name' => $argv[2], 'name' => $argv[2]);
 }
 if (!array_key_exists('userfile',$_FILES)) {
+  //we have pretty large backups
   ?>
 <form enctype="multipart/form-data" action='<?=$_SERVER['REQUEST_URI']?>' 
    method="POST">
@@ -11,16 +12,12 @@ if (!array_key_exists('userfile',$_FILES)) {
     Send this file: <input name="userfile" type="file" />
     <input type="submit" value="Send File" />
 </form>
-<b>ALL</b> databases in the zipfile are restored, so if you do not want to
-restore all files, create a new zipfile (the name does not matter) with only 
-the ones you want restored.  The names of the files in the zipfile give the 
-database, so they are very important -- keep them the same.<p>
+    The name of the file in the zipfile gives the database, so it is very important -- keep it the same. The name of the zipfile gives the backup name, unless it is "janakjanak.zip" in which case it will be ignored.<p>
 
 What follows has several parts.  First comes the output from unzipping.  Then 
 comes the results of backing up each database you are trying to restore.  
 Then comes the output, if any, of the msyql command to restore the database 
-(there should be no output normally).  Then everything (but the unzip) is 
-repeated for each file in the zipfile.  This will take a while, so
+(there should be no output normally). This will take a while, so
 be patient.  Any warnings or errors will stop the script, because this is a
 very dangerous operation.
 </body>
@@ -32,10 +29,7 @@ print( <<<STROUTPUT
 What follows has several parts.  First comes the output from unzipping, if you
 uploaded a zipfile.  Then comes the result of backing up each database you are
 trying to restore.  Then comes the output, if any, of the msyql command to
-restore the database (there should be no output normally).  Then everything (but
-the unzip) is repeated for each file in the zipfile.  This will take a while, so
-be patient.  Any warnings or errors will stop the script, because this is a
-very dangerous operation.
+restore the database (there should be no output normally). This will take a while, so be patient.  Any warnings or errors will stop the script, because this is a very dangerous operation.
 STROUTPUT
       );
 $php_start_time = array_sum(split(' ',microtime()));
@@ -71,6 +65,7 @@ set_error_handler('clean_up');
 
 $handle = fopen("$restore_dir/.lock","w");
 fwrite($handle,time() . "\n");
+print_r($filedata);
 if (!strcasecmp(substr($filedata['name'],-4),'.zip')) {
   print("<pre>");
   system("unzip {$filedata['tmp_name']} -d $restore_dir 2>&1",$retval);
@@ -121,20 +116,48 @@ while ($fname = readdir($dh)) {
     print("<h3>Backing up old $fname</h3>");
     require("../public_html/admin/backup_database.php");
   }
-  $db->debug = true;
-  if ($MYSQL_VERSION >= 41000) {
-    //this command will screw up the mysql connection, but it's ok because
-    //we're about to close and re-open it
-    $retval = $db->Execute(file_get_contents("$restore_dir/$fname"));
+  $db->debug = false;
+  $retval = system("mysql -u" .escapeshellarg($user) . " -p" .
+                   escapeshellarg($url_array['pwd']) . " -h" . escapeshellarg($server) .
+                   " " . escapeshellarg($fname) .
+                   " < " . escapeshellarg($restore_dir) . "/" .
+                   escapeshellarg($fname) . " 2>&1");
+  if ($filedata['name'] !== "janakjanak.zip") {
+    $archive = $archive_pre . substr($filedata['name'],0,-4) . "_";
+    $db_props = array();
+    $db_props['semester_start'] = get_static('semester_start');
+    $restore_fetch = $db->SetFetchMode(ADODB_FETCH_NUM);
+    $mod_row = $db->_Execute("select max(`mod_date`) " .
+                             "from " . bracket($archive . 'modified_dates'));
+    $db_props['mod_date'] = $mod_row->fields[0];
+    $db_props['cur_week'] = get_cur_week();
+    $wanted_row = $db->_Execute("select count(*) from " .
+                                bracket($archive . 'wanted_shifts'));
+    $db_props['num_wanted'] = $wanted_row->fields[0];
+    $db_props['num_assigned'] = 0;
+    foreach ($days as $day) {
+      $master_row = $db->GetRow("select count(*) from " .
+                                bracket($archive . 'master_shifts') .
+                                " where `$day` is not null and `$day` != ?",
+                                array($dummy_string));
+      $db_props['num_assigned'] += $master_row[0];
+    }
+    //did the user not name this him/herself
+    $db_props['autobackup'] = false;
+    $db_props['owed_default'] = get_static('owed_default');
+    //store these parameters in archive data
+    $db->Execute("insert into `GLOBAL_archive_data` (`archive`," .
+                 "`semester_start`,`mod_date`,`cur_week`,`num_wanted`, " .
+                 "`num_assigned`,`autobackup`,`creation`,`owed_default`) " .
+                 "VALUES (?,?,?,?,?,?,?,NOW(),?)",
+                 array(substr($filedata['name'],0,-4),
+                       $db_props['semester_start'],
+                       $db_props['mod_date'],$db_props['cur_week'],$db_props['num_wanted'],
+                       $db_props['num_assigned'],$db_props['autobackup'],
+                       $db_props['owed_default']));
+    $db->SetFetchMode($restore_fetch);
   }
-  else {
-    $retval = system("mysql -u" .escapeshellarg($user) . " -p" .
-                     escapeshellarg($url_array['pwd']) . " -h" . escapeshellarg($server) .
-                     " " . escapeshellarg($fname) . 
-                     " < " . escapeshellarg($restore_dir) . "/" . 
-                     escapeshellarg($fname) . " 2>&1");
-    $retval = !$retval;
-  }
+  $retval = !$retval;
   $db->Close();
   if ($retval) {
     print("<h4>Restore succeeded!</h4>");
