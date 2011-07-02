@@ -4,6 +4,8 @@ if (!$running_shell) {
 ?>
 <html><head><title>Delete backed-up database</title></head><body>
 <?php
+//the president and workshift might both need to delete backups.
+$require_user = array('workshift','president');
 }
 //interface to delete backup database(s).  Main thing here is that the
 //script looks through backups and figures out which ones are
@@ -14,8 +16,6 @@ if (!$running_shell) {
 //later than or at the same time as this backup's last-modified table.
 //See the functions below for more details.
 
-//the president and workshift might both need to delete backups.
-$require_user = array('workshift','president');
 require_once('default.inc.php');
 if (!isset($php_start_time)) {
   $php_start_time = array_sum(split(' ',microtime()));
@@ -23,11 +23,211 @@ if (!isset($php_start_time)) {
 if (!isset($dbnames)) {
   $dbnames = get_backup_dbs();
 }
-//no longer functional, and shouldn't be necessary, since we now cache
-//archive data in a global table, so processing is speedy
-//if (!isset($start_db_index) && isset($_REQUEST['start_db_index'])) {
-//  $start_db_index = $_REQUEST['start_db_index'];
-//}
+
+
+//because Janak doesn't want to rewrite this whole thing to use classes, ugly
+//checks for defined functions
+
+if (!isset($delete_include_file_flag)) {
+  $delete_include_file_flag = true;
+function monthtosem($month) {
+  switch ($month) {
+  case 1: return 0;
+  case 5: case 6: return 1;
+  case 8: case 9: return 2;
+  default: return 3;
+  }
+  }
+
+//workhorse -- finds dbs that shouldn't be useful anymore
+function get_dbs_to_delete() {
+  global $db;
+  $corrupt = array();
+  $num_done = 0;
+  $archive_res = $db->Execute("select `archive`, " .
+    "`semester_start` as `semester`, " .
+    "unix_timestamp(`mod_date`) as `mod_date`,`cur_week` as `week`, " .
+    "`num_wanted` as `wanted`, `emailed`+0 as `emailed`, " .
+    "`num_assigned` as `master`, unix_timestamp(`creation`) as `time`, " .
+    "`autobackup`+0 as `autobackup` from `GLOBAL_archive_data`" .
+                              " order by `mod_date`,`creation`");
+  while ($row = $archive_res->FetchRow()) {
+    $num_done++;
+    if (!isset($backups)) {
+      $backups = array();
+    }
+    if (!isset($backups[$row['semester']])) {
+      $backups[$row['semester']] = array();
+    }
+    $backups[$row['semester']][] = $row;
+  }
+  if (!isset($backups)) {
+    return array(array(),$corrupt, $num_done,array());
+  }
+  //sort by semester (the key)
+  ksort($backups);
+  $sem_start = get_static('semester_start');
+  $needed_semesters = array();
+  $havesem = array();
+  foreach (array_reverse(array_keys($backups),true) as $sem) {
+    if (isset($havesem[0]) && isset($havesem[1]) && isset($havesem[2])) {
+      break;
+    }
+    $sem_array = explode('-',$sem);
+    if (count($sem_array) != 3) {
+      continue;
+    }
+    $archive_sem = monthtosem($sem_array[1]);
+    if (!isset($havesem[$archive_sem])) {
+      $needed_semesters[$sem] = true;
+      $havesem[$archive_sem] = true;
+    }
+  }
+  $to_delete = array();
+  $can_delete = array();
+  //ok, time to find databases we can delete
+/*   print "<pre>"; */
+  foreach ($backups as $sem => $backupsems) {
+    //don't delete anything from the current semester
+    if ($sem == $sem_start) {
+      continue;
+    }
+    //are there no backups here?  I don't know how that happens
+    if (!$ct = count($backupsems)) {
+      continue;
+    }
+    //is this semester no longer needed? get rid of it
+    if (!isset($needed_semesters[$sem])) {
+      foreach ($backupsems as $backup) {
+        if ($backup['emailed']) {
+          $can_delete[] = $backup['archive'];
+        }
+      }
+    }
+    //sort list, then go through, eliminating < elements.  See below
+    //for total_comp_backup_dbs
+    usort($backupsems,'total_comp_backup_dbs');
+    $curct = $ct;
+    $named_preserved = array();
+    for ($ii = 0; $ii < $ct; $ii++) {
+      $marked_for_deletion_flag = false;
+      //always leave at least 2 backups per semester
+      if ($curct+count($named_preserved) <= 2) {
+        break;
+      }
+      //last backup of semester might be non-redundant -- just in case
+      if ($ii == $ct-1) {
+        break;
+      }
+      //don't delete backups that haven't been offloaded
+      if (!$backupsems[$ii]['emailed']) {
+        continue;
+      }
+      //nothing here?  Don't know how that could happen
+      if (!$backupsems[$ii]) {
+        continue;
+      }
+      //even if this is a needed semester, we can still throw out
+      //all but 2 named backups
+      if (isset($needed_semesters[$sem])) {
+        if (!$backupsems[$ii]['autobackup']) {
+          if (count($named_preserved) == 2) {
+            $can_delete[] = $named_preserved[0];
+            $named_preserved[0] = $named_preserved[1];
+            $named_preserved[1] = $backupsems[$ii]['archive'];
+            if (!$marked_for_deletion_flag) {
+              $curct--;
+              $marked_for_deletion_flag = true;
+            }
+          }
+          else {
+            $named_preserved[] = $backupsems[$ii]['archive'];
+          }
+        }
+        else {
+          $can_delete[] = $backupsems[$ii]['archive'];
+            if (!$marked_for_deletion_flag) {
+              $curct--;
+              $marked_for_deletion_flag = true;
+            }
+        }
+      }
+      //check for redundancies.  Go backwards, because it's likely
+      //that later archive will make redundant.
+      for ($jj = $ct-1; $jj > $ii; $jj--) {
+/*         print "comparing \n"; */
+/*         print_r($backupsems[$jj]); */
+/*         var_dump(comp_backup_dbs($backupsems[$ii],$backupsems[$jj])); */
+        //is this backup strictly less than later one?
+        if (comp_backup_dbs($backupsems[$ii],$backupsems[$jj]) < 0) {
+          $to_delete[] = $backupsems[$ii]['archive'];
+            if (!$marked_for_deletion_flag) {
+              $curct--;
+              $marked_for_deletion_flag = true;
+            }
+          break;
+        }
+      }
+    }
+  }
+  return array($to_delete,$corrupt,$num_done,$can_delete);
+}
+
+function total_comp_backup_dbs($arr1,$arr2) {
+  if ($arr1['autobackup'] !== $arr2['autobackup']) {
+    return $arr1['autobackup']?-1:1;
+  }
+  foreach (array('mod_date','time','wanted','week','master') as $attrib) {
+    if ($arr1[$attrib] !== $arr2[$attrib]) {
+      return $arr1[$attrib]>$arr2[$attrib]?1:-1;
+    }
+  }
+}
+
+//function which allows us to figure out which dbs are "less" than others,
+//so can be deleted
+function comp_backup_dbs($arr1,$arr2) {
+  //user backups are always on top, and incomparable
+  if (!$arr1['autobackup'] && !$arr2['autobackup']) {
+    return 0;
+  }
+  //is first greater than second?  Compare each attribute.  Time is a
+  //bit tricky -- if one of them is user-named, we can't look at the
+  //times, so we need to skip that attribute.
+  $raw_comp1 = ((!$arr1['autobackup'] || !$arr2['autobackup'] || 
+                 $arr1['time'] >= $arr2['time']) && 
+                $arr1['wanted'] >= $arr2['wanted'] &&
+                $arr1['week'] >= $arr2['week'] &&
+                $arr1['mod_date'] >= $arr2['mod_date'] &&
+                $arr1['master'] >= $arr2['master']);
+  //if first was a user backup, it can't possibly be less.
+  if (!$arr1['autobackup']) {
+    //it wasn't more, so must be 0
+    if (!$raw_comp1) {
+      return 0;
+    }
+    else {
+      //first was more
+      return 1;
+    }
+  }
+  $raw_comp2 = ((!$arr1['autobackup'] || !$arr2['autobackup'] ||
+                 $arr2['time'] >= $arr1['time']) && 
+                $arr2['wanted'] >= $arr1['wanted'] &&
+                $arr2['week'] >= $arr1['week'] &&
+                $arr2['mod_date'] >= $arr1['mod_date'] &&
+                $arr2['master'] >= $arr1['master']);
+  if (!$arr2['autobackup']) {
+    if (!$raw_comp2) {
+      return 0;
+    }
+    else {
+      return -1;
+    }
+  }
+  return $raw_comp1-$raw_comp2;
+}
+}
 
 if (!$running_shell && !array_key_exists('backup_name',$_REQUEST)) {
   ?>
@@ -172,12 +372,19 @@ $backup_arr = $_REQUEST['backup_name'];
 if (!is_array($backup_arr)) {
 $delete_dbs = get_dbs_to_delete();
 $backup_arr = array_merge($delete_dbs[0],$delete_dbs[1]);
+if (isset($can_delete_flag)) {
+  $backup_arr = array_unique(array_merge($backup_arr,$delete_dbs[3]));
 }
+}
+
+$oldfetch = $db->fetchMode;
+$db->SetFetchMode(ADODB_FETCH_NUM); 
+
 
 $num_deleted = 0;
 //pretty standard deleting.
 foreach ($backup_arr as $backup) {
-if (!check_php_time()) {
+if (!$running_shell && !check_php_time()) {
 ?>
 <h2>Ran out of time deleting backups.</h2>
 <form action='<?=this_url()?>' method='post'>
@@ -199,15 +406,18 @@ value='<?=escape_html($backup_arr[$ii])?>'/>
 $num_deleted++;
 $ret = true;
 if ($running_shell) {
-  print $house_name . " " . $backup . "\n";
+    print $house_name . " " . $backup . "\n";
 }
 else {
   print "<h4>Deleting " . escape_html($backup) . "</h4>\n";
 }
 
-//use numbered columns because columns have database name in them
-$oldfetch = $db->fetchMode;
-$db->SetFetchMode(ADODB_FETCH_NUM); 
+$row = $db->GetRow("select `emailed` from `GLOBAL_archive_data` " .
+                 "where `archive` = ?",array($backup));
+if (!$row[0]) {
+  print "<h3>Can't delete non-offloaded backup</h3>\n";
+  continue;
+}
 
 //quote whatever funky name they gave us to avoid mysql regular expressions
 $res = $db->Execute("show tables like ?",
@@ -216,7 +426,6 @@ if (is_empty($res)) {
   print("<h4>Backup " . escape_html($backup) . " does not exist.</h4>");
   continue;
 }
-$db->SetFetchMode($oldfetch);
 //we want to delete as much as possible, not dying ever
 janak_fatal_error_reporting(0);
 //did every single drop table succeed?
@@ -245,136 +454,11 @@ while ($row = $res->FetchRow()) {
     janak_error("<h4>There was an error deleting the backup</h4>\n");
   }
 }
-if (!$running_shell) {
-  echo "<h3>All done!\n</h3>";
-}
+$db->SetFetchMode($oldfetch);
 
-//workhorse -- finds dbs that shouldn't be useful anymore
-function get_dbs_to_delete() {
-  global $db,$sem_start;
-  $corrupt = array();
-  $num_done = 0;
-  $archive_res = $db->Execute("select `archive`, " .
-    "`semester_start` as `semester`, " .
-    "unix_timestamp(`mod_date`) as `mod_date`,`cur_week` as `week`, " .
-    "`num_wanted` as `wanted`, " .
-    "`num_assigned` as `master`, unix_timestamp(`creation`) as `time`, " .
-    "`autobackup`+0 as `autobackup` from `GLOBAL_archive_data`");
-  while ($row = $archive_res->FetchRow()) {
-    $num_done++;
-    if (!isset($backups)) {
-      $backups = array();
-    }
-    if (!isset($backups[$row['semester']])) {
-      $backups[$row['semester']] = array();
-    }
-    $backups[$row['semester']][] = $row;
-  }
-  if (!isset($backups)) {
-    return array(array(),$corrupt, $num_done);
-  }
-  //back to normal
-  $archive = '';
-  //sort by semester (the key)
-  ksort($backups);
-  if (!strlen($sem_start)) {
-    $bkeys = array_keys($backups);
-    $sem_start = end($bkeys);
-  }
-  $to_delete = array();
-  //ok, time to find databases we can delete
-/*   print "<pre>"; */
-  foreach ($backups as $sem => $backupsems) {
-    //don't delete anything from the current semester
-    if ($sem == $sem_start) {
-      continue;
-    }
-    //are there no backups here?  I don't know how that happens
-    if (!$ct = count($backupsems)) {
-      continue;
-    }
-    //sort list, then go through, eliminating < elements.  See below
-    //for comp_backup_dbs
-    usort($backupsems,'comp_backup_dbs');
-    $curct = $ct;
-    for ($ii = 0; $ii < $ct; $ii++) {
-/*       print "doing \n"; */
-/*       print_r($backupsems[$ii]); */
-      //always leave at least 2 backups per semester
-      if ($curct <= 2) {
-        break;
-      }
-      //last backup of semester is always non-redundant
-      if ($ii == $ct-1) {
-        break;
-      }
-      //nothing here?  Don't know how that could happen
-      if (!$backupsems[$ii]) {
-        continue;
-      }
-      //check for redundancies.  Go backwards, because it's likely
-      //that later archive will make redundant.
-      for ($jj = $ct-1; $jj > $ii; $jj--) {
-/*         print "comparing \n"; */
-/*         print_r($backupsems[$jj]); */
-/*         var_dump(comp_backup_dbs($backupsems[$ii],$backupsems[$jj])); */
-        //is this backup less than later one?
-        if (comp_backup_dbs($backupsems[$ii],$backupsems[$jj]) < 0) {
-          $to_delete[] = $backupsems[$ii]['archive'];
-          $curct--;
-          break;
-        }
-      }
-    }
-  }
-  return array($to_delete,$corrupt,$num_done);
-}
-
-//function which allows us to figure out which dbs are "less" than others,
-//so can be deleted
-function comp_backup_dbs($arr1,$arr2) {
-  //user backups are always on top, and incomparable
-  if (!$arr1['autobackup'] && !$arr2['autobackup']) {
-    return 0;
-  }
-  //is first greater than second?  Compare each attribute.  Time is a
-  //bit tricky -- if one of them is user-named, we can't look at the
-  //times, so we need to skip that attribute.
-  $raw_comp1 = ((!$arr1['autobackup'] || !$arr2['autobackup'] || 
-                 $arr1['time'] >= $arr2['time']) && 
-                $arr1['wanted'] >= $arr2['wanted'] &&
-                $arr1['week'] >= $arr2['week'] &&
-                $arr1['mod_date'] >= $arr2['mod_date'] &&
-                $arr1['master'] >= $arr2['master']);
-  //if first was a user backup, it can't possibly be less.
-  if (!$arr1['autobackup']) {
-    //it wasn't more, so must be 0
-    if (!$raw_comp1) {
-      return 0;
-    }
-    else {
-      //first was more
-      return 1;
-    }
-  }
-  $raw_comp2 = ((!$arr1['autobackup'] || !$arr2['autobackup'] ||
-                 $arr2['time'] >= $arr1['time']) && 
-                $arr2['wanted'] >= $arr1['wanted'] &&
-                $arr2['week'] >= $arr1['week'] &&
-                $arr2['mod_date'] >= $arr1['mod_date'] &&
-                $arr2['master'] >= $arr1['master']);
-  if (!$arr2['autobackup']) {
-    if (!$raw_comp2) {
-      return 0;
-    }
-    else {
-      return -1;
-    }
-  }
-  return $raw_comp1-$raw_comp2;
-}
 if (!$running_shell) {
 ?>
+<h3>All done!</h3>
 </body></html>
 <?php
 }
