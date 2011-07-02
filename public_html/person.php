@@ -59,7 +59,7 @@ $row = $db->GetRow("SELECT * FROM `{$archive}house_info` where `member_name` = ?
                    array($member_name));
 //put out all house info on one line -- room, phone, email
 foreach ($row as $key => $val) {
-  if ($key == 'autoid' || $key == 'member_name') {
+  if ($key == 'autoid' || $key == 'member_name' || $key == 'privacy') {
     continue;
   }
   //don't put out empty fields
