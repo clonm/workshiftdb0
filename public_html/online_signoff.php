@@ -16,37 +16,6 @@ For more help if you need it, click on the "help" link above,
 or you can check out
 <a href='http://docs.google.com/Presentation?id=dhcp4ck8_29g4698bf8'>this presentation</a>
 by the Wilde workshift manager.<hr/>
-<table border=0><tr><td width=220 valign=top><script src="http://widgets.twimg.com/j/2/widget.js"></script>
-<script>
-new TWTR.Widget({
-  version: 2,
-  type: 'profile',
-  rpp: 20,
-  interval: 6000,
-  width: 200,
-  height: 800,
-  theme: {
-    shell: {
-      background: '#ffffff',
-      color: '#ffffff'
-    },
-    tweets: {
-      background: '#ffffff',
-      color: '#000000',
-      links: '#8d9fb3'
-    }
-  },
-  features: {
-    scrollbar: false,
-    loop: false,
-    live: false,
-    hashtags: false,
-    timestamp: false,
-    avatars: false,
-    behavior: 'all'
-  }
-}).render().setUser('bscannounce').start();
-</script></td><td valign=top>
 <?
 $cur_week = get_cur_week();
 if ($cur_week == -2) {
@@ -963,4 +932,4 @@ print "</td>";
 print "</table>";
 }
 ?>
-</td></tr></table></body></html>
+</body></html>
