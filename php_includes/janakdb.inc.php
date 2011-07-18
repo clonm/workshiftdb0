@@ -79,8 +79,6 @@ if (array_key_exists('REQUEST_URI',$_SERVER)) {
   else {
     setcookie('default_house',$house_name,time()+10800*30,"/");
   }
-  print_r($house_name);
-  print "Janak: $house_name\n";
   //where administrative php scripts are
   $secured = ($url_components[$house_name_component+1] === 'admin');
   $baseurl = join('/',array_slice($url_components,0,$house_name_component+1));
