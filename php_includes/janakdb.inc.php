@@ -57,6 +57,28 @@ if (array_key_exists('REQUEST_URI',$_SERVER)) {
     exit("Do not access the site through http://..../cvsworkshift/... Use http://cvsworkshift..../ instead.");
 }
   $house_name = $url_name;
+  //To enable a link like http://workshift.bsc.coop/public_html/preferences.php
+  //to work for each house, a cookie can be set. Data should never be posted
+  //to these urls -- they are only for initial access.
+  if ($house_name == 'public_html') {
+    if (isset($_REQUEST['default_house'])) {
+      setcookie('default_house',$_REQUEST['default_house'],
+                time()+10800*30,"/");
+      $_COOKIE['default_house'] = $_REQUEST['default_house'];
+    }
+    if (isset($_COOKIE['default_house'])) {
+      $url_components[$house_name_component] = $_COOKIE['default_house'];
+      header('Location: http://' . $_SERVER['HTTP_HOST'] . 
+             join('/',$url_components));
+    }
+    else {
+      require_once('choose_house.php');
+      exit;
+    }
+  }
+  else {
+    setcookie('default_house',$house_name,time()+10800*30,"/");
+  }
   //where administrative php scripts are
   $secured = ($url_components[$house_name_component+1] === 'admin');
   $baseurl = join('/',array_slice($url_components,0,$house_name_component+1));
