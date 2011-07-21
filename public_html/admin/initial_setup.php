@@ -1,8 +1,9 @@
 <?php
 $body_insert = '';
 require_once('default.inc.php');
+//Janak commented out 7/21/11
 //getting weird names, easier with numbers anyway
-$db->SetFetchMode(ADODB_FETCH_NUM);
+//$db->SetFetchMode(ADODB_FETCH_NUM);
 $page_status = null;
 //post should override get, since get might be from an earlier page
 if (array_key_exists('page_status',$_POST)) {
@@ -42,12 +43,11 @@ if ($am > $bm) {
 }
 
 $current_sem = monthtosem(date('n'));
-if ($current_sem == 'unknown') {
+if (false && $current_sem == 'unknown') {
 ?>
 Why are you trying to do a beginning-of-semester action now?  You can alter values
 over at <a href='basic_consts.php'>basic_consts.php</a> -- this page should only
-be accessed at the beginning of a semester.  Please email <?=admin_email()?>
-to explain what you're trying to do.
+be accessed at the beginning of a semester.  Please email <?=admin_email()?> to explain what you're trying to do.
 </body>
 </html>
 <?php
@@ -55,40 +55,27 @@ to explain what you're trying to do.
   exit;
 } 
 
-if ($page_status != 'submit') {
-  $backupdbs = get_backup_dbs();
-  //archives will be organized spring, summer, fall, unknown 
+if ($page_status != 'submit') { 
+ //archives will be organized spring, summer, fall, unknown 
   $options_array = array('spring' => array(),'summer' => array(),
                          'fall' => array(),'unknown' => array());
-  //go through and get info on each backup
-  foreach ($backupdbs as $backup) {
-    //the fact that we're setting the $archive variable means that all
-    //$archive-dependent functions will now be accessing the archive,
-    //not the current db
-    $archive = $archive_pre . $backup . '_';
-    if (!table_exists('static_data') || !table_exists('fining_data') ||
-        !table_exists('master_shifts') || !table_exists('modified_dates')) {
-      continue;
-    }
-    $mod_row = $db->_Execute("select unix_timestamp(max(`mod_date`)) " .
-                           "from " . bracket($archive
-                                             . 'modified_dates'));
-    $mod_date = $mod_row->fields[0];
-    $num_shifts = 0;
-    $master_row = $db->_Execute("select count(*) from " .
-                                bracket($archive . 'master_shifts'));
-    $num_shifts = $master_row->fields[0];
-    $owed_default = get_static('owed_default');
-    $semester_start = get_static('semester_start');
-    $semester_start = explode('-',$semester_start);
-    if (count($semester_start) != 3) {
-      continue;
-    }
+
+
+
+  $archive_res = $db->Execute("select `archive`, " .
+                              "`semester_start` as `semester`, " .
+                              "unix_timestamp(`mod_date`) as `mod_date`, " .
+                              "`num_assigned` as `master`, `owed_default` " .
+                              " from `GLOBAL_archive_data` order by `mod_date`");
+  while ($archive_row = $archive_res->FetchRow()) {
+    $semester_start = split('-',$archive_row['semester']);
     $semester_time = mktime(0,0,0,$semester_start[1],$semester_start[2],
                             $semester_start[0]);
     $archive_sem = monthtosem($semester_start[1]);
-    $archive_data = array('name' => $backup, 'owed' => $owed_default,
-                          'shifts' => $num_shifts, 'mod_date' => $mod_date);
+    $archive_data = array('name' => $archive_row['archive'], 
+                          'owed' => $archive_row['owed_default'],
+                          'shifts' => $archive_row['master'], 
+                          'mod_date' => $archive_row['mod_date']);
     //weird archive we don't know the semester of?  Add to end
     if ($archive_sem == 'unknown') {
       $options_array['unknown'][] = $archive_data;
@@ -101,7 +88,6 @@ if ($page_status != 'submit') {
       $options_array[$archive_sem][$semester_time][] = $archive_data;
     }
   }
-  $archive = '';
   foreach ($options_array as $key => $junk) {
     krsort($options_array[$key],SORT_NUMERIC);
     foreach ($options_array[$key] as $ind => $junk) {

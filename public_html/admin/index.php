@@ -90,7 +90,7 @@ if (!$archive) {
 switch (date('n')) {
 case 1: case 5: case 6: case 8: case 9:
 ?>
-<a href="initial_setup.php">Change semesters, from last one to this one.  Set up semester-specific settings, backup old database, clear out old data.  (Warning -- may take some time to load.  Please be patient.)<br/>
+<a href="initial_setup.php">Change semesters, from last one to this one.  Set up semester-specific settings, backup old database, clear out old data.<br/>
 <?php
 default:
 }
