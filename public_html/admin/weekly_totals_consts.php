@@ -1,4 +1,5 @@
 <?php
+$body_insert = '';
 require_once('default.inc.php');
  $start_date = explode('-', get_static('semester_start'));
 function end_date($week) {
@@ -204,7 +205,7 @@ function validate_form() {
 
 </head><body onload='initialize_form()'>
 <?php 
-print_help();
+    print $body_insert;
 #}
 ?>
 <form onsubmit='return validate_form()'
@@ -255,7 +256,7 @@ they are still down.  If down hours reset each week, check this box.
 <span id='max_up_hours_text'>Is there a maximum number of hours a member can be up?  If so, enter it here
 <input id='max_up_hours' name='max_up_hours' value='<?=get_static('max_up_hours',null)?>'></span><br>
 Should up hours at the end of the semester automatically be applied to repay workshift fines?
-Stebbins has this system.  Read the <a href='help.html#cash_hours_auto'>help file</a>
+Stebbins has this system.  Read the <a href='<?=$wiki_url?>Manager_Fining_Parameters#cash_hours_auto' target='help'>help file</a>
 for more information.<input type=checkbox name='cash_hours_auto_bool'
 <?=get_static('cash_hours_auto',null)?'checked':''?>><br>
 <span id='max_up_hours_fining_text'>
@@ -364,7 +365,7 @@ onclick='make_same(<?=$ii?>)'>
 ?>
 <html><head><title>Update Weekly Totals Numbers</title></head><body>
 <?php
-print_help();
+   print $body_insert;
 foreach (array('weekly_fining_bool','fining_zero_hours_bool',
                'cash_hours_auto_bool', 'nonzeroed_total_hours_bool') as $key) {
   $real = substr($key,0,-5);

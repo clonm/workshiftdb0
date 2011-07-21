@@ -4,7 +4,6 @@ require_once('default.inc.php');
 ?>
 <html><head><title>Upload Workshift Doc</title></head><body>
 <?php
-print_help();
 print $body_insert;
 if (!isset($_FILES['description']) || !isset($_FILES['description']['tmp_name'])
     || !strlen($_FILES['description']['tmp_name'])) {

@@ -1,7 +1,6 @@
 <?php
-//need house list
-$delay_include = true;
-require_once('../admin/default.admin.inc.php');
+$houses = array('ath','aca','caz','clo','con','dav','euc','fen','hip','hoy',
+		'kid','kng','lot','nsc','rid','roc','she','stb','wil','wol','co');
 require_once("$php_includes/janakdb-utils.inc.php");
 ?>
 <form action='<?=this_url()?>' method='POST'>

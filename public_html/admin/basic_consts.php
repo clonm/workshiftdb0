@@ -15,9 +15,8 @@ if (!isset($_REQUEST['basic_consts_submitting_bool'])) {
   //previous academic or previous summer semester.
   ?>
 This can be a confusing page.  Please 
-  <a href='help.html#basic_consts' target='help'>look at the help</a>
+  <a href='<?=$wiki_url?>Manager#basic_consts' target='help'>look at the help</a>
 if you are confused, or email <?=admin_email()?>.
-Many values should not change semester to semester.
 <hr/>
 <form action='<?=this_url()?>' method='POST'>
 <input type=hidden name='basic_consts_submitting_bool' value=1>

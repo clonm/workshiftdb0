@@ -840,8 +840,11 @@ function user_timestamp($sec,$min,$hr,$day,$mo,$yr) {
 
 //Section 2: php functions
 
+$wiki_url = "http://workshiftdb0.sourceforge.net/w/";
+
 //Puts a help link at top of each admin page, when called
 function print_help($section=null,$span=false) {
+  global $wiki_url;
   //no printing if running from shell
   if (!array_key_exists('REQUEST_URI',$_SERVER)) {
     return;
@@ -853,20 +856,27 @@ function print_help($section=null,$span=false) {
   }
   $done = true;
   //public_utils has no help file, so we have to link back to admin
-  $public_utils = split('/',$_SERVER['REQUEST_URI']);
-  if (count($public_utils) > 2 &&
-      $public_utils[count($public_utils)-2] == 'public_utils') {
-    $public_utils = true;
+  $url_components = split('/',$_SERVER['REQUEST_URI']);
+  $public_utils = (count($url_components) > 2 &&
+                   $url_components[count($url_components)-2] == 
+                   'public_utils');
+  $admin_dir = (count($url_components) > 2 && 
+                $url_components[2] == 'admin');
+  $script_name = script_name();
+  if ($script_name == 'index' && $admin_dir) {
+    $script_name = '';
   }
   else {
-    $public_utils = false;
+    $script_name = "#$script_name";
   }
   print "<" . ($span?'span':'div') . 
     " class='help_link print_hide'><strong><a href='" .
-    ($public_utils?'../admin/':'') . "help.html#" . 
-    escape_html($section?$section:script_name())  . 
+    $wiki_url .
+    ($admin_dir || $public_utils?'Manager':'Users') .
+    escape_html($section?'#' . $section:$script_name)  . 
     "' target='workshift_help'>Help</a></strong>&nbsp;&nbsp;" .
-    "<a href='index.php' target='_top'>Home</a>&nbsp;&nbsp;" .
+    "<a href='" . ($public_utils?'../admin/':'') . 
+    "index.php' target='_top'>Home</a>&nbsp;&nbsp;" .
     "<span style='font-size: smaller'><a href='" .
     escape_html($bug_report_url) .
     "'>Submit Bug</a>&nbsp;&nbsp;<a href='" .

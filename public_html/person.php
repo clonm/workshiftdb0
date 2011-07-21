@@ -616,7 +616,7 @@ if (isset($fine_exists[2])) {
     //cash-in as a potential one, not actual, even though any hours
     //coming from max_up_hours overflow are pretty much definite
     print "<td></td><td>" . money(-1*$rebate) . "</td>" .
-      "<td><a href='help.html#cash_hours'>" .
+      "<td><a href='" . $wiki_url . "Users#cash_hours' target='help'>" .
       ($cash_flag_potential?'<b>Potential</b> c':'C') . 
       "ash-in of up hours</a></td></tr>";
     $subtot[2] += -$rebate;
@@ -655,7 +655,7 @@ print "</p><b>Total Fines: " . money($total_fine) . "</b>";
 if ($cash_flag && $total_fine != $cash_fines) {
   echo " (" . money($cash_fines) . " " .
     ($cash_flag_potential?"after":"before") .
-    " <a href='help.html#cash_hours'>cash-in of up hours</a>)";
+    " <a href='" . $wiki_url . "Users#cash_hours' target='help'>cash-in of up hours</a>)";
 }   
 echo "<p>\n";
 $fines_table = ob_get_contents();
@@ -673,7 +673,7 @@ print $tot_hours . " hours";
 if ($cash_flag && $tot_hours != $cash_total) {
   print " (" . escape_html($cash_total) . " " . 
     ($cash_flag_potential?"after":"before") .
-    " <a href='help.html#cash_hours'>cash-in of up hours</a>)";
+    " <a href='<?=$wiki_url?>Users#cash_hours' target='help'>cash-in of up hours</a>)";
 }
 print "</h4>";
 //we'll output a nonzeroed total if there is one, and our nonzeroed
@@ -684,7 +684,7 @@ if ($nonzeroed_total_flag &&
       $nonzeroed_total != $tot_hours) ||
      ($cash_flag && !$cash_flag_potential && 
       $nonzeroed_total != $cash_hours))) {
-  print "(Your <a href='help.html#nonzeroed_total'>nonzeroed " .
+  print "(Your <a href='<?=$wiki_url?>Users#nonzeroed_total' target='help'>nonzeroed " .
     "total</a> is " . escape_html($nonzeroed_total) . " hours)<p>";
 }
 //print out fines table, now that summary info has been printed

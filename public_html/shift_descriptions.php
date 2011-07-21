@@ -1,4 +1,5 @@
 <?php
+$body_insert = '';
 require_once('default.inc.php');
 ?>
 <html><head><title>Shift Descriptions</title></head>
@@ -18,7 +19,7 @@ table {
 }
 </style>
 <body>
-<?php print_help() ?>
+<?=$body_insert ?>
 <table border>
 <tr><th>Workshift</th><th>Earliest starting time</th><th>Latest ending time</th><th>Description</th></tr>
 <?php

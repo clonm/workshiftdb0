@@ -102,8 +102,6 @@ election</title>
 </head><body>
 <?=$body_insert?>
 <?php 
-   ;
- print_help(); 
  //files can be uploaded through this form, hence the enctype
 ?>
 <form method='POST' enctype='multipart/form-data'

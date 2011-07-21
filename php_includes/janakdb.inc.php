@@ -70,6 +70,7 @@ if (array_key_exists('REQUEST_URI',$_SERVER)) {
       $url_components[$house_name_component] = $_COOKIE['default_house'];
       header('Location: http://' . $_SERVER['HTTP_HOST'] . 
              join('/',$url_components));
+      exit;
     }
     else {
       require_once('choose_house.php');

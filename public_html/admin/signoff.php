@@ -34,7 +34,6 @@ if (count($_GET) == 0) { ?>
 <html><head><title>Print Sign-Off Sheets</title></head><body>
 <?php
    print $body_insert;
- print_help(); 
 ?>
 <form action='<?=this_url()?>' method=get id='signoff_form'>
    <input size=3 name='week_num' value='<?=($cur_week = get_cur_week())>-1?$cur_week:''?>'>

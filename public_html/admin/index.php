@@ -31,7 +31,7 @@ case 1: print 'President';
 <?php
 }
 ?>
-<h4><a href='help.html' target='help'>Read the help</a>
+<h4><a href='<?=$wiki_url?>Manager' target='help'>Read the help</a>
 for how to get started.</h4>
 <?php
 $browser = browser_detection('full');
