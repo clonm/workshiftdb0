@@ -424,6 +424,8 @@ $res = $db->Execute("show tables like ?",
                     array(quote_mysqlreg("$archive_pre$backup") . '_%'));
 if (is_empty($res)) {
   print("<h4>Backup " . escape_html($backup) . " does not exist.</h4>");
+  $db->Execute("delete from `GLOBAL_archive_data` where `archive` = ?",
+               array($backup));
   continue;
 }
 //we want to delete as much as possible, not dying ever
