@@ -25,8 +25,8 @@ if (array_key_exists('privacy',$privacy)) {
 To modify what info of yours appears in the directory, check/uncheck the buttons and submit.
 <form action='<?=this_url()?>' method=post><input type=hidden name='modify_privacy'>
 Room: <input type=checkbox name='room' <?=$privacy & 1?'checked':''?>>, 
-Email: <input type=checkbox name='email' <?=$privacy & 2?'checked':''?>>, 
-Phone: <input type=checkbox name='phone' <?=$privacy & 4?'checked':''?>>
+Email: <input type=checkbox name='email' <?=$privacy & 4?'checked':''?>>, 
+Phone: <input type=checkbox name='phone' <?=$privacy & 2?'checked':''?>>
 <input class=button type=submit value='Submit changes'></form>
 <?php
   }
