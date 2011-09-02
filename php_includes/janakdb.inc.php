@@ -4,6 +4,27 @@
 
 ////////////  OPTIONS THAT NEED TO BE CHANGED ON SITE CHANGES ///////////////
 
+//house is determined by the url.  However, which part of the url to use is not
+//so clear -- it'll vary server to server, based on the setup of the aliases.
+//Change the number below to the segment of the url that is used.
+$house_name_component = 1;
+
+$admin_email = 'workshift.system@gmail.com';
+
+//if running mysql on a local pipe, this should just be '.'
+$default_server = 'localhost';
+
+//This array has all the basic information about the connection, as
+//well as some non-basic info.  If you ever have a time when the
+//database name is a more complicated function of the house_name, you
+//might have to make this into a function.  It's an array because of
+//the admin functions that might need to use it repeatedly
+$url_array = array('db' => "bsccoo5_workshift$house_name", 
+                   'user' => "bsccoo5_wkshift",
+                   'pwd' => "workshift",
+                   'server' => $default_server,
+);
+
 //location of html_includes directory -- could vary site to site
 $html_includes = '/public_html/html_includes';
 
@@ -14,8 +35,6 @@ $html_includes = '/public_html/html_includes';
 //are defined in later versions of php, but may not be defined in
 //ours.  It is interpreted as a path relative to the php_includes dir.
 $php_utils = 'php_utils';
-
-$admin_email = 'workshift.system@gmail.com';
 
 //these need to be changed if the bug tracking system changes.  They'll also
 //need to be changed in index.php (for the admin), since it doesn't include
@@ -32,14 +51,6 @@ $project_url = 'http://sourceforge.net/projects/workshiftdb0/';
 $USE_MYSQL_FEATURES = false;
 //do we have views and stored procedures?
 $USE_MYSQL_50 = false;
-
-//if running mysql on a local pipe, this should just be '.'
-$default_server = 'localhost';
-
-//users are determined by the url.  However, which part of the url to use is not
-//so clear -- it'll vary server to server, based on the setup of the aliases.
-//Change the number below to the segment of the url that is used.
-$house_name_component = 1;
 
 //////////////  END OPTIONS THAT MAY NEED TO BE CHANGED ON SITE CHANGES /////
 
