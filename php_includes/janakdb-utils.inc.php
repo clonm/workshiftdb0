@@ -418,7 +418,7 @@ function create_and_update_weekly_totals_data() {
     //what should the owed default be?
     $owed_default = get_static('owed_default',5);
     //remote possibility of sql injection here
-    if (!ctype_digit($owed_default)) {
+    if (!is_numeric($owed_default)) {
       $owed_default = 5;
       set_static('owed_default',5);
     }
@@ -1548,10 +1548,11 @@ function add_authorized_user($mem_name,$type) {
   if (!in_array($mem_name,get_houselist())) {
     return null;
   }
+  $user_privs = user_privileges($mem_name);
   //are they already in this type?  Get rid of them
-  if (authorized_user($mem_name,$type)) {
+  if (in_array($type,$user_privs)) {
     //here are their new privileges
-    $privs = array_diff(user_privileges($mem_name),array($type));
+    $privs = array_diff($user_privs,array($type));
     //changing privileges is a suspicious activity
     //the authority figure key tells us who did the changing.
     //Unfortunate that we need to pack it in there.
@@ -1561,7 +1562,7 @@ function add_authorized_user($mem_name,$type) {
     return $db->Execute("insert into `privilege_table` (`member_name`," .
                         "`privileges`) values (?,?) " .
                         "on duplicate key update `privileges` = ?",
-                        array($mem_name,$type,join(',',$privs)));
+                        array($mem_name,join(',',$privs),join(',',$privs)));
   }
   //we're adding the privilege.
   elections_log(null,'change_privilege',$mem_name,
@@ -1571,7 +1572,7 @@ function add_authorized_user($mem_name,$type) {
                       "`privileges`) values (?,?) " .
                       "on duplicate key update " .
                       "`privileges` = concat(`privileges`,?)",
-                      array($mem_name,$type,",$type"));
+                      array($mem_name,$type,$type));
 }
 
 //get member corresponding to the current session id, if it exists.
