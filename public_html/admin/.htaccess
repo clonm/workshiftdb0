@@ -1,2 +1,6 @@
+# can be used to set zlib compression. actually
+# done in php.ini and php5.ini, so this file is
+# not used anymore. 
+
 # # php_value zlib.output_compression 1
 # # php_value zlib.output_compression_level 3
