@@ -272,6 +272,9 @@ if (isset($_REQUEST['settings_archive']) && strlen($_REQUEST['settings_archive']
   $db->Execute("rename table " .
                join(",", array_map('rename_origmap',$settings_tables)) . "," .
                join(",",array_map('rename_tempmap',$settings_tables)));
+  //Janak 8/20/11: current week shouldn't carry over from previous semester.
+  //this is probably true for other things as well.
+  set_static('cur_week',null);
   $db->debug = false;
   set_error_handler($old_errhandler);
 }
