@@ -1,5 +1,5 @@
 <?php
-readgzfile("index.html");
+phpinfo();
 exit;
 var_dump(preg_match('/[0-9][0-9][0-9][0-9](_[0-9][0-9]){5}/',"2006_08_25_20_30_41") == 1);
 exit;
