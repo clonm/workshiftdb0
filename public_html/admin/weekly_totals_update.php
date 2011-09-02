@@ -342,7 +342,11 @@ $javascript_pre .= <<<HEREDOC
 
 function initialize_weekly_totals_update() {
   var ii;
-  for (ii = 1; ii < 5*week_num; ii++) {
+  for (ii = 1; ii < 5*(week_num-2); ii++) {
+    document.getElementById('checkhide'+ii).checked = false;
+    hide_col(ii,'none');
+  }    
+  for (ii = Math.max(1,5*(week_num-2)); ii < 5*(week_num); ii++) {
     if ((ii % 5) == 4) {
       continue;
     }
@@ -350,7 +354,7 @@ function initialize_weekly_totals_update() {
     hide_col(ii,'none');
   }
   var startval;
-  for (ii = last_offset; ii <= last_offset+Number(tot_weeks)-week_num; ii++) {
+  for (ii = last_offset+2; ii <= last_offset+Number(tot_weeks)-week_num; ii++) {
     document.getElementById('checkhide'+ii).checked = false;
     hide_col(ii,'none');
   }    
