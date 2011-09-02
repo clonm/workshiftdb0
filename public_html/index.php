@@ -165,37 +165,10 @@ while ($row = $res->FetchRow()) {
 PHP generated this page in 
 <?=escape_html(round(array_sum(split(' ',microtime()))-$php_start_time,2))?>
  seconds.
-</td><td width=420 valign=top><script src="http://widgets.twimg.com/j/2/widget.js"></script>
-<script>
-new TWTR.Widget({
-  version: 2,
-  type: 'profile',
-  rpp: 2,
-  interval: 6000,
-  width: 400,
-  height: 100,
-  theme: {
-    shell: {
-      background: '#ffffff',
-      color: '#ffffff'
-    },
-    tweets: {
-      background: '#ffffff',
-      color: '#000000',
-      links: '#8d9fb3'
-    }
-  },
-  features: {
-    scrollbar: false,
-    loop: false,
-    live: false,
-    hashtags: false,
-    timestamp: false,
-    avatars: false,
-    behavior: 'all'
-  }
-}).render().setUser('sub4pay').start();
-</script><script src="http://widgets.twimg.com/j/2/widget.js"></script>
+</td><td width=420 valign=top>
+<center><a href="https://docs.google.com/a/bsc.coop/spreadsheet/viewform?S&formkey=dHhBeDRjYkZzQUs1YTRLdFNsWGhyM0E6MQ#gid=0"><img src="http://bsc.coop/widfar/workshift_site_retrofit_banner.jpg" width=380 height=130 alt="what would YOU do for a retrofit?"></a></center>
+<br>
+<script src="http://widgets.twimg.com/j/2/widget.js"></script>
 <script>
 new TWTR.Widget({
   version: 2,
