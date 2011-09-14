@@ -594,8 +594,7 @@ while ($row = $res->FetchRow()) {
       break;
     case 'member email change':
       print "member_email_change'>" .
-        escape_html($row['attrib']) . " changed their email</a></td><td>" .
-        escape_html($row['oldval']) . " became " . escape_html($row['val']);
+        escape_html($row['attrib']) . " changed their email</a></td><td>";
       break;
     case 'president email change':
       print "president_email_change'>" .
