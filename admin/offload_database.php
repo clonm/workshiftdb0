@@ -83,7 +83,12 @@ foreach ($houses as $house_name) {
     $zipfile = $row[0] . '.zip';
     system("zip -j " . escapeshellarg($zipfile) . ' ' . 
            escapeshellarg($filename) . " 2>&1");
-    $uploader->upload($zipfile,"backups/$house_name") || janak_error("couldn't upload");
+    try {
+      $uploader->upload($zipfile,"backups/$house_name");
+    }
+    catch (Exception $e) {
+      janak_error($e->getMessage());
+    }
     $done_archives[] = $row[0];
     $db->Execute("UPDATE `GLOBAL_archive_data` SET `emailed` = 1 where `archive` = ?",
                  array($row[0])) ||
