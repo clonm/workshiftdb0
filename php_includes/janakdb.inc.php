@@ -247,9 +247,9 @@ if ($house_name !== 'admin') {
   $temp = explode('-',$temp[2]);
   $MYSQL_VERSION += $temp[0];
   //both of the below can be suppressed via $body_insert being non-null
-  //authentication for site.  Sets up cookie session.
   ob_start();
   print_help(null,true);
+  //authentication for site.  Sets up cookie session.
   //require_user might never really return (if it calls member_check).
   //So we don't get to print our nice <hr/>.  We'll live.  The output
   //buffering might also not end until the script ends.
