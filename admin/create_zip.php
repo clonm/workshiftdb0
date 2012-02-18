@@ -94,34 +94,33 @@ foreach ($houses as $house_name) {
   }
   if (array_key_exists('quick',$_REQUEST)) {
     $db->SetFetchMode(ADODB_FETCH_NUM);
-    ($handle = fopen("$backup_dir/" . $url_array['db'],"w")) ||
-      trigger_error("Couldn't open $backup_dir/" . $url_array['db'],E_USER_ERROR);
+    $db_file = "$backup_dir/" . $house_name;
+    ($handle = fopen($db_file,"w")) ||
+      janak_error("Couldn't open $db_file");
     fwrite($handle,"set autocommit=0;\nbegin;\n") ||
-      trigger_error("Couldn't start writing to $backup_dir/" . $url_array['db'],
-                    E_USER_ERROR);
+      janak_error("Couldn't start writing to $db_file");
     $db->Execute("set autocommit=0");
     $db->Execute("begin");
     foreach ($cols as $tbl) {
       fwrite($handle,"drop table if exists `$tbl`;\n") ||
-        trigger_error("Couldn't write to $backup_dir/" . $url_array['db'],
-                      E_USER_ERROR);
+        janak_error("Couldn't write to $db_file");
       ($res = $db->Execute("show create table `$tbl`")) ||
         janak_error("Couldn't get table definition for $tbl");
       fwrite($handle,$res->fields[1] . ";\n") ||
-        janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
+        janak_error("Couldn't write to $db_file");
       ($res = $db->Execute("select * from `$tbl`")) ||
         janak_error("Couldn't select from $tbl");
     while ($data_row = $res->FetchRow()) {
       fwrite($handle,
                "INSERT INTO `$tbl` VALUES (" . 
                join(',',array_map('db_quote',$data_row)) . ");\n") ||
-          janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
+          janak_error("Couldn't write to $db_file");
       }
     }
     $db->Execute("commit");
     $db->Execute("set autocommit=1");
     fwrite($handle,"commit;\nset autocommit=1;\n") ||
-      janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
+      janak_error("Couldn't write to $db_file");
 
   }
   else {
@@ -136,7 +135,7 @@ foreach ($houses as $house_name) {
       " " . escapeshellarg($url_array['db']) . " " .
       join(' ',array_map('escapeshellarg',$cols)) . 
       " 2>&1 1> " . escapeshellarg($backup_dir) . "/" . 
-           escapeshellarg($url_array['db']);
+           escapeshellarg($house_name);
     //    print $exec_string;
     system($exec_string);
   }

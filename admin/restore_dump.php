@@ -12,7 +12,7 @@ if (!array_key_exists('userfile',$_FILES)) {
     Send this file: <input name="userfile" type="file" />
     <input type="submit" value="Send File" />
 </form>
-    The name of the file in the zipfile gives the database, so it is very important -- keep it the same. The name of the zipfile gives the backup name, unless it is "janakjanak.zip" in which case it will be ignored.<p>
+    The name of the file(s) in the zipfile are the house names, so they are very important -- keep them the same. The name of the zipfile gives the backup name, unless it is "janakjanak.zip" in which case it will be ignored.<p>
 
 What follows has several parts.  First comes the output from unzipping.  Then 
 comes the results of backing up each database you are trying to restore.  
@@ -94,7 +94,7 @@ while ($fname = readdir($dh)) {
   print("<h1>Restoring $fname</h1>");
   $server = server_from_db($fname);
   $user = user_from_db($fname);
-  $db->Connect($server,$user,$url_array['pwd'],$fname);
+  $db->Connect($server,$user,$url_array['pwd'],"$db_basename$fname");
   $row = $db->GetRow("select version() as vs");
   $temp = $row['vs'];
   $temp = explode('.',$temp);

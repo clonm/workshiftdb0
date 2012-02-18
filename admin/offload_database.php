@@ -46,11 +46,11 @@ foreach ($houses as $house_name) {
                       "`emailed` is NULL order by `semester_start`");
   while ($row = $res->FetchRow()) {
     fwrite(STDERR,"doing " . $row[0]);
-    $filename = "$backup_dir/$house_name/" . $url_array['db'];
+    $filename = "$backup_dir/$house_name/$house_name";
     ($handle = fopen($filename,"w")) ||
-      trigger_error("Couldn't open $filename",E_USER_ERROR);
+      janak_error("Couldn't open $filename");
     fwrite($handle,"set autocommit=0;\nbegin;\n") ||
-      trigger_error("Couldn't start writing to $filename", E_USER_ERROR);
+      janak_error("Couldn't start writing to $filename");
     $db->Execute("set autocommit=0");
     $db->Execute("begin");
     $tbl_res = $db->Execute('show tables like ?',
@@ -59,25 +59,24 @@ foreach ($houses as $house_name) {
     while ($tbl_row = $tbl_res->FetchRow()) {
       $tbl = $tbl_row[0];
       fwrite($handle,"drop table if exists `$tbl`;\n") ||
-        trigger_error("Couldn't write to $backup_dir/" . $url_array['db'],
-                      E_USER_ERROR);
+        janak_error("Couldn't write to $filename");
       ($create_res = $db->Execute("show create table `$tbl`")) ||
         janak_error("Couldn't get table definition for $tbl");
       fwrite($handle,$create_res->fields[1] . ";\n") ||
-        janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
+        janak_error("Couldn't write to $filename");
       ($data_res = $db->Execute("select * from `$tbl`")) ||
         janak_error("Couldn't select from $tbl");
     while ($data_row = $data_res->FetchRow()) {
       fwrite($handle,
                "INSERT INTO `$tbl` VALUES (" . 
                join(',',array_map('db_quote',$data_row)) . ");\n") ||
-          janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
+          janak_error("Couldn't write to $filename");
       }
     }
     $db->Execute("commit");
     $db->Execute("set autocommit=1");
     fwrite($handle,"commit;\nset autocommit=1;\n") ||
-      janak_error("Couldn't write to $backup_dir/" . $url_array['db']);
+      janak_error("Couldn't write to $filename");
     $zipfile = $row[0] . '.zip';
     system("zip -j " . escapeshellarg($zipfile) . ' ' . 
            escapeshellarg($filename) . " 2>&1");
