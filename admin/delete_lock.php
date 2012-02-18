@@ -6,7 +6,7 @@ if ($dh = @opendir($restore_dir)) {
   while ($fname = readdir($dh)) {
     if($fname=='.' || $fname=='..') continue;
     unlink("$restore_dir/$fname") || 
-      trigger_error("Couldn't delete $fname from $restore_dir",E_USER_ERROR);
+      janak_error("Couldn't delete $fname from $restore_dir");
   }
 }
 else {
