@@ -9,7 +9,7 @@ TD.first { vertical-align: top; padding-right: 3em}
 TH { vertical-align: top; text-align: left; padding-right: 3em}
 </style>
 </head><body>
-<table border=0><tr><td width=650><h3>First Things First</h3>
+<table border=0><tr><td width=650 class="first"><h3>First Things First</h3>
 Fill out your <a href="preferences.php">preference form</a>.<p>
 <a href="person.php">Your personal page</a><p>
 <hr>
@@ -165,7 +165,7 @@ while ($row = $res->FetchRow()) {
 PHP generated this page in 
 <?=escape_html(round(array_sum(split(' ',microtime()))-$php_start_time,2))?>
  seconds.
-</td><td width=420 valign=top>
+</td><td valign=top>
 <center><a href="https://docs.google.com/a/bsc.coop/spreadsheet/viewform?S&formkey=dHhBeDRjYkZzQUs1YTRLdFNsWGhyM0E6MQ#gid=0"><img src="http://bsc.coop/widfar/workshift_site_retrofit_banner.jpg" width=380 height=130 alt="what would YOU do for a retrofit?"></a></center>
 <br>
 <script src="http://widgets.twimg.com/j/2/widget.js"></script>
@@ -175,7 +175,7 @@ new TWTR.Widget({
   type: 'profile',
   rpp: 20,
   interval: 6000,
-  width: 400,
+      width: 380,
   height: 600,
   theme: {
     shell: {
