@@ -21,16 +21,17 @@ foreach ($houses as $house) {
   while ($row = $res->FetchRow()) {
     if (!isset($dbnames[$row[0]])) {
       print "$house: GLOBAL_archive_data lists " . $row[0] .
-        " but backup doesn't exist.\n";
+        " but backup doesn't exist.<br/>\n";
+      $dbnames[$row[0]] = 0;
     }
     if ($dbnames[$row[0]]) {
-      print "$house: multiple listings of " . $row[0] . " in GLOBAL_archive_data\n";
+      print "$house: multiple listings of " . $row[0] . " in GLOBAL_archive_data<br/>\n";
     }
     $dbnames[$row[0]]++;
   }
   foreach ($dbnames as $backup => $num) {
     if (!$num) {
-      print "$house: $backup does not appear in GLOBAL_archive_data\n";
+      print "$house: $backup does not appear in GLOBAL_archive_data<br/>\n";
     }
   }
 }
