@@ -71,6 +71,7 @@ if (array_key_exists('REQUEST_URI',$_SERVER)) {
   //where administrative php scripts are
   $secured = ($url_components[$house_name_component+1] === 'admin');
   $baseurl = join('/',array_slice($url_components,0,$house_name_component+1));
+  $html_includes = $baseurl . "/html_includes";
   $running_shell = false;
 }
 else {

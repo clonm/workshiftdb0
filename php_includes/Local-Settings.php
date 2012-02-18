@@ -7,17 +7,17 @@ $admin_email = 'workshift.system@gmail.com';
 
 //What is the server to connect to?
 //if running mysql on a local pipe, this should just be '.'
-$db_server = 'localhost';
+$db_server = 'db';
 
 //What is the mysql user to connect to the databases
-$db_user = 'bsccoo5_wkshift';
+$db_user = 'bsc1933';
 
 //You can set the password to connect here, or put it in workshift_pass.txt
 $db_password = null;
 
 //All databases are supposed to start with the same string, terminating in the
 //house code. This is that string.
-$db_basename = 'bsccoo5_workshift';
+$db_basename = 'bsc1933_shift';
 
 //house is determined by the url.  However, which part of the url to use is not
 //so clear -- it'll vary server to server, based on the setup of the aliases.
@@ -26,11 +26,4 @@ $db_basename = 'bsccoo5_workshift';
 //name, stb, is the first component. In the url
 //http://www.bsc.coop/workshift/stb/admin/ the house name is the second
 //component.
-$house_name_component = 1;
-
-//The location of the html_includes directory can vary site to site. If the
-//$house_name_component is 1, then the default below is probably right.
-//But if the $house_name_component above is not 1, then you might need to
-//give a path like 
-#$html_includes='/~bsccoo5/workshift/workshiftdb0/public_html/html_includes';
-$html_includes = '/public_html/html_includes';
+$house_name_component = 4;
