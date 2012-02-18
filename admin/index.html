@@ -2,11 +2,18 @@
 
 <ul>
 <li><a href='reset_password.php'>Reset any officer's password</a>.
+<li><a href='create_house_urls.php'>Set up urls</a> for all the houses (use just once, when the system is first set up).
+<li><a href='active_houses.php'>View the last time</a> each house used the system.
 <li><a href='restore_dump.php'>Restore some/all houses' systems from a
     backup</a> (in the event of data loss).
+<li><a href='delete_lock.php'>Reset the state</a> if the above restore operation fails partway through, so you can try again.
+<li><a href='phpinfo.php'>View PHP</a> configuration of the server.
+<li><a href='sync_archives_list.php'>View backups sync state</a> to see if there are backups that are not properly catalogued.
+<li><a href='sync_global_archive_data.php'>Add all backups to the catalog.</a>
+<hr>
+<h3>These operations are done automatically by the system</h3>
+(so you don't need to do them)
 <li><a href='create_zip.php'>Create a full backup of the
-    system</a>.
-<li><a href='create_zip.php?all'>Create the fullest possible backup of the
     system</a>.
 <li><a href='delete_backups.php'>Delete houses' redundant/corrupt backups</a>
   (to save space/speed some page loads).
