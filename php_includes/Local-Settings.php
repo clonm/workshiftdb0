@@ -26,4 +26,4 @@ $db_basename = 'bsc1933_shift';
 //name, stb, is the first component. In the url
 //http://www.bsc.coop/workshift/stb/admin/ the house name is the second
 //component.
-$house_name_component = 4;
+$house_name_component = 3;

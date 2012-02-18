@@ -51,7 +51,7 @@ if (file_exists($restore_dir)) {
   while ($fname = readdir($dh)) {
     if($fname=='.' || $fname=='..') continue;
     unlink("$restore_dir/$fname") || 
-      trigger_error("Couldn't delete $fname from $restore_dir",E_USER_ERROR);
+      janak_error("Couldn't delete $fname from $restore_dir");
   }
 }
 else {
@@ -119,7 +119,7 @@ while ($fname = readdir($dh)) {
   $db->debug = false;
   $retval = system("mysql -u" .escapeshellarg($user) . " -p" .
                    escapeshellarg($url_array['pwd']) . " -h" . escapeshellarg($server) .
-                   " " . escapeshellarg($fname) .
+                   " " . escapeshellarg("$db_basename$fname") .
                    " < " . escapeshellarg($restore_dir) . "/" .
                    escapeshellarg($fname) . " 2>&1");
   if ($filedata['name'] !== "janakjanak.zip") {
