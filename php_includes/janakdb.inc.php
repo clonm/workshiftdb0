@@ -2,34 +2,11 @@
 // Gives common interface and setup to all scripts involving database.
 // Also has options that may need to be modified for different site setups.
 
-////////////  OPTIONS THAT NEED TO BE CHANGED ON SITE CHANGES ///////////////
 
-//house is determined by the url.  However, which part of the url to use is not
-//so clear -- it'll vary server to server, based on the setup of the aliases.
-//Change the number below to the segment of the url that is used.
-$house_name_component = 1;
+//settings that differ system to system
+require_once('Local-Settings.php');
 
-$admin_email = 'workshift.system@gmail.com';
-
-//if running mysql on a local pipe, this should just be '.'
-$default_server = 'localhost';
-
-//This array has all the basic information about the connection, as
-//well as some non-basic info.  If you ever have a time when the
-//database name is a more complicated function of the house_name, you
-//might have to make this into a function.  It's an array because of
-//the admin functions that might need to use it repeatedly
-$url_array = array('db' => "bsccoo5_workshift$house_name", 
-                   'user' => "bsccoo5_wkshift",
-                   'pwd' => "workshift",
-                   'server' => $default_server,
-);
-
-//location of html_includes directory -- could vary site to site
-$html_includes = '/public_html/html_includes';
-
-//this is what it could look like too
-#$html_includes='/~bsccoo5/cvsworkshift/workshiftdb0/public_html/html_includes';
+////////////  OPTIONS THAT MAY NEED TO BE CHANGED ON SITE CHANGES ///////////////
 
 //php_utils is a directory containing source files with functions that
 //are defined in later versions of php, but may not be defined in
@@ -188,15 +165,18 @@ if (array_key_exists('forget_login',$_REQUEST)) {
 //the admin functions that might need to use it repeatedly.
 //We read the password from an external file to keep it out of the
 //(public) source code.
-$passfile = fopen($php_includes . '/workshift_pass.txt','r');
-$db_password = rtrim(fgets($passfile));
-$db_basename = "bsccoo5_workshift";
+if (!$db_password) {
+  $passfile = fopen($php_includes . '/workshift_pass.txt','r');
+  $db_password = rtrim(fgets($passfile));
+}
 $url_array = array('db' => "$db_basename$house_name", 
-                   'user' => "bsccoo5_wkshift",
+                   'user' => $db_user,
                    'pwd' => $db_password,
-                   'server' => $default_server,
+                   'server' => $db_server,
 );
 unset($db_password);
+unset($db_server);
+unset($db_user);
 unset($passfile);
 
 //many scripts can be invoked with an archive argument, which will make them
