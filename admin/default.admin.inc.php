@@ -29,7 +29,7 @@ if (!$php_includes) {
             $basedir = realpath(dirname($GLOBALS[$global][$key]));
           }
           if (!$basedir) {
-            break;
+            continue;
           }
           $comps = explode(DIRECTORY_SEPARATOR,$basedir);
           while (count($comps)) {

@@ -10,7 +10,7 @@ foreach (array('DOCUMENT_ROOT','PATH_TRANSLATED','SCRIPT_FILENAME','PWD') as $ke
       $basedir = realpath(dirname($GLOBALS[$global][$key]));
     }
     if (!$basedir) {
-      break;
+      continue;
     }
     $comps = explode(DIRECTORY_SEPARATOR,$basedir);
     while (count($comps)) {
