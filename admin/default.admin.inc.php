@@ -24,7 +24,8 @@ if (!$php_includes) {
       foreach (array('HTTP_SERVER_VARS','_SERVER',
         'HTTP_ENV_VARS','_ENV') as $global) {
           $basedir = null;
-          if (array_key_exists($key,$GLOBALS[$global]) && 
+          if (array_key_exists($global,$GLOBALS) && 
+              array_key_exists($key,$GLOBALS[$global]) && 
             $GLOBALS[$global][$key]) {
             $basedir = realpath(dirname($GLOBALS[$global][$key]));
           }
