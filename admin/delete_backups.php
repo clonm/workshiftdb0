@@ -5,7 +5,8 @@ require_once('default.admin.inc.php');
 <?php
 if (isset($_REQUEST['house'])) {
   $house = $_REQUEST['house'];
-  $db->Connect('localhost',"usca_janak$house","workshift","usca_janak$house");
+  $db->Connect($url_array['server'],$url_array['user'],$url_array['pwd'],
+    "$db_basename$house");
   //just to quiet delete_backup_databases down
   $include_path = get_include_path();
   $include_path = '../public_html/' . PATH_SEPARATOR . $include_path;

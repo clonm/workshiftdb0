@@ -38,9 +38,7 @@ foreach ($houses as $house_name) {
     unlink("$backup_dir/$house_name/$fname") || 
       janak_error("Couldn't delete $fname from $backup_dir/$house_name");
   }
-  $url_array['user'] = "bsccoo5_wkshift";
-  $url_array['db'] = "bsccoo5_workshift$house_name";
-  $sql_user = null;
+  $url_array['db'] = "$db_basename$house_name";
   $done_archives = array();
   $db->Connect($url_array['server'],$url_array['user'],$url_array['pwd'],
                $url_array['db']);

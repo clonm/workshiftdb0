@@ -181,16 +181,23 @@ if (array_key_exists('forget_login',$_REQUEST)) {
   $_SERVER['REQUEST_METHOD'] = 'GET';
 }
 
-//This array has all the basic information about the connection, as
+//$url_array has all the basic information about the connection, as
 //well as some non-basic info.  If you ever have a time when the
 //database name is a more complicated function of the house_name, you
 //might have to make this into a function.  It's an array because of
-//the admin functions that might need to use it repeatedly
-$url_array = array('db' => "bsccoo5_workshift$house_name", 
+//the admin functions that might need to use it repeatedly.
+//We read the password from an external file to keep it out of the
+//(public) source code.
+$passfile = fopen($php_includes . '/workshift_pass.txt','r');
+$db_password = rtrim(fgets($passfile));
+$db_basename = "bsccoo5_workshift";
+$url_array = array('db' => "$db_basename$house_name", 
                    'user' => "bsccoo5_wkshift",
-                   'pwd' => "workshift",
+                   'pwd' => $db_password,
                    'server' => $default_server,
 );
+unset($db_password);
+unset($passfile);
 
 //many scripts can be invoked with an archive argument, which will make them
 //access the backup database, instead of the current one.

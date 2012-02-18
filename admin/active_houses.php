@@ -5,8 +5,8 @@
 //Commented by Janak 31 Jan 2010
 require_once('default.admin.inc.php');
 foreach ($houses as $house) {
-  $db->Connect('localhost',"bsccoo5_wkshift","workshift",
-    "bsccoo5_workshift$house");
+  $db->Connect($url_array['server'],$url_array['user'],$url_array['pwd'],
+    "$db_basename$house");
   print "<h1>" . escape_html($house) . "</h1>";
   if (table_exists('modified_dates')) {
     $row = $db->GetRow("select `table_name`," .

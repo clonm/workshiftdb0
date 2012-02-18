@@ -74,9 +74,7 @@ foreach ($houses as $house_name) {
      fwrite(STDERR,"ran out of time");
      break;
    }
-  $url_array['user'] = "bsccoo5_wkshift";
-  $url_array['db'] = "bsccoo5_workshift$house_name";
-  $sql_user = null;
+  $url_array['db'] = $db_basename . $house_name;
   $cols = array();
   if (!array_key_exists('all',$_REQUEST) || 
       array_key_exists('quick',$_REQUEST) || array_key_exists('optimize',$_REQUEST)) {

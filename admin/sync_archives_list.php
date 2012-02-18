@@ -2,7 +2,8 @@
 require_once('default.admin.inc.php');
 
 foreach ($houses as $house) {
-  $db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshift$house");
+  $db->Connect($url_array['server'],$url_array['user'],$url_array['pwd'],
+    "$db_basename$house");
   //"show tables like " gives awful column names, so we go numeric
   $oldfetch = $db->fetchMode;
   $db->SetFetchMode(ADODB_FETCH_NUM);

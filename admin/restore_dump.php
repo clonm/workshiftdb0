@@ -203,7 +203,8 @@ janak_errhandler($errno,$errstr,$errfile,
 } 
 
 function server_from_db($db) {
-  return 'localhost';
+  global $url_array;
+  return $url_array['server'];
 #  return $db . '.test.usca.org';
 }
 

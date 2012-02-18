@@ -11,8 +11,7 @@ if (isset($temp_houses['h'])) {
 foreach ($houses as $house_name) {
   //  fwrite(STDERR,"doing $house_name\n");
   print "$house_name\n";
-  $url_array['user'] = "bsccoo5_wkshift";
-  $url_array['db'] = "bsccoo5_workshift$house_name";
+  $url_array['db'] = "$db_basename$house_name";
   $sql_user = null;
   $db->Connect($url_array['server'],$url_array['user'],$url_array['pwd'],
                $url_array['db']);
