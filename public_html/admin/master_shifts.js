@@ -13,6 +13,19 @@ listdays['Sunday'] = 6;
 var dayslist = ['Weeklong', 'Monday', 'Tuesday', 'Wednesday', 
 		'Thursday','Friday','Saturday','Sunday'];
 
+var accumulated_errors = '';
+
+function store_alert(txt) {
+    accumulated_errors += "\n" + txt;
+}
+
+function print_alerts() {
+    if (accumulated_errors) {
+        alert(accumulated_errors);
+        accumulated_errors = '';
+    }
+}
+
 //dummy function so we can call offer_options even if there's no assign_shifts.php
 //sitting on top of us
 function offer_options(elt,elt2,elt3,elt4) {
@@ -131,11 +144,14 @@ function assign_shift(member, workshift, addshift, silent) {
     alter_hours(member,(addshift?1:-1)*workshift[5]);
     return false;
   }
-  if (typeof(silent) == 'undefined')
-    silent = false;
-  silent = silent || parent.suppress_all;
-  //adding a shift?
-  if (addshift) {
+    var no_alert = true;
+    if (typeof(silent) == 'undefined') {
+        no_alert = false;
+        silent = false;
+    }
+    var silent = silent || parent.suppress_all;
+    //adding a shift?
+    if (addshift) {
     //can we actually add this shift? temp will now have the times this shift
     //is being done
     var temp = can_do(member,workshift,false,silent);
@@ -170,6 +186,9 @@ function assign_shift(member, workshift, addshift, silent) {
     //change the hours assigned
     alter_hours(member,-workshift[5]);
   }
+    if (!no_alert) {
+        print_alerts();
+    }
   return true;
 }
 
@@ -204,7 +223,7 @@ function can_do(member,workshift,listing,silent) {
       return false;
     }
     else if (!silent) {
-      alert(member + " has " + 
+      store_alert(member + " has " + 
             (Number(hourslist[member])+Number(workshift[5])) + 
             " hours assigned.");
       success = false;
@@ -225,7 +244,7 @@ function can_do(member,workshift,listing,silent) {
             for (var ii=0; ii < unwanted[ind].length; ii++) {
               tempstr += unwanted[ind][ii] + ", ";
             }
-            alert(member + " has unwanted preference: " + tempstr +
+            store_alert(member + " has unwanted preference: " + tempstr +
                   " which seems to conflict with " + workshift[0]);
             success = 0;
           }
@@ -275,18 +294,17 @@ function can_do(member,workshift,listing,silent) {
   var hours = Math.ceil(workshift[5]);
   if (hours > (nd-st)) {
     if (!listing && !silent) {
-      alert("The system cannot calculate busy times for " + workshift[0] +
+      store_alert("The system cannot calculate busy times for " + workshift[0] +
             ", since the start time of " + start_time + " and end time of " +
             end_time + " are so close together.");
     }
     return [st,nd];
   }
   for (var tryct = 0; tryct < 2; tryct++) {
-    var msg;
     if (tryct == 1 && !listing && !silent) {
-      msg = member + " would prefer not to work on " + dayslist[workshift[1] ] + ": " + 
+        store_alert(member + " would prefer not to work on " + dayslist[workshift[1] ] + ": " + 
         display_busy(busyday,'2',st,nd) + " which conflicts with " + 
-        workshift[0] + " (possibly taking into account some busy times)";
+                    workshift[0] + " (possibly taking into account some busy times)");
     }
     //if a shift starts before the availability schedule starts, check to see if
     //it can be done right at the beginning.  If it doesn't fit, push the start
@@ -298,9 +316,6 @@ function can_do(member,workshift,listing,silent) {
         }
       }
       if (ii == hours+st) {
-        if (msg) {
-          alert(msg);
-        }
         return [0,ii];
       }
       else {
@@ -315,9 +330,6 @@ function can_do(member,workshift,listing,silent) {
         }
       }
       if (ii == nd-hours) {
-        if (msg) {
-          alert(msg);
-        }
         return [ii,15];
       }
       else {
@@ -337,16 +349,13 @@ function can_do(member,workshift,listing,silent) {
         startii = ii;
       }
       if (ii+1-startii >= hours) {
-        if (msg) {
-          alert(msg);
-        }
         return [startii,ii+1];
       }
     }
   }
   //did we fail?
   if (!listing && !silent) {
-      alert(member + " is busy on " + dayslist[workshift[1] ] + ", " + 
+      store_alert(member + " is busy on " + dayslist[workshift[1] ] + ", " + 
             display_busy(busyday,'3',st,nd) + " which conflicts with " + 
             workshift[0]);
       return false;
@@ -532,10 +541,13 @@ function initialize_master_shifts() {
       else {
         workshift[1] = jj;
       }
-      //assign the shift, suppressing warnings if suppress_first is set
+      //assign the shift, suppressing warnings from being printed
       assign_shift(member,workshift,true,parent.suppress_first);
     }
   }
+    if (!parent.suppress_first) {
+        print_alerts();
+    }
   //update the hours if we're in a frame
   //  if (parent != self) {
   //  for (var member in hourslist) {
