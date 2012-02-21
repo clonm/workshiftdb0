@@ -60,32 +60,31 @@ var rating_color = new Array();
 if ($shift_prefs_style = get_static('shift_prefs_style',0)) {
   $max_rating = get_static('wanted_max_rating',5);
   $default_rating = get_static('default_rating',2);
+  $min_wanted_rating = max(get_static('min_wanted_rating',max($max_rating-1,1)),1);
 }
 else {
   $max_rating = 2;
   $default_rating = 1;
+  $min_wanted_rating = 2;
 }
 echo "var max_rating = " . $max_rating . ";\n";
 //the minimum wanted rating is the least rating such that a person is
 //considered to "want" the shift.  People who want shifts are bolded.
-//The min_wanted_rating should be at least 1, and greater than the
-//default rating, which is a "don't want, don't not want"
-echo "var min_wanted_rating = " . 
-max(get_static('min_wanted_rating',$shift_prefs_style?max($max_rating-1,1):2),
-    $default_rating+1) . ";\n";
-echo "var default_rating = $default_rating;\n";
+echo "var min_wanted_rating = " . $min_wanted_rating . ";\n";
 
+$want_scale_factor = $max_rating-$min_wanted_rating+2;
+$unwant_scale_factor = max($min_wanted_rating-1,1);
 //do the colors
 for ($ii = 0; $ii <= $max_rating; $ii++) {
   echo "rating_color[$ii] = '";
-  if ($ii > $default_rating) {
-    //some proportion of 255, depending on how much above default ii is
+  if ($ii>= $min_wanted_rating) {
+    //some proportion of 255, depending on how much above minimum ii is
     $temp = dechex(ceil(255*
-                        ($ii-$default_rating)/($max_rating-$default_rating)));
+                        ($ii-$min_wanted_rating+1)/$want_scale_factor));
     //put out that number (in hex) padded so it's in the middle
     echo str_pad($temp . '00',6,'0',STR_PAD_LEFT);
   }
-  else if ($ii <= $default_rating) {
+  else if ($ii < $min_wanted_rating) {
     //gray comes from all the colors being the same
     //if the default rating is 0, just make it black -- there's no
     //such thing as not wanting a shift if the default is 0
@@ -94,7 +93,7 @@ for ($ii = 0; $ii <= $max_rating; $ii++) {
     }
     else {
       //192 is pretty gray -- the closer to 255, the lighter we get
-      $temp = dechex(floor(192*(1-$ii/$default_rating)));
+      $temp = dechex(floor(192*(1-($ii/$unwant_scale_factor))));
     }
     //pad out to length 2
     if (strlen($temp) == 1) {
@@ -185,8 +184,8 @@ function set_rating_person(member,workshift) {
     is_wanted_person(st,true);
   }
   st.color = '#' + rating_color[rating];
-  //the size is at least 85%, and at most 85+15(max/default)%
-  var temp = (Number(85)+Number(15)*(rating/default_rating));
+  //the size is at least 85%, and at most 85+15(max/min_wanted)%
+  var temp = (Number(85)+Number(15)*(rating/min_wanted_rating));
   st.fontSize = temp + '%';
 }
 
@@ -202,13 +201,16 @@ function get_rating(member,workshift) {
       for (var ind in wanted[ii]) {
         //does it match?
         if (self.master_shifts.shift_match(wanted[ii][ind],workshift)) {
+          if (member == "Chavez, Rigoberto") {
+            alert(workshift + ", and " + ii);
+          }
           return ii;
         }
       }
     }
   }
   //no match, return default
-  return default_rating;
+  return <?=$default_rating?>;
 }
 //change the text of the member element to show how many hours they
 //have currently
