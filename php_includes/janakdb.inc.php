@@ -49,23 +49,26 @@ if (array_key_exists('REQUEST_URI',$_SERVER)) {
   //to work for each house, a cookie can be set. Data should never be posted
   //to these urls -- they are only for initial access.
   if ($house_name == 'public_html') {
-    if (isset($_REQUEST['default_house'])) {
+    if (!headers_sent() && isset($_REQUEST['default_house'])) {
       setcookie('default_house',$_REQUEST['default_house'],
                 time()+10800*30,"/");
       $_COOKIE['default_house'] = $_REQUEST['default_house'];
     }
-    if (isset($_COOKIE['default_house'])) {
+    if (!headers_sent() && isset($_COOKIE['default_house'])) {
       $url_components[$house_name_component] = $_COOKIE['default_house'];
       header('Location: http://' . $_SERVER['HTTP_HOST'] . 
              join('/',$url_components));
       exit;
     }
-    else {
+    else if (!headers_sent()) {
       require_once('choose_house.php');
       exit;
     }
+    else {
+      exit("There was an error in the system (headers already sent). Please email workshiftadmin@gmail.com and say what happened.");
+    }
   }
-  else {
+  else if (!headers_sent()) {
     setcookie('default_house',$house_name,time()+10800*30,"/");
   }
   //where administrative php scripts are
