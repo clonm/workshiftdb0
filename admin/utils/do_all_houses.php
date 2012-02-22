@@ -6,6 +6,7 @@ janak_fatal_error_reporting(0);
 foreach ($houses as $house) {
   $db->Connect('localhost',"bsccoo5_wkshift","workshift","bsccoo5_workshift$house");
   print "<h1>$house</h1>";
-  $db->Execute("drop table `current_voting_lock`");
+  $row = $db->GetRow("SELECT COUNT(*) as `ct` FROM `master_shifts` where `floor` IS NOT NULL AND `floor` != ''");
+  print $row['ct'] . "<br>";
 }
 
