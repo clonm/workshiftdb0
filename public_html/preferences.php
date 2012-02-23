@@ -99,21 +99,6 @@ else {
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" --"http://www.w3.org/TR/REC-html40/strict.dtd"-->
 <html><head><title>PERMANENT WORKSHIFT PREFERENCE SHEET</title>
 <script type="text/javascript">
-var theForm;
-var wantedButton;
-var unwantedButton;
-var name_index = "__name";
-var num_mods;
-var modifiers = new Array();
-var msie;
-//set up page, initialize variables, do a ton of stuff
-function initialize() {
-  //not supposed to be good to test for browsers using explicit codes, but
-  //I'm too lazy to fix this
-  var ua = window.navigator.userAgent;
-  msie = ua.indexOf ( "MSIE " );
-
-}
 
 //before submitting, there must be a name and password entered
 function check_form()
@@ -133,126 +118,6 @@ return false;
 return true;
 }
 
-//add either a wanted or unwanted preference
-function addfields(arg1)
-{
-  var prefix;
-  var button;
-  var counter;
-  if (arg1 == 0) {
-    prefix = "wanted";
-    button = wantedButton;
-    counter = wanted_num++;
-  }
-  else {
-    prefix = "unwanted";
-    button = unwantedButton;
-    counter = unwanted_num++;
-  }
-  var p = document.createElement("p");
-  var input;
-  //ah, browser incompatibility
-  if (msie>=0) {
-    input = document.createElement("<SELECT onchange=display_choices(" + 
-				   arg1 + "," + counter + ")>");
-  }
-  else {
-    input = document.createElement("SELECT");
-    input.setAttribute("onchange","display_choices(" + arg1 + "," + counter + ")");
-  }  
-  p.appendChild(input);
-  button.parentNode.insertBefore(p,button);
-  input.setAttribute("id",prefix + counter);
-  input.setAttribute("name",input.id);
-  var oOption;
-<?php
-    //the full list of workshifts gets put in here, as it does later on.
-$res = $db->Execute("SELECT DISTINCT " . bracket('workshift') .
-		    " FROM " . bracket('master_shifts') . 
-		    " ORDER BY " . bracket('workshift'));
-  $workshiftlist = array();
-  while ($row = $res->FetchRow()) {
-    $workshiftlist[] = $row['workshift'];
-  }
-?>
-//make the blank option
-  oOption = document.createElement('option');
-  oOption.innerText = '';
-  input.appendChild(oOption);
-  oOption.text = '';
-  input.appendChild(oOption);
-<?php
-    //option for every workshift
-    foreach ($workshiftlist as $shift) :
-?>
-  oOption = document.createElement('option');
-  oOption.text = <?=dbl_quote($shift)?>;
-  input.appendChild(oOption);
-  oOption.innerText = <?=dbl_quote($shift)?>;
-  input.appendChild(oOption);
-<?php endforeach; ?>
-}
-
-//once the user selects a workshift, new fields have to spring into
-//action and tell the user what the sub-choices are
-function display_choices(arg1, counter) {
-  var prefix = (arg1? "unwanted" : "wanted");
-  var curelt = document.getElementById(prefix + counter);
-  //get rid of any old choices there might have been
-  for (var modifs = curelt.nextSibling; modifs != null;
-       modifs = curelt.nextSibling) {
-    curelt.parentNode.removeChild(modifs);
-  }
-  //what was selected?
-  var selection = curelt.options[curelt.selectedIndex].text;
-  //maybe we're in IE
-  if (!selection)
-    selection = curelt.options[curelt.selectedIndex].innerText;
-  //does this workshift have any modifiers?
-  if (modifiers[selection]) {
-    //loop through all the possible modifiers
-    for (var outloop = 0; outloop<num_mods; outloop++) {
-      var fieldname = modifiers[name_index][outloop];
-      //aha!  here's one that applies
-      if (modifiers[selection][fieldname]) {
-        var nameelt = document.createTextNode(fieldname + ": ");
-        curelt.parentNode.appendChild(nameelt);
-	var input = document.createElement("SELECT");
-	curelt.parentNode.appendChild(input);
-	//not sure why this is here
-	input.focus();
-	input.setAttribute("id",prefix + counter + fieldname + "[]");
-	input.setAttribute("name",input.id);
-	input.setAttribute("multiple","true");
-	var oOption;
-	//add in all the possible options for this modifier
-	for (var loop = 0; loop<modifiers[selection][fieldname].length; loop++) {
-	  oOption = document.createElement('option');
-	  oOption.text = modifiers[selection][fieldname][loop];
-	  oOption.innerText = modifiers[selection][fieldname][loop];
-          oOption.value = modifiers[selection][fieldname][loop];
-	  input.appendChild(oOption);
-	}
-	//make sure there are no unsightly scrollbars
-	input.size = input.length;
-	input.selectedIndex = -1;
-      }
-    }
-  }
-}
-
-//programmatically select one or more options from a select element
-function multiple_select(elt, option) {
-  elt.focus();
-  for (ii = 0; ii < elt.options.length; ii++) {
-    if (elt.options[ii].value == option || elt.options[ii].innerText == option) {
-      elt.options[ii].selected = true;
-      break;
-    }
-  }
-  elt.blur();
-}
-
 </script>
 
 <style type='text/css'>
@@ -264,8 +129,7 @@ div.hidearrow {
 </style>
 
 </head>
-<!-- initialize the document -->
-<body onLoad="initialize()">
+<body>
 <?php
 print $body_insert;
 if (!$no_js) {
@@ -276,9 +140,8 @@ if (!$no_js) {
 }
 else { 
 ?>
- <h3>Note that you may not be able to add
-more wanted or unwanted shifts on this page.  Press back on your browser or   
-<a href='preferences.php'>Click here to view this page with full javascript functionality</a>
+ <h3>Press back on your browser or   
+<a href='preferences.php'>click here</a> to view this page with full javascript functionality
 </h3>
 <?php 
     }
@@ -362,14 +225,14 @@ It's saved from semester to semester.
 print "<p>";
 print_static_text('preferences_shift_rating_instructions',
 <<<INSTRUCTIONS
-Rank each category of shifts from 0 (absolutely hate, hate, hate) to
+Rate each category of shifts from 0 (absolutely hate, hate, hate) to
 %max_rating (I love these shifts to pieces).
-If you do not rank a category, it will be assumed
-that you are giving it the maximum rating.  To rank a shift within a category
-differently from the category, click on the "Expand" button next to the category.
-Otherwise, all shifts within the category will get the category rating.
+If you do not rate a category, it will be assumed
+that you are giving it the maximum rating. 
 INSTRUCTIONS
-   ,
+                  . ($no_js?"You can rate shifts within a category differently from the overall category rating.":'To rank a shift within a category
+differently from the category, click on the "Expand" button next to the category.') .
+'Otherwise, all shifts within the category will get the category rating.' ,
    array('%max_rating' => array("Maximum rating",
   "*get_static('wanted_max_rating',5)")),
    true,true);
@@ -400,8 +263,10 @@ while ($row = $res->FetchRow()) {
       if (isset($wanted_shifts['cat_' . $row['category']])) {
         print " value='" . $wanted_shifts['cat_' . $row['category']] . "'";
       }
-      print ">" . ucfirst(escape_html($row['category'])) . " <input type=button value='Expand' ";
-      print <<<ONCLICK
+      print ">" . ucfirst(escape_html($row['category']));
+      if (!$no_js) {
+        print " <input type=button value='Expand' ";
+        print <<<ONCLICK
 onclick='if (this.value == "Expand") {
 document.getElementById("div_{$row['autoid']}").style.display = "";
 this.value = "Hide";
@@ -413,6 +278,10 @@ this.value = "Expand";
 return false;' ><div id='div_{$row['autoid']}' style='display: none; margin-left: 10px'>
 ONCLICK
 ;
+      }
+      else {
+        print "<div id='div_{$row['autoid']}' style='margin-left: 10px'>\n";
+      }
     }
     else {
       print "Uncategorized shifts:<br/>\n";
