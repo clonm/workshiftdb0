@@ -55,18 +55,10 @@ else {
 var rating_color = new Array();
 <?php
 //of course, we need to know the maximum possible rating.
-//shift_prefs_style says whether we're doing wanted/unwanted or
-//numerical ratings
-if ($shift_prefs_style = get_static('shift_prefs_style',0)) {
-  $max_rating = get_static('wanted_max_rating',5);
-  $default_rating = get_static('default_rating',2);
-  $min_wanted_rating = max(get_static('min_wanted_rating',max($max_rating-1,1)),1);
-}
-else {
-  $max_rating = 2;
-  $default_rating = 1;
-  $min_wanted_rating = 2;
-}
+$max_rating = get_static('wanted_max_rating',5);
+$default_rating = get_static('default_rating',2);
+$min_wanted_rating = max(get_static('min_wanted_rating',max($max_rating-1,1)),1);
+
 echo "var max_rating = " . $max_rating . ";\n";
 //the minimum wanted rating is the least rating such that a person is
 //considered to "want" the shift.  People who want shifts are bolded.
@@ -192,22 +184,9 @@ function set_rating_person(member,workshift) {
 //calculate rating by a member of a workshift.  Needs to look through
 //member preferences and see if any match this shift
 function get_rating(member,workshift) {
-  //get all member's prefs
-  var wanted = self.master_shifts.wantedlist[member];
-  for (var ii = 0; ii <= max_rating; ii++) {
-    //any shifts with this rating?
-    if (wanted[ii]) {
-      //for each such shift
-      for (var ind in wanted[ii]) {
-        //does it match?
-        if (self.master_shifts.shift_match(wanted[ii][ind],workshift)) {
-          if (member == "Chavez, Rigoberto") {
-            alert(workshift + ", and " + ii);
-          }
-          return ii;
-        }
-      }
-    }
+  pref = self.master_shifts.find_match(self.master_shifts.wantedlist[member],workshift);
+  if (pref) {
+    return pref[1];
   }
   //no match, return default
   return <?=$default_rating?>;
@@ -262,17 +241,17 @@ function reset_list() {
 //currently has the workshift in blue, and change members' appearance
 //based on how good this shift is for them
 function offer_options(member,hours,workshift) {
-  //workshift[1] gives the day the workshift is done.  If it is less
+  //workshift['day'] gives the day the workshift is done.  If it is less
   //than 0, it means that we haven't clicked into a specific day, but
   //rather are just somewhere on the row, so there is no one person
   //who has the shift.
-  if (workshift[1] >= 0) {
+  if (workshift['day'] >= 0) {
     if (get_style(member)) {
       get_style(member).color = 'blue';
     }
   }
   for (var mem in listhouse) {
-    if (workshift[1] >= 0 && mem == member) {
+    if (workshift['day'] >= 0 && mem == member) {
       continue;
     }
     //remember, set_rating_person will change the members' displays
@@ -280,7 +259,7 @@ function offer_options(member,hours,workshift) {
     //if the member actually can't do this particular shift, be more
     //discouraging about it
     var if_flag = true;
-    if (workshift[1] >= 0) {
+    if (workshift['day'] >= 0) {
       if_flag = self.master_shifts.can_do(mem,workshift,true);
     }
     if (if_flag == false) {

@@ -20,27 +20,27 @@ foreach ($namemung_array as $key => $val) {
 }
 //col_formats gives the columns we want, and (if present) a function
 //to call on each column, to modify the output
-$col_formats = array_merge(array('workshift' => 'shiftlink', 'floor' => '', 
+$col_formats = array_merge(array('workshift' => 'shiftlink',  
                                  'hours' => '', 'Weeklong' => 'namemung'),
                            $namemung_array,
                            array('start_time' => 'timeformat', 
                                  'end_time' => 'timeformat','category' => ''));
 //columns with names in them, so we can restrict on them
-$restrict_cols = array(3,4,5,6,7,8,9,10);
+$restrict_cols = array(2,3,4,5,6,7,8,9);
 
 $dummy_string = get_static('dummy_string','XXXXX');
 //everything's an input, but some of them are specialized inputs --
 //these are defined in table_edit.css
-$col_styles = array('input','input','hours','member_name','member_name','member_name',
+$col_styles = array('input','hours','member_name','member_name','member_name',
 		    'member_name','member_name','member_name','member_name',
 		    'member_name','time','time','input');
 //we can sort on workshift, hours, start time, end time, or category of shift
 $col_sortable = array();
 $col_sortable[0] = 'pre_process_default';
-$col_sortable[2] = 'pre_process_num';
+$col_sortable[1] = 'pre_process_num';
+$col_sortable[10] = 'pre_process_time';
 $col_sortable[11] = 'pre_process_time';
-$col_sortable[12] = 'pre_process_time';
-$col_sortable[13] = 'pre_process_default';
+$col_sortable[12]= 'pre_process_default';
 
 //give a cell which is grey if the dummy string is in there
 function namemung($str, $rownum, $colnum) {
@@ -97,8 +97,8 @@ else {
   $javascript_pre .= "var suppress_all = false;\nvar suppress_first = false;\n";
 }
 
-$res = $db->Execute("SELECT `{$archive}house_list`.`member_name`, `shift`, " .
-                    "`day`, `floor`, `rating` " .
+$res = $db->Execute("SELECT `{$archive}house_list`.`member_name`, `shift_id`, " .
+                    "`is_cat`, `rating` " .
                     "FROM `{$archive}house_list` LEFT JOIN " .
                     "`{$archive}wanted_shifts` ON " .
                     "`{$archive}house_list`.`member_name` = " .
@@ -109,60 +109,21 @@ if (!$res) {
 //tell javascript about all the wanted shifts people have
  $initedlist = array();
 $javascript_pre .="var wantedlist = new Array();\n";
-//we might have categories, not just shifts
-$catdata = array();
 while ($row = $res->FetchRow()) {
   $member_name = $row['member_name'];
   //new member?  Make an array for them
   if (!array_key_exists($member_name,$initedlist)) {
     $javascript_pre .="wantedlist[" . dbl_quote($member_name) . "] = new Array();\n";
-    $initedlist[$member_name] = array();
-    $catdata[$member_name] = array();
+    $initedlist[$member_name] = true;
   }
   $rating = $row['rating'];
   //no rating given?  Don't put it in
   if (!strlen($rating)) {
     continue;
   }
-  //preferences are organized by rating
-  if (!isset($initedlist[$member_name][$rating])) {
-    $javascript_pre .="wantedlist[" . dbl_quote($member_name) . 
-      "][$rating] = new Array();\n";
-    $initedlist[$member_name][$rating] = true;
-  }
-  //was this a category that the member rated?  If so, we need to put every shift
-  //in this category into their preference
-  if ($row['day'] == 'category') {
-    $catres = $db->Execute("select * from `{$archive}master_shifts` where " .
-                           "`category` = ?",
-                           array($row['shift']));
-    while ($catrow = $catres->FetchRow()) {
-      $catdata[$member_name][$catrow['workshift']] = 
-        array($rating,$catrow['floor']);
-    }
-  }
-  else {
-    unset($catdata[$member_name][$row['shift']]);
-    $wanted_days = split(';',$row['day']);
-    foreach ($wanted_days as $day) {
-    $javascript_pre .= "//";
-    $javascript_pre .= $day . "\n";
-      $javascript_pre .="wantedlist[" . 
-        dbl_quote($member_name) . "][$rating][wantedlist[" .
-        dbl_quote($member_name) . "][$rating].length] = [" .
-        dbl_quote($row['shift']) . ', ' . ($day == 'shift'?'""':dbl_quote($day)) . 
-        ', ' . dbl_quote($row['floor']) . "];\n";
-    }
-  }
-}
-foreach ($catdata as $member_name => $shift_data) {
-  foreach ($shift_data as $shift => $data) {
-    $javascript_pre .= "wantedlist[" . 
-      dbl_quote($member_name) . "][" . $data[0] . "][wantedlist[" .
-      dbl_quote($member_name) . "][" . $data[0] . "].length] = [" .
-      dbl_quote($shift) . ', "", ' . 
-      dbl_quote($data[1]) . "];\n"; 
-  }
+  $javascript_pre .="wantedlist[" . 
+    dbl_quote($member_name) . "][" . dbl_quote($row['shift_id']) . "] = [" .
+    $rating . ', ' . ($row['is_cat']?0:1) . "];\n";
 }
 
 //hourslist will be set later on after the shifts are actually read in
@@ -205,23 +166,6 @@ foreach ($houselist as $member) {
   $javascript_pre .= 'shiftlist[' . dbl_quote($member) . "] = new Array();\n";
 }
 
-$prefslist = array();
-#$db->debug = true;
-  
-$res = $db->Execute("select distinct `member_name` from " .
-                    "`{$archive}wanted_shifts`");
-while ($row = $res->FetchRow()) {
-  if ($row['member_name']) {
-    $prefslist[$row['member_name']] = 0;
-  }
-}
-
-$prefslist = array_merge($prefslist,array_flip($houselist));
-
-$javascript_pre .= "var prefslist = new Array();\n";
-foreach ($prefslist as $mem => $junk) {
-  $javascript_pre .= "prefslist[" . dbl_quote($mem) . "] = 0;\n";
-}
 $javascript_pre .= "var weekly_hours_quota = " . get_static('owed_default',5) .
 <<<HEREDOC
 ;

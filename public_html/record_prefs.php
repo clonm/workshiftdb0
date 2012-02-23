@@ -1,7 +1,7 @@
 <?php
 //all the attributes that a shift can have -- not gotten through database
 //because that might fail if the database is down and this page has to work
-$attribs = array('floor','day');
+$attribs = array('day');
 //this days is a duplicate of janakdb-utils.php, but we can't include it
 //because it might possibly fail, and this page HAS to work
 $days = array('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday');
@@ -89,45 +89,6 @@ $notes = $_REQUEST['notes'];
 $wanted = array();
 $wanted_attribs = array();
 
-if (!isset($_REQUEST['shift_prefs_style']) || $_REQUEST['shift_prefs_style'] == 0) {
-$whicharray = array('wanted','unwanted');
-foreach (array('wanted','unwanted') as $which) {
-  //get the shift preferences from the user's input
-  $wanted[$which] = array();
-  $wanted_attribs[$which] = array();
-  //we have to deal with the fact that a user might have left some shift
-  //fields blank in the form -- we don't want to insert blank preferences
-  //$ii_real indexes the actual preference we're on, while $ii indexes
-  //the preferences we're recording (the non-blank ones)
-  for ($ii=0, $ii_real=0; ; $ii++, $ii_real++) {
-    if (!array_key_exists("$which{$ii_real}",$_REQUEST)) {
-      break;
-    }
-    $wanted[$which][$ii] = $_REQUEST["$which${ii_real}"];
-    //not an actual preference? skip it
-    if (!$wanted[$which][$ii]) {
-      $ii--;
-      array_pop($wanted[$which]);
-      continue;
-    }
-    $wanted_attribs[$which][$ii] = array();
-    //what were the actual attributes of this shift? (floor, day)
-    foreach($attribs as $attrib) {
-      if (!array_key_exists("$which$ii_real$attrib",$_REQUEST)) {
-        continue;
-      }
-      //they come in array form
-      $wanted_attribs[$which][$ii][$attrib] = $_REQUEST["$which$ii_real$attrib"];
-      $num_attribs = count($wanted_attribs[$which][$ii][$attrib]);
-      if ($num_attribs === 0) {
-        unset($wanted_attribs[$which][$ii][$attrib]);
-      }
-    }
-  }
-  //this is how many real preferences we have
-  $wanted_num[$which] = count($wanted[$which]);
-}
-}
 //now we output what we got.  This lets the user resubmit if there's an error
 //or a bad password, or at least print the page out and save it.
 function esc_h($str) {
@@ -148,27 +109,6 @@ Show email in directory: <input type=checkbox name='privacy_email'
 <?=array_key_exists('privacy_email',$_REQUEST)?' checked':''?>><br>
 Password (hidden): <input type=password value='<?=esc_h($passwd)?>' name='passwd'><br>
 <?php 
-if (!isset($_REQUEST['shift_prefs_style']) || $_REQUEST['shift_prefs_style'] == 0) {
-  print "<input type=hidden name='shift_prefs_style' value=0>";
-foreach (array('wanted','unwanted') as $which) : ?>
-<p>
-<?=ucfirst($which)?> shifts:</p>
-<?php for ($ii = 0; $ii < $wanted_num[$which]; $ii++) : ?>
-<p>
-<input type=text value='<?=esc_h($wanted[$which][$ii])?>' name='<?=esc_h("$which$ii")?>'>
-<?php foreach (array_keys($wanted_attribs[$which][$ii]) as $attrib) : ?>
-<select multiple=true name='<?=esc_h("$which$ii$attrib")?>[]'>
-<?php foreach ($wanted_attribs[$which][$ii][$attrib] as $val) : ?>
-<option selected value='<?=esc_h($val)?>'><?=esc_h($val)?>
-<?php endforeach; //$wanted_attribs[$which][$ii][$attrib]?>
-</select>
-<?php endforeach; //array_keys($wanted_attribs[$which][$ii])?>
-</p>
-<?php endfor; //$ii
-endforeach; //wanted/unwanted
-}
-else {
-  print "<input type=hidden name='shift_prefs_style' value=1>";
   $categories = array();
   print "<table>";
   foreach ($_REQUEST as $key => $val) {
@@ -177,24 +117,22 @@ else {
     }
     if (substr($key,0,4) == 'cat_' || substr($key,0,4) == 'sft_') {
       print "<tr><td>";
-      $shift_arr = $_REQUEST['nm_' . $key];
-      if (!is_array($shift_arr)) {
-        $shift_arr = array($shift_arr,null);
+      if (substr($key,0,4) == 'sft_') {
+        $shift_name = $_REQUEST['nm_' . $key];
+        print ucfirst(esc_h($shift_name)); 
+          print "<input type=hidden name='nm_" . esc_h($key) . "'" .
+            " value='" . esc_h($shift_name) . 
+            "'>";
       }
-      print ucfirst(esc_h($shift_arr[0] . 
-                          (strlen($shift_arr[1])?' (' . $shift_arr[1] . ')':''))); 
-      foreach ($shift_arr as $prop) {
-        print "<input type=hidden name='nm_" . esc_h($key) . "[]'" .
-          " value='" . esc_h($prop) . 
-          "'>";
+      else {
+        print  ucfirst(esc_h(substr($key,4)));
       }
       print "</td><td><input name='" . esc_h($key) . "' value='" .
-        esc_h($val) . "'></tr>";
+        esc_h($val) . "'></td></tr>";
       $categories[$key] = $val;
     }
   }
   print "</table>";
-}
 ?>
 <p>
 <p>Notes:</p>
@@ -256,6 +194,7 @@ function fail($string) {
 //this file will create the database object and initialize it.  No functions
 //to call -- it just does it.  This is probably not the best way to do it.
 $require_user = false;
+$body_insert = ' ';
 require_once('default.inc.php');
 
 //uncomment to view the sql statements being sent back and forth
@@ -371,70 +310,16 @@ if (!delete_old_prefs($member_name,$passwd)) {
   fail('delete old preferences');
 }
 
-if (!isset($_REQUEST['shift_prefs_style']) || $_REQUEST['shift_prefs_style'] == 0) {
-  foreach (array('wanted','unwanted') as $which) {
-    if (!$ins_wanted = $db->Prepare("INSERT INTO " . bracket("wanted_shifts") . 
-				    " VALUES (NULL,?,?,?,?," .
-                                    ($which == 'wanted'?'2':'0') . ")")) {
-      fail("prepare insert query for {$which}_shifts");
-    }
-    if (!$check_attribs = 
-        $db->Prepare("select " . 
-                     implode(',',
-                             array_merge(array_diff($attribs,array('day')),
-                                         $days)) .
-                     " from `master_shifts` where `workshift` = ?")) {
-      fail("prepare attrib query for {$which}_shifts");
-    }
-    $dummy_string = get_static('dummy_string');
-    for ($ii = 0; $ii < count($wanted[$which]); $ii++) {
-      $temp_attribs = array_keys($attribs);
-      foreach ($temp_attribs as $key => $val) {
-        $temp_attribs[$key] = array();
-      }
-      $res = $db->Execute($check_attribs,$wanted[$which][$ii]);
-      while ($row = $res->FetchRow()) {
-        foreach ($row as $col => $val) {
-          if ($row[$col] !== $dummy_string &&
-              array_search($col,$days) !== false) {
-            $temp_attribs['day'][] = $col;
-            continue;
-          }
-          $temp_attribs[$col][] = $val;
-        }
-      }
-      $temp_attribs = array_filter($temp_attribs);
-      $wanted_attribs[$which][$ii] = array_intersect($wanted_attribs[$which][$ii],
-                                                     $temp_attribs);
-      if (!$db->Execute($ins_wanted,
-			array($member_name,
-			      $wanted[$which][$ii],
-			      mk_array($wanted_attribs[$which],$ii,'day'),
-			      mk_array($wanted_attribs[$which],$ii,'floor')))) {
-	fail("insert $which shift $ii, $wanted[$which][$ii]");
-      }
-    }
-    if (count($wanted[$which])) {
-      set_mod_date('wanted_shifts');
-    }
-  }
+foreach ($categories as $cat => $rating) {
+  $db->Execute("insert into `wanted_shifts` " .
+               "(`member_name`,`shift_id`,`rating`,`is_cat`) " .
+               "values (?,?,?,?)",
+               array($member_name,substr($cat,4),$rating,$cat{0} == 'c'));
 }
-else {
-      foreach ($categories as $cat => $rating) {
-        $shift_arr = $_REQUEST['nm_' . $cat];
-        if (!is_array($shift_arr)) {
-          $shift_arr = array($shift_arr,null);
-        }
-        $db->Execute("insert into `wanted_shifts` " .
-                     "(`member_name`,`shift`,`rating`,`day`,`floor`) " .
-                       "values (?,?,?,?,?)",
-                     array($member_name,$shift_arr[0],
-                           $rating,$cat{0} == 'c'?'category':'shift',$shift_arr[1]));
-      }
-      if (count($categories)) {
-        set_mod_date('wanted_shifts');
-      }
-    }
+if (count($categories)) {
+  set_mod_date('wanted_shifts');
+}
+
 if ($db->CompleteTrans()) { 
   //let user look at the preferences through a little form hidden here, so the
   //password is sent automatically

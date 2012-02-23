@@ -57,9 +57,8 @@ $days = array('Monday', 'Tuesday', 'Wednesday',
 	      'Thursday', 'Friday', 'Saturday','Sunday');
 foreach(array_pad($days,8,'Weeklong') as $day) {
   $res = $db->Execute("SELECT " . bracket('workshift') . ", " . 
-		     bracket('floor') . ", " . bracket($day) .
-		     " AS " . bracket('day') . " FROM " . 
-		     bracket($archive . 'master_shifts') . 
+                      bracket($day) . " AS " . bracket('day') . 
+                      " FROM " . bracket($archive . 'master_shifts') . 
                       " WHERE " . bracket($day) .
 		     " = ?",array($person));
   if (is_empty($res)) {
@@ -72,45 +71,24 @@ foreach(array_pad($days,8,'Weeklong') as $day) {
   print "$day: <br>";
   while ($row = $res->FetchRow()) {
     print $row['workshift'];
-    if ($row['floor']) {
-      print " floor " . $row['floor'];
-    }
     print "<br>\n";
   }
   print "<br>";
 }
-$shift_prefs_style = get_static('shift_prefs_style',0);
 $max_rating = get_static('wanted_max_rating',2);
 
-if (!$shift_prefs_style) {
-  for ($ii = 0; $ii <= 2; $ii++) {        
-    if ($ii == 1) {
-      continue;
-    }
-    $res = $db->Execute("select `shift`,`floor`,`day` from `{$archive}wanted_shifts` where " .
-                        '`member_name` = ? and `rating` = ?',
-                        array($person,$ii));
-    switch($ii) {
-    case '2': print 'W'; break;
-    case '0': print 'Unw'; break;
-    }
-    print "anted: <br>\n";
-    rs2html($res);
-  }
-}
-else {
-  print "<h4>Shift Preferences:</h4>";
-  $table_name = "{$archive}wanted_shifts";
-  $col_names = array('shift','rating','type','floor');
-  $col_sizes = array(100,0,0,0);
-  $col_sortable = array('pre_process_default','pre_process_num','pre_process_default');
-  $table_edit_query = 'select `shift`,`rating`,`day` as `type`,`floor` from `wanted_shifts` where ' .
-    '(`day` = ' . $db->qstr('category') . ' or `day` = ' .
-    $db->qstr('shift') . ') and `member_name` = ' . $db->qstr($person) . ' order by `type`,`shift`';
-  $body_insert = ob_get_contents();
-  ob_end_clean();
-  ob_start();
-}
+print "<h4>Shift Preferences:</h4>";
+$table_name = "{$archive}wanted_shifts";
+$col_names = array('shift','rating','type');
+$col_sizes = array(100,0,0);
+$col_sortable = array('pre_process_default','pre_process_num','pre_process_default');
+$table_edit_query = 'select if(`is_cat`,shift_id,`master_shifts`.`workshift`) as `shift`,`rating`,' .
+'if(`is_cat`,"category","") as `type` from `wanted_shifts` left join `master_shifts` ' .
+' on shift_id = master_shifts.autoid where `member_name` = ' .
+$db->qstr($person) . ' order by `type` DESC,`shift` ASC';
+$body_insert = ob_get_contents();
+ob_end_clean();
+ob_start();
 
 $res = $db->Execute("SELECT " . bracket('notes') . ", " . bracket('av_0') .
 		    ", " . bracket('av_1') . ", " . bracket('av_2') . 
@@ -155,16 +133,7 @@ foreach ($days as $day) {
 </table>
 <?php
     }
-if (!$shift_prefs_style) {
-  ob_end_flush();
-?>
-</body>
-</html>
-<?php
-    }
-    else {
-      $javascript_pre = ob_get_contents();
-      ob_end_clean();
-      require_once("$php_includes/table_view.php");
-    }
+$javascript_pre = ob_get_contents();
+ob_end_clean();
+require_once("$php_includes/table_view.php");
 ?>

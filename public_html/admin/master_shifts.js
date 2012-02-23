@@ -1,4 +1,4 @@
-var num_shift_mods = 1;
+var num_shift_mods = 0;
 //we need to be able to go between days and numbers
 var listdays = new Array();
 listdays['Monday'] = 0;
@@ -16,7 +16,9 @@ var dayslist = ['Weeklong', 'Monday', 'Tuesday', 'Wednesday',
 var accumulated_errors = '';
 
 function store_alert(txt) {
-    accumulated_errors += "\n" + txt;
+    if (txt) {
+        accumulated_errors += "\n" + txt;
+    }
 }
 
 function print_alerts() {
@@ -38,27 +40,24 @@ function hours_of(elt) {
 }
 
 //return all info about a workshift element -- shift name, day (as a number),
-//start time, end time, and hours it's worth
+//start time, end time, hours it's worth, category, and id
 function workshift_of(elt) {
   var row = elt.parentNode.parentNode.childNodes;
   var elts = get_cell(elt);
-  var floor = get_value(row[1]);
-  if (!floor.length) {
-    floor = '';
-  }
-  var shift_name = get_value(row[0]);
   var day = elts[1]-num_shift_mods-2;
   //non-day elements all get -1 as a flag
   if (day < 0 || day > 7) {
     day = -1;
   }
-  return new Array(shift_name,
-                   day,
-                   floor,
-                   get_value(row[Number(10)+num_shift_mods]),
-                   get_value(row[Number(11)+num_shift_mods]),
-                   get_value(row[Number(1)+num_shift_mods]),
-                   get_value(row[Number(12)+num_shift_mods]));
+    var workshift = new Object();
+    workshift['id'] = get_value(row[row.length-2]);
+    workshift['name'] = get_value(row[0]);
+    workshift['hours'] = get_value(row[Number(1)+num_shift_mods]);
+    workshift['day'] = day;
+    workshift['start'] = get_value(row[Number(10)+num_shift_mods]);
+    workshift['end'] = get_value(row[Number(11)+num_shift_mods]);
+    workshift['cat'] = get_value(row[Number(12)+num_shift_mods]);
+    return workshift;
 }
 
 //is this a cell of hours a shift is worth?
@@ -134,14 +133,14 @@ function display_busy(busyday,vals,st,nd) {
 
 //full shift name -- includes floor and hours
 function shift_string(workshift) {
-  return workshift[0] + workshift[1] + workshift[2] + workshift[6];
+  return workshift['id'] + workshift['day'];
 }
 
 //assign a shift to a member, or remove a shift from a member, depending if
 //addshift is true or false.  silent says whether can_do() warns about problems.
 function assign_shift(member, workshift, addshift, silent) {
   if (typeof(hourslist[member]) == 'undefined') {
-    alter_hours(member,(addshift?1:-1)*workshift[5]);
+    alter_hours(member,(addshift?1:-1)*workshift['hours']);
     return false;
   }
     var no_alert = true;
@@ -155,36 +154,35 @@ function assign_shift(member, workshift, addshift, silent) {
     //can we actually add this shift? temp will now have the times this shift
     //is being done
     var temp = can_do(member,workshift,false,silent);
-    var temp2 = shift_string(workshift);
     if (typeof(shiftlist[member]) != 'undefined') {
-      shiftlist[member][temp2] = temp;
+        shiftlist[member][shift_string(workshift)] = temp;
     }
     //member is no longer free during these times, unless it's a weeklong
-    if (typeof(busylist[member]) != 'undefined' && workshift[1] > 0 &&
+    if (typeof(busylist[member]) != 'undefined' && workshift['day'] > 0 &&
         temp && temp[0] && temp[1]) {
       for (var ii = temp[0]; ii <= temp[1]; ii++) {
-        busylist[member][workshift[1]-1][ii] = 3;
+        busylist[member][workshift['day']-1][ii] = 3;
       }
     }
     //add in the new hours
-    alter_hours(member,workshift[5]);
+    alter_hours(member,workshift['hours']);
   }
   //dropping a shift?
   else {
     //does the member actually have this shift?
-    if (shiftlist[member] && shiftlist[member][shift_string(workshift)]) {
+      if (shiftlist[member] && shiftlist[member][shift_string(workshift)]) {
       //put back those available hours, unless it's a weeklong
-      if (workshift[1] > 0) {
+      if (workshift['day'] > 0) {
         var temp = shiftlist[member][shift_string(workshift)];
         for (var ii = temp[0]; ii <= temp[1]; ii++) {
-          busylist[member][workshift[1]-1][ii] = origbusylist[member][workshift[1]-1][ii];
+          busylist[member][workshift['day']-1][ii] = origbusylist[member][workshift['day']-1][ii];
         }
       }
       //get rid of the shift
       delete (shiftlist[member][shift_string(workshift)])
     }
     //change the hours assigned
-    alter_hours(member,-workshift[5]);
+    alter_hours(member,-workshift['hours']);
   }
     if (!no_alert) {
         print_alerts();
@@ -192,13 +190,14 @@ function assign_shift(member, workshift, addshift, silent) {
   return true;
 }
 
-//does a preference (which might have blank days, etc.) match a given workshift?
-function shift_match(pref,workshift) {
-  return pref[0] == workshift[0] && 
-    (!pref[1].length || workshift[1] < 0 ||
-     pref[1].indexOf(dayslist[workshift[1] ]) != -1) &&
-    (!pref[2].length ||
-     pref[2].indexOf(workshift[2]) != -1);
+function find_match(wanteds,workshift) {
+    if (typeof(wanteds[workshift['id']]) != 'undefined') {
+        return Object(workshift['id'],wanteds[workshift['id']][0],wanteds[workshift['id']][1]);
+    }
+    if (typeof(wanteds[workshift['cat']]) != 'undefined') {
+        return Object(workshift['cat'],wanteds[workshift['cat']][0],wanteds[workshift['cat']][1]);
+    }
+    return null;
 }
 
 //big function -- can this member do this workshift?  listing is whether or not
@@ -218,53 +217,49 @@ function can_do(member,workshift,listing,silent) {
   var success = true;
   //about to assign too many hours?
   if (typeof(hourslist[member]) != 'undefined' &&
-      Number(hourslist[member]) + Number(workshift[5]) > weekly_hours_quota) {
+      Number(hourslist[member]) + Number(workshift['hours']) > weekly_hours_quota) {
     if (listing) {
       return false;
     }
     else if (!silent) {
       store_alert(member + " has " + 
-            (Number(hourslist[member])+Number(workshift[5])) + 
+            (Number(hourslist[member])+Number(workshift['hours'])) + 
             " hours assigned.");
       success = false;
       
     }
   }
+
   if (typeof(wantedlist[member]) != 'undefined') {
+      pref = find_match(wantedlist[member],workshift);
+      
     //did they not even want this shift?
-    var unwanted = wantedlist[member][0];
-    for (var ind in unwanted) {
-      if (shift_match(unwanted[ind],workshift)) {
-        if (listing) {
-          return 0;
-        }
-        else {
-          if (!silent) {
-            var tempstr = '';
-            for (var ii=0; ii < unwanted[ind].length; ii++) {
-              tempstr += unwanted[ind][ii] + ", ";
-            }
-            store_alert(member + " has unwanted preference: " + tempstr +
-                  " which seems to conflict with " + workshift[0]);
-            success = 0;
+      if (pref && !pref[0]) {
+          if (listing) {
+              return 0;
+          }
+          else {
+              if (!silent) {
+                  store_alert(member + " has unwanted preference " + pref[0] +
+                              " which seems to conflict with " + workshift['name']);
+                  success = 0;
           }
         }
       }
+  }
+    //this is hard -- figure out when the person can do the shift
+    if (typeof(busylist[member]) == 'undefined') {
+        return success;
     }
-  }
-  //this is hard -- figure out when the person can do the shift
-  if (typeof(busylist[member]) == 'undefined') {
-    return success;
-  }
-  if (workshift[1] == 0) {
-    return success;
-  }
-  var busyday = busylist[member][workshift[1]-1];
-  var start_time = workshift[3];
-  var end_time = workshift[4];
-  //is there no start time or end time, or they're nonsensical?
-  if (!start_time || !end_time || (start_time == end_time)) {
-    return success;
+    if (workshift['day'] == 0) {
+        return success;
+    }
+    var busyday = busylist[member][workshift['day']-1];
+    var start_time = workshift['start'];
+    var end_time = workshift['end'];
+    //is there no start time or end time, or they're nonsensical?
+    if (!start_time || !end_time || (start_time == end_time)) {
+        return success;
   }
   //get the hoursminutes and am/pm part of the start_time
   var ampm = start_time.split(' ');
@@ -291,20 +286,21 @@ function can_do(member,workshift,listing,silent) {
     nd+=24;
   }
   //round hours up
-  var hours = Math.ceil(workshift[5]);
+  var hours = Math.ceil(workshift['hours']);
   if (hours > (nd-st)) {
     if (!listing && !silent) {
-      store_alert("The system cannot calculate busy times for " + workshift[0] +
+      store_alert("The system cannot calculate busy times for " + workshift['name'] +
             ", since the start time of " + start_time + " and end time of " +
             end_time + " are so close together.");
     }
     return [st,nd];
   }
   for (var tryct = 0; tryct < 2; tryct++) {
+      var msg;
     if (tryct == 1 && !listing && !silent) {
-        store_alert(member + " would prefer not to work on " + dayslist[workshift[1] ] + ": " + 
-        display_busy(busyday,'2',st,nd) + " which conflicts with " + 
-                    workshift[0] + " (possibly taking into account some busy times)");
+        msg = member + " would prefer not to work on " + dayslist[workshift['day'] ] + ": " + 
+        display_busy(busyday,'23',st,nd) + " which conflicts with " + 
+                    workshift['name'] + " (possibly taking into account some busy times)";
     }
     //if a shift starts before the availability schedule starts, check to see if
     //it can be done right at the beginning.  If it doesn't fit, push the start
@@ -316,7 +312,8 @@ function can_do(member,workshift,listing,silent) {
         }
       }
       if (ii == hours+st) {
-        return [0,ii];
+          store_alert(msg);
+          return [0,ii];
       }
       else {
         st = 0;
@@ -330,6 +327,7 @@ function can_do(member,workshift,listing,silent) {
         }
       }
       if (ii == nd-hours) {
+          store_alert(msg);
         return [ii,15];
       }
       else {
@@ -355,11 +353,12 @@ function can_do(member,workshift,listing,silent) {
   }
   //did we fail?
   if (!listing && !silent) {
-      store_alert(member + " is busy on " + dayslist[workshift[1] ] + ", " + 
+      store_alert(member + " is busy on " + dayslist[workshift['day'] ] + ", " + 
             display_busy(busyday,'3',st,nd) + " which conflicts with " + 
-            workshift[0]);
+            workshift['name']);
       return false;
   }
+    store_alert(msg);
   return false;
 }
 
@@ -374,20 +373,20 @@ function shift_change(oldmem,newmem,hours,workshift) {
 function hours_change(elt,workshift,prev_val, interval_change) {
   var row = elt.parentNode.parentNode.childNodes;
   for (var ii = 0; ii < 8; ii++) {
-    workshift[1] = ii;
-    var temp = workshift[5];
+    workshift['day'] = ii;
+    var temp = workshift['hours'];
     if (typeof(interval_change) == 'undefined') {
       if (typeof(prev_val) != 'undefined') {
-        workshift[5] = prev_val;
+        workshift['hours'] = prev_val;
       }
       else {
-        workshift[5] = 0;
+        workshift['hours'] = 0;
       }
     }
     //remove the old workshift
     assign_shift(row[ii+3].firstChild.value,workshift,false);
     //add in the new workshift
-    workshift[5] = temp;
+    workshift['hours'] = temp;
     assign_shift(row[ii+3].firstChild.value,workshift,true);
   }
 }
@@ -531,7 +530,7 @@ function initialize_master_shifts() {
     var cur_row = rows_array[ii];
     var workshift;
     for (var jj = 0; jj < 8; jj++) {
-      var elt = cur_row.childNodes[jj+3].firstChild;
+      var elt = cur_row.childNodes[jj+num_shift_mods+2].firstChild;
       var member = elt.value;
       //get the full workshift array if it's the first time
       if (jj == 0) {
@@ -539,7 +538,7 @@ function initialize_master_shifts() {
       }
       //otherwise, all that's changed is the day, so change that
       else {
-        workshift[1] = jj;
+        workshift['day'] = jj;
       }
       //assign the shift, suppressing warnings from being printed
       assign_shift(member,workshift,true,parent.suppress_first);
@@ -562,192 +561,3 @@ function elt_of(ind) {
   return rows_array[(ind-col_num)/8].childNodes[2+num_shift_mods+col_num].firstChild;
 }
 
-//array of the order shifts are assigned in -- different for each person
-var master_shift_order = 0;
-//which rows each workshift is in
-var workshiftlist = 0;
-//copy of the shift order that will be played around with
-var shift_order = 0;
-var shift_copy_master = 0;
-function autoassign() {
-  if (!confirm('If you have not saved your work and reloaded this page, please press ' +
-               'cancel and do so now.  To cancel this assignation at any point, press ' +
-               'the escape key.  This may not work in the first half-minute or so, while ' +
-               'the initial setup is going on.  Try again after names are turning red.')) {
-    return;
-  }
-  //haven't initialized this yet?
-  if (!master_shift_order) {
-      master_shift_order = new Array();
-    //people who submitted first get preference
-      for (var mem in prefslist) {
-        if (hourslist[mem] < weekly_hours_quota) {
-          master_shift_order[mem] = new Array();
-        }
-      }
-    workshiftlist = new Array();
-    var total_num = num_rows*8;
-    var elt;
-    shift_copy_master = new Array(num_rows);
-    //set up workshiftlist and shift_copy -- shift_copy is used to put the
-    //order shifts are tried for each person into random order, but right
-    //now it's trivial
-    for (ii = 0; ii < num_rows; ii++) {
-      elt = workshift_of(rows_array[ii].childNodes[3].firstChild);
-      if (typeof(workshiftlist[elt[0] ]) == 'undefined') {
-        workshiftlist[elt[0] ] = new Array();
-      }
-      workshiftlist[elt[0] ][workshiftlist[elt[0] ].length] = ii;
-      for (jj = 0; jj < 8; jj++) {
-        shift_copy_master[8*ii+jj] = 8*ii+jj;
-      }
-    }
-  }
-  //set up order for each person
-  for (mem in master_shift_order) {
-    var shift_copy = shift_copy_master.concat();
-    //this will go up to total_num -- the total number of workshifts
-    var num_done = 0;
-    //number of shifts that have actually been added -- some may be rejected
-    var num_added = 0;
-    //first go through the wanted list, so preferences go at the top
-    var wanted = wantedlist[mem];
-    for (var ind in wanted) {
-      for (var pref in wanted[ind]) {
-        if (!wanted[ind][pref].length) {
-          continue;
-        }
-        for (var ii in workshiftlist[wanted[ind][pref][0] ]) {
-          for (var jj = 0; jj < 8; jj++) {
-            var elt = rows_array[ii].childNodes[2+num_shift_mods].firstChild;
-            if (elt.value == '') {
-              var workshift = workshift_of(elt);
-              //does this shift match the wanted preference?
-              if (self.master_shifts.shift_match(wanted[ind],workshift)) {
-                //can the person actually do this shift, at least initially?
-                if (can_do(mem,workshift,true,true)) {
-                  master_shift_order[mem][num_added++] = 8*ii+jj;
-                }
-                //get it out of the list of shifts to be done
-                shift_copy[8*ii+jj] = shift_copy[total_num-++num_done];
-              }
-            }
-          }
-        }
-      }
-    }
-    //go through all the rest of the shifts
-    for (; num_done < total_num; num_done++) {
-      //look at a random entry in the shift_copy array
-      ind = Math.floor(Math.random()*(total_num-num_done));
-      var elt = elt_of(shift_copy[ind]);
-      if (!elt.value) {
-        if (can_do(mem,workshift_of(elt),true,true)) {
-          master_shift_order[mem][num_added++] = shift_copy[ind];
-        }
-      }
-      shift_copy[ind] = shift_copy[total_num-num_done-1];
-    }
-  }
-  shift_order = new Array();
-  for (ii in master_shift_order) {
-    shift_order[ii] = master_shift_order[ii].concat();
-  }
-  cur_history = new Array();
-  max_history = new Array();
-  in_calculation = true;
-  try_assign();
-  return;
-}
-
-var cur_history;
-var max_history;
-
-function try_assign() {
-  if (stop_calculation) {
-    alert('Aborting operation.  Putting in the best I could find so far.');
-    in_calculation = false;
-    assign_best_fit();
-    return;
-  }
-  var starting_flag = cur_history.length;
-  if (starting_flag) {
-    var last_elt = cur_history.pop();
-    //    if (cur_history.length < 3) {
-    //  alert(cur_history.length + ' ' + last_elt[0] + ' ' + shift_order[last_elt[0] ]);
-    //}
-  }
-  var ii = 0;
-  var continue_flag = true;
-  while (continue_flag) {
-    continue_flag = false;
-    for (mem in shift_order) {
-      if (hourslist[mem] == weekly_hours_quota && (!starting_flag || mem != last_elt[0])) {
-        continue;
-      }
-      continue_flag = true;
-      var orig_len = 0;
-      if (starting_flag && mem != last_elt[0]) {
-        continue;
-      }
-      else if (starting_flag) {
-        starting_flag = 0;
-        var mas = master_shift_order[mem];
-        var elt = elt_of(mas[mas.length-shift_order[mem].length-1]);
-        autoassign_shift(elt,'');
-        orig_len = last_elt[1];
-      }
-      var order = shift_order[mem];
-      var len = order.length;
-      if (!orig_len) {
-        orig_len = len;
-      }
-      for (var ii = 0; ii < len; ii++) {
-        var ind = order.shift();
-        var elt = elt_of(ind);
-        if (!elt.value) {
-          if (can_do(mem,workshift_of(elt),true,true)) {
-            autoassign_shift(elt,mem);
-            cur_history[cur_history.length] = new Array(mem,orig_len,ind);
-            break;
-          }
-        }
-      }
-      if (ii == len) {
-        if (!cur_history.length) {
-          alert('Failed to assign ' + weekly_hours_quota + ' hours to everyone.  ' +
-                'Assigning the best I could find.');
-          assign_best_fit();
-          return;
-        }
-        //if the original length was 0, this won't help, and will in fact
-        //introduce a bug
-        if (orig_len) {
-          shift_order[mem] = master_shift_order[mem].slice(-orig_len);
-        }
-        if (cur_history.length > max_history.length) {
-          for (ii in cur_history) {
-            max_history[ii] = cur_history[ii].concat();
-          }
-        }
-        self.setTimeout('try_assign()',1);
-        return;
-      }
-    }
-  } 
-}
-
-function assign_best_fit() {
-  for (var ii in cur_history) {
-    autoassign_shift(elt_of(cur_history[ii][2]),'');
-  }
-  for (var ii in max_history) {
-    autoassign_shift(elt_of(max_history[ii][2]),max_history[ii][0]);
-  }
-}
-
-function autoassign_shift(elt,mem) {
-  prev_val = elt.value;
-  elt.value = mem;
-  change_handler(elt);
-}

@@ -43,16 +43,10 @@ if (!isset($shifts_start_date)) {
   $shifts_start_date = date('l, F j',strtotime('next Monday',
 					       strtotime($prefs_due_date)));
 }
-$shift_prefs_style = get_static('shift_prefs_style',0);
-if (!$shift_prefs_style) {
-  $whiches = array('wanted','unwanted');
-}
-else {
-  $max_rating = get_static('wanted_max_rating',5);
-  $whiches = array();
-  for ($ii = 0; $ii <= $max_rating; $ii++) {
-    $whiches[] = $ii;
-  }
+$max_rating = get_static('wanted_max_rating',5);
+$whiches = array();
+for ($ii = 0; $ii <= $max_rating; $ii++) {
+  $whiches[] = $ii;
 }
 //are we going from previously stored preferences that are being given to us?
 if ($init_flag) {
@@ -81,32 +75,16 @@ if ($init_flag) {
     $flags[$ii] = $mem_info["av_$ii"];
   }
   $wanted_shifts = array();
-  if (!$shift_prefs_style) {
-  //add in the wanted/unwanted preferences
-    foreach ($whiches as $which) {
-      $wanted_shifts[$which] = array();
-#    $db->debug = true;
-      $res = $db->Execute("SELECT `shift`,`day`,`floor` FROM `wanted_shifts` " .
-                          "WHERE `member_name` = ? and `rating` = ?",
-                          array($member_name,
-                                $which == 'wanted'?2:
-                                ($which == 'unwanted'?0:$which)));
-      while ($wanted_shifts[$which][] = $res->FetchRow()) ;
-      array_pop($wanted_shifts[$which]);
+  $res = $db->Execute("select * from `wanted_shifts` where `member_name` = ?",
+                      array($member_name));
+  while ($row = $res->FetchRow()) {
+    if (!$row['is_cat']) {
+      $prefix = 'sft_';
     }
-  }
-  else {
-    $res = $db->Execute("select * from `wanted_shifts` where `member_name` = ?",
-                        array($member_name));
-    while ($row = $res->FetchRow()) {
-      if ($row['day'] == 'shift') {
-        $prefix = 'sft_';
-      }
-      else {
-        $prefix = 'cat_';
-      }
-      $wanted_shifts[$prefix . $row['shift']][$row['floor']] = $row;
+    else {
+      $prefix = 'cat_';
     }
+    $wanted_shifts[$prefix . $row['shift_id']] = $row['rating'];
   }
 } //init_flag
 else {
@@ -115,24 +93,6 @@ else {
   $wanted_shifts = array_flip($whiches);
   foreach ($wanted_shifts as $key => $val) {
     $wanted_shifts[$key] = array();
-  }
-}
-if (!$shift_prefs_style) {
-  $wanted_num = array();
-  foreach ($whiches as $which) {
-    $wanted_num[$which] = count($wanted_shifts[$which]);
-  }
-  if (!$no_js) {
-    $wanted_attribs = array();
-    foreach($whiches as $which) {
-      $wanted_attribs[$which] = array();
-      for ($ii = 0; $ii < count($wanted_shifts[$which]); $ii++) {
-        $wanted_attribs[$which][$ii] = array();
-      }
-    }
-  }
-  else {
-    $attribs = array();
   }
 }
 ?>
@@ -146,178 +106,13 @@ var name_index = "__name";
 var num_mods;
 var modifiers = new Array();
 var msie;
-<?php
-if (!$shift_prefs_style) { ?>
-var wanted_num = <?=$wanted_num['wanted']+$num_blank_shifts?>;
-var unwanted_num = <?=$wanted_num['unwanted']+$num_blank_shifts?>;
-var num_blank_shifts = <?=$num_blank_shifts?>;
-<?php
-    }
-?>
 //set up page, initialize variables, do a ton of stuff
 function initialize() {
   //not supposed to be good to test for browsers using explicit codes, but
   //I'm too lazy to fix this
   var ua = window.navigator.userAgent;
   msie = ua.indexOf ( "MSIE " );
-<?php
-    if (!$shift_prefs_style) {
-?>
-  wantedButton = document.getElementById("wanted_button");
-  unwantedButton = document.getElementById('unwanted_button');
-  modifiers[name_index] = new Array();
-  //we need to make sure that all select boxes are cleared if they're not
-  //selected and if there isn't stored info
-  var ii;
-  for (ii = wanted_num-num_blank_shifts; ii < wanted_num; ii++) {
-    document.getElementById('wanted' + ii).selectedIndex = 0;
-  }
-  for (ii = unwanted_num-num_blank_shifts; ii < unwanted_num; ii++) {
-    document.getElementById('unwanted' + ii).selectedIndex = 0;
-  }
 
-  <?php
-      //we now have to get all the workshifts, determine what modifiers each
-      //of them have (modifiers means floor, day currently, but it might be 
-      //anything), and associate them in a big array
-      $booldays = '';
-  $stringdays = '';
-  $dummy_string = get_static('dummy_string'); 
-  foreach ($days as $day) {
-    $booldays .= "OR not (" . bracket($day) . " <=> ?) ";
-    $stringdays .= ", " . bracket($day);
-  }
-  $result = $db->execute("SELECT `category`," . bracket('workshift') . ", " . 
-			 bracket('floor') . $stringdays . 
-		      " FROM " . bracket('master_shifts') . 
-		      " WHERE ((" . bracket('floor') . " IS NOT NULL) AND " .
-		      "(NOT " . bracket('floor') . " = 0)) " . 
-		      $booldays . " ORDER BY " . bracket('workshift') .
-		      ", " . bracket('floor'), array_fill(0,7,$dummy_string));
-  $workshift = 0;
-  $indices = array(); $cur_mods = array(); $days_done = array();
-  //loop through result set
-  while ($modifs = $result->FetchRow()) {
-    if ($modifs['category']{0} == '*') {
-      continue;
-    }
-    //category is not a modifier
-    unset($modifs['category']);
-    //have we not figured out the possible modifiers yet?
-    //actually this is here because we want to treat $result as an array 
-    //of arrays as much as possible, so we have to get the first row with while()
-    if (!isset($modif_keys)) {
-      //build up regex to match (actually, not match) the days and workshift
-      $grepdays = '';
-      foreach ($days as $day) {
-	$grepdays .= "|($day)";
-      }
-      $grepdays = '(workshift)' . $grepdays;
-      //what keys do we have which aren't workshift or day? (days have to be
-      //handled separately because there is a separate column per day, as opposed
-      //to the other modifiers, which are assumed to be in one column)
-      $modif_keys = array_values(preg_grep("/$grepdays/", 
-					   array_keys($modifs),
-					   PREG_GREP_INVERT));
-    }
-    
-    //is the current workshift different from the last one we did?
-    if ($workshift !== $modifs['workshift']) {
-      //output javascript, a new array element for this workshift
-      print "  modifiers[" . dbl_quote($modifs['workshift']) . 
-	"] = new Array();\r\n";
-      //do the attributes setting, assuming we have stored preferences,
-      //or do the global attributes setting, assuming we have no js
-      if ($no_js) {
-        foreach ($cur_mods as $attrib => $arr) {
-          if (!isset($attribs[$attrib])) {
-            $attribs[$attrib] = array();
-          }
-          $attribs[$attrib] = array_unique(array_merge($attribs[$attrib],array_keys($arr)));
-        }
-      }
-      else if ($init_flag) {
-        foreach ($whiches as $which) {
-          for ($jj = 0; $jj < count($wanted_shifts[$which]); $jj++) {
-            if ($wanted_shifts[$which][$jj]['shift'] === $workshift) {
-              foreach ($cur_mods as $attrib => $arr) {
-                $wanted_attribs[$which][$jj][$attrib] = array_keys($arr);
-              }
-              $wanted_attribs[$which][$jj]['day'] = array_keys($days_done);
-            }
-          }
-        }
-      }
-      $workshift = $modifs['workshift'];
-      $indices = array(); $cur_mods = array(); $days_done = array();
-      $ii = 0;
-    }
-    //does this workshift have specific days?  If so, put in a sub-array
-    foreach ($days as $day) {
-      if ($modifs[$day] != $dummy_string && 
-	  !array_key_exists($day,$days_done)) {
-	$days_done[$day] = 1;
-	if (!$ii) {
-	  print "  modifiers[" . dbl_quote($workshift) . 
-            "]['day'] = new Array();\r\n";
-	}
-	print "  modifiers[" . dbl_quote($workshift) . "]['day'][$ii] = " .
-          dbl_quote($day) . ";\r\n";
-	$ii++;
-      }
-    }
-    //do the remaining modifiers.  So far it's only floor, but who knows
-    foreach ($modif_keys as $key) {
-      //make sure this modifier actually exists, and that we haven't set it yet
-      if (!array_key_exists($key,$modifs) ||
-	  is_null($modifs[$key]) || $modifs[$key] === '' ||
-	  (array_key_exists($key,$cur_mods) && 
-	   array_key_exists($modifs[$key],$cur_mods[$key]) && 
-	   $cur_mods[$key][$modifs[$key]]))
-	continue;
-      //we won't set this again
-      $cur_mods[$key][$modifs[$key]] = 1;
-      //which index are we on?
-      if (!array_key_exists($key,$indices)) {
-	print "  modifiers[" . dbl_quote($workshift) . "][" . dbl_quote($key) . 
-          "] = new Array();\r\n";
-	$indices[$key] = 0;
-      }
-      print "  modifiers[" . dbl_quote($workshift) . "][" . dbl_quote($key) . "][" . 
-        $indices[$key]++ . "] = " . dbl_quote($modifs[$key]) . ";\r\n";
-    }
-  }
-  if ($no_js) {
-    foreach ($cur_mods as $attrib => $arr) {
-      $attribs[$attrib] = array_unique(array_merge($attribs[$attrib],array_keys($arr)));
-    }
-    $attribs['day'] = $days;
-  }
-  else if ($init_flag) {
-    foreach ($whiches as $which) {
-      for ($jj = 0; $jj < count($wanted_shifts[$which]); $jj++) {
-        if ($wanted_shifts[$which][$jj]['shift'] === $workshift) {
-          foreach ($cur_mods as $attrib => $arr) {
-            $wanted_attribs[$which][$jj][$attrib] = array_keys($arr);
-          }
-          $wanted_attribs[$which][$jj]['day'] = array_keys($days_done);
-        }
-      }
-    }
-  }
-  $ii = 0;
-  if (!isset($modif_keys)) {
-    $modif_keys = array();
-  }
-  //from here on out, $modif_keys is just all the possible modifers, day included
-  array_push($modif_keys,'day');
-  //what are all the possibilities for the modifiers?
-  for ($ii = 0; $ii < count($modif_keys); $ii++) {
-    print "  modifiers[name_index][$ii] = " . dbl_quote($modif_keys[$ii]) . ";\r\n";
-  }
-  print "  num_mods = " . count($modif_keys) . ";\r\n";
-    }
-?>
 }
 
 //before submitting, there must be a name and password entered
@@ -473,18 +268,7 @@ div.hidearrow {
 <body onLoad="initialize()">
 <?php
 print $body_insert;
-if (!$no_js) { if (!$shift_prefs_style) {
-
-  if (browser_detection('os') === 'mac' &&
-      browser_detection('browser') !== 'moz') {
-?>
-  <h3>Warning: may not work properly on Macs.  Try using
-<a href='http://www.mozilla.com/'>Firefox</a>, then Safari.  
-IE may crash on Macs.</h3>
-<?php
-     }
-
-}
+if (!$no_js) {
  $_GET['no_js'] = true; 
   print("<p><a href='" . this_url() . "'>Use a version of this page " .
         "that does not require javascript</a></p>");
@@ -574,111 +358,7 @@ It's saved from semester to semester.
 <a href='shift_descriptions.php' target='shift_descriptions'>More info about each workshift</a><br>
 <a href='workshift_doc.php' target='workshift_doc'>Workshift document</a></p>
 <p>
-<?php if (!$shift_prefs_style) {
-print_static_text('preferences_shift_wanted_instructions',
-<<<INSTRUCTIONS
-List some shifts you want, and be as specific as
-possible (i.e. what shift AND what day-this will do more than anything
-else to increase your chance of getting the shift you want). Almost
-everybody will end up doing a kitchen crew shift (i.e. dishes), so be
-sure to include at least one specific kitchen shift.  I encourage you
-to apply to work at CO/CK-it tends to be pretty social, and you can
-choose your job.  Please let me know if you are applying to be a cook
-or to work at CO/CK. See the list of shift descriptions in your
-workshift packet for more details.
-INSTRUCTIONS
-                  ,
-                  array(),
-                  true,true);
-?>
-<br>
-To select multiple items, or to unselect an item, use the CONTROL key
-on your keyboard, or select the blank item.  If you do not specify a
-day, it is assumed that you want (or do not want) the shift for any day
-of the week.
-</p>
 <?php
-#';
-foreach ($whiches as $which) {
-  if ($which == 'unwanted') {
-    print("List some shifts you would really hate to do.<br>\n");
-  }
-  for ($ii = 0; $ii < $wanted_num[$which]+$num_blank_shifts; $ii++) {
-    if ($ii < $wanted_num[$which]) {
-      $row = $wanted_shifts[$which][$ii];
-    }
-    else {
-      $row = null;
-    }
-  ?>
-
-<p><SELECT id='<?=escape_html($which . $ii)?>' name="<?=
-escape_html($which . $ii)?>" <?=
-    //we don't want someone whose browser only half-works with javascript
-    //to have choices taken away by display_choices
-    $no_js?'':'onChange=display_choices(' . array_search($which,$whiches) .",$ii)"
-?> >
-<option>
-<?php
-foreach ($workshiftlist as $shift) {
-  if ($row && $shift === $row['shift']) {
-    print "<option selected>" . escape_html($shift) . "\n";
-  }
-  else {
-    print "<option>" . escape_html($shift) . "\n";
-  }
-}
-?>
-</SELECT><?php
-    //if we have no javascript, then we display all possible attributes
-    //if we have javascript, then we display nothing unless this is a stored
-    //preference, in which case we display just the correct cells
-if (!$no_js) {
-  if (!$row) {
-    continue;
-  }
-  $attribs = $wanted_attribs[$which][$ii];
-}
-  //go through all possible options
-  foreach ($attribs as $attrib => $vals) {
-    if ($row && isset($row['attrib'])) {
-      $row[$attrib] = explode(';',$row[$attrib]);
-    }
-    print escape_html($attrib) . ": ";
-?><select multiple size=<?=count($vals)?> id="<?=escape_html(
-$which . $ii . $attrib)?>" name="<?=escape_html($which . $ii . $attrib)?>[]">
-<?php
-     //list all the options for this attribute
- foreach ($vals as $val) {
-   //select the ones that the user selected last time
-   if ($row && isset($row[$attrib]) && 
-       in_array($val,explode(';',$row[$attrib])) !== false) {
-     print "<option selected>" . escape_html($val) . "\n";
-   }
-   else {
-     print "<option>" . escape_html($val) . "\n";
-   }
- }
-?>
-</select><?php
-    }
-?></p>
-<?php
-}
-  //it's ok to have the button for people to make new preferences, even in no_js.
-  //Maybe they can, so good luck to them.  But those new preferences will have
-  //full javascript functionality, and will maybe not work so well if js is bad.
-  ?></p><p>
-<input type="button" value="add another <?=$which?> shift" 
-id="<?=$which?>_button"
-onClick="addfields(<?=array_search($which,$whiches)?>)">
-</p><?php 
-}
-?>
-<input type=hidden name='shift_prefs_style' value=0>
-<?php
-}
-    else {
 print "<p>";
 print_static_text('preferences_shift_rating_instructions',
 <<<INSTRUCTIONS
@@ -695,38 +375,33 @@ INSTRUCTIONS
    true,true);
 ?>
 <p>
-<input type=hidden name='shift_prefs_style' value=1>
 <?php
 $category = null;
 $workshifts_done = array();
-$no_cat_shifts = array();
 $firstflag = 0;
-$res = $db->Execute("select * from `master_shifts` where `category` is null or " .
+$res = $db->Execute("select *, " .
+                    "if(isnull(category) or length(trim(category))=0,null,category) " .
+                    "as `catcleaned` from `master_shifts` " .
+                    "where `category` is null or " .
                     "substring(`category`,1,1) != '*'" .
-                    "order by `category`, `workshift`");
+                    "order by ISNULL(`catcleaned`), `catcleaned`, `workshift` ASC");
 print "<table>";
+$category = 'janakjanak';
 while ($row = $res->FetchRow()) {
-  if (!$row['category']) {
-    $category = null;
-    if (!isset($workshifts_done[$row['workshift']])) {
-      $no_cat_shifts[] = array($row['autoid'],$row['workshift'],$row['floor']);
-      $workshifts_done[$row['workshift']] = true;
-    }
-    continue;
-  }
-  if ($category != $row['category']) {
-    $category = $row['category'];
+  if ($category !== $row['catcleaned']) {
+    $category = $row['catcleaned'];
     if ($firstflag++) {
       print "</div></td></tr>";
-    }
-    print "<tr><td><input type=hidden name='nm_cat_" . escape_html($row['autoid']) . 
-      "' value='" . escape_html($row['category']) . "'>" . 
-      "<input size=3 name='cat_" . escape_html($row['autoid']) . "' ";
-    if (isset($wanted_shifts['cat_' . $row['category']][null])) {
-      print " value='" . $wanted_shifts['cat_' . $row['category']][null]['rating'] . "'";
-    }
-    print ">" . ucfirst(escape_html($row['category'])) . " <input type=button value='Expand' ";
-    print <<<ONCLICK
+    }      
+    print "<tr><td>";
+    if ($category) {
+      print "<input size=3 name='cat_" . 
+        escape_html($row['category']) . "' ";
+      if (isset($wanted_shifts['cat_' . $row['category']])) {
+        print " value='" . $wanted_shifts['cat_' . $row['category']] . "'";
+      }
+      print ">" . ucfirst(escape_html($row['category'])) . " <input type=button value='Expand' ";
+      print <<<ONCLICK
 onclick='if (this.value == "Expand") {
 document.getElementById("div_{$row['autoid']}").style.display = "";
 this.value = "Hide";
@@ -738,37 +413,23 @@ this.value = "Expand";
 return false;' ><div id='div_{$row['autoid']}' style='display: none; margin-left: 10px'>
 ONCLICK
 ;
+    }
+    else {
+      print "Uncategorized shifts:<br/>\n";
+    }
   }
   print "<input type=hidden name='nm_sft_" . escape_html($row['autoid']) . 
-      "[]' value='" . escape_html($row['workshift']) . "'>" . 
-    "<input  type=hidden name='nm_sft_" . escape_html($row['autoid']) . 
-      "[]' value='" . escape_html($row['floor']) . "'>" . 
-    "<input size=3 name='sft_{$row['autoid']}' ";
-  if (isset($wanted_shifts['sft_' . $row['workshift']][$row['floor']])) {
-    print " value='" . $wanted_shifts['sft_' . $row['workshift']][$row['floor']]['rating'] . "'";
+      "' value='" . escape_html($row['workshift']) . "'>" . 
+    "<input size=3 name='sft_" . escape_html($row['autoid']) . "' ";
+  if (isset($wanted_shifts['sft_' . $row['autoid']])) {
+    print " value='" . $wanted_shifts['sft_' . $row['autoid']] . "'";
   }
-  print ">" . escape_html($row['workshift'] . 
-  (strlen($row['floor'])?' (' . $row['floor'] . ')':'')) . "<br/>";
+  print ">" . escape_html($row['workshift'])  . "<br/>";
 }
 if ($firstflag) {
   print "</div></td></tr>";
 }
-print "</table>Uncategorized shifts:<br>";
-foreach ($no_cat_shifts as $shift_data) {
-  print "<input type=hidden name='nm_sft_" . escape_html($shift_data[0]) . 
-    "[]' value='" . escape_html($shift_data[1]) . "'>" . 
-    "<input type=hidden name='nm_sft_" . escape_html($shift_data[0]) .
-  "[]' value='" . escape_html($shift_data[2]) . "'>" .
-    "<input size=3 name='sft_" . escape_html($shift_data[0]) . "' ";
-  if (isset($wanted_shifts['sft_' . $shift_data[1]][$shift_data[2]])) {
-    print " value='" . 
-    escape_html($wanted_shifts['sft_' . $shift_data[1]][$shift_data[2]]['rating']) . "'";
-  }
-  print ">" . escape_html($shift_data[1] . 
-        (strlen($shift_data[2])?' (' . $shift_data[2] . ')':'')) . 
-  "<br/>";
-}
-    }
+print "</table>";    
 ?>
 
 <p>
