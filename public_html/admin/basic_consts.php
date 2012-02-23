@@ -35,25 +35,8 @@ obligations for a given week):
 <input name='prefs_due_date' value='<?= get_static('prefs_due_date')?>'>
 <li>Start of permanent shifts (Usually a Monday -- enter like Monday, September 12): 
 <input name='shifts_start_date' value='<?= get_static('shifts_start_date')?>'>
-<li>Do you want preference forms to be rated (default is wanted/unwanted)?
-<input type=checkbox name='shift_prefs_style_bool' 
-<?=get_static('shift_prefs_style',0)?'checked':''?>
- onchange="if (this.checked) {
-document.getElementById('rating_div').style.display='';
-document.getElementById('rating_div2').style.display = '';
-document.getElementById('rating_div2').disabled = '';
-document.getElementById('wanted_text_div').disabled = 1;
-document.getElementById('wanted_text_div').style.display = 'none';
-} 
-else {
-  document.getElementById('rating_div').style.display='none';
-document.getElementById('rating_div2').disabled = 1;
-document.getElementById('rating_div2').style.display = 'none';
-document.getElementById('wanted_text_div').style.display = '';
-document.getElementById('wanted_text_div').disabled = '';
-}
-"><br/>
-<div id='rating_div' style='border: groove;<?=!get_static('shift_prefs_style',0)?" display: none'":"'"?>>
+<br/>
+<div id='rating_div' style='border: groove;'>
 Please fill out the following.
 All three values should be whole numbers:<br/>
 <input name='wanted_max_rating' value='<?=get_static('wanted_max_rating',5)?>'>
@@ -109,13 +92,7 @@ Do you want this to be html?
  ?>
  )<p>
 What appears before the shift preferences:
-<div id='rating_div2' 
-<?php 
-if (!get_static('shift_prefs_style')) {
-  print "disabled style='display: none' ";
-}
-?>
->
+<div id='rating_div2'>
 <textarea cols=80 rows=10 name='preferences_shift_rating_instructions_text'>
 <?php
 print escape_html(get_raw_static_text('preferences_shift_rating_instructions',
@@ -140,45 +117,6 @@ Do you want this to be html?
 (You can use the following escape codes to insert data into this text:<br/>
 <?php
  $esc = get_escapes_text('preferences_shift_rating_instructions');
- foreach ($esc as $code => $datum) {
-   print escape_html($code) . " will insert the " . escape_html($datum) . "<br/>";
- }
- ?>
- )<p>
-</div>
-<div id='wanted_text_div'
-<?php 
-if (get_static('shift_prefs_style')) {
-  print " disabled style='display: none' ";
-}
-?>
->
-<textarea cols=80 rows=10 name='preferences_shift_wanted_instructions_text'>
-<?php
-print escape_html(get_raw_static_text('preferences_shift_wanted_instructions',
-<<<INSTRUCTIONS
-List some shifts you want, and be as specific as
-possible (i.e. what shift AND what day-this will do more than anything
-else to increase your chance of getting the shift you want). Almost
-everybody will end up doing a kitchen crew shift (i.e. dishes), so be
-sure to include at least one specific kitchen shift.  I encourage you
-to apply to work at CO/CK-it tends to be pretty social, and you can
-choose your job.  Please let me know if you are applying to be a cook
-or to work at CO/CK. See the list of shift descriptions in your
-workshift packet for more details.
-INSTRUCTIONS
-                  ,
-                  array(),
-                  true));
-?>
-</textarea><br/>
-Do you want this to be html?
-<input type=checkbox name='preferences_shift_wanted_instructions_bool'
-<?=get_is_html_text('preferences_shift_wanted_instructions')?' checked ':''?>
-><br/>
-(You can use the following escape codes to insert data into this text:<br/>
-<?php
- $esc = get_escapes_text('preferences_shift_wanted_instructions');
  foreach ($esc as $code => $datum) {
    print escape_html($code) . " will insert the " . escape_html($datum) . "<br/>";
  }
@@ -211,15 +149,11 @@ print "<div id='parameter_messages' style='display: none'>";
 //checkboxes have to be dealt with separately, since they aren't present
 //in $_REQUEST if they're not checked
 $shift_flag = false;
-foreach (array('allow_single_houselist_upload_bool',
-               'shift_prefs_style_bool') as $key) {
+foreach (array('allow_single_houselist_upload_bool') as $key) {
   $real = substr($key,0,-5);
   print("Turned " . escape_html($real) . " o");
   if (isset($_REQUEST[$key])) {
     set_static($real,true);
-    if ($real == 'shift_prefs_style') {
-      $shift_flag = true;
-    }
     print("n");
   }
   else {
@@ -235,11 +169,6 @@ foreach ($_POST as $key => $val) {
   }
   //skip the checkboxes
   if (substr($key,-5) == '_bool') {
-    continue;
-  }
-  //if we're not using ratings, don't set the rating settings here --
-  //done below, and the user may get confused if we tell them about it
-  if (!$shift_flag && substr($key,-7) == '_rating') {
     continue;
   }
   switch ($key) {
@@ -262,14 +191,6 @@ $db->Execute("delete from `fining_periods` " .
              "where `week` > ?", array(get_static('tot_weeks')));
 
 //not using ratings, but that just means we're rating out of 2, with default 1
-if (!$shift_flag) {
-  print("<h4>Setting shift preference style to " . 
-        escape_html('wanted/unwanted') . "</h4>");
-  set_static('shift_prefs_style',0);
-  set_static('wanted_max_rating',2);
-  set_static('min_wanted_rating',2);
-  set_static('default_rating',1);
-}
 print "</div>";
 
 ?>
