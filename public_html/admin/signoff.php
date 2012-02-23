@@ -292,7 +292,7 @@ $dummy_string = get_static('dummy_string','XXXXX');
                                          $row['category'] &&
                                          substr($row['category'],0,1) == '*');
    }
-   $row['workshift'] = format_shift($row['workshift'],$row['hours'],$row['floor']);
+   $row['workshift'] = format_shift($row['workshift'],$row['hours']);
  }
 
  if (!isset($table_name)) {
@@ -328,7 +328,6 @@ $dummy_string = get_static('dummy_string','XXXXX');
          $row[$day] = $dummy_string;
        }
      }
-     $row['floor'] = null;
      inner_mung_row($row);
    }
  }
@@ -391,7 +390,7 @@ $dummy_string = get_static('dummy_string','XXXXX');
    }
  }
  if (!isset($table_name)) {
-    $res = $db->Execute("select `workshift`, `floor`, `hours`, `Weeklong`, `category` " .
+    $res = $db->Execute("select `workshift`, `hours`, `Weeklong`, `category` " .
                         "from `master_shifts` where `Weeklong` != ? or `Weeklong` is null " .
                         "order by `workshift`",
                         array($dummy_string));
@@ -422,7 +421,7 @@ STYLE
      if ($row['category'] && substr($row['category'],0,2) == '**') {
        continue;
      }
-     $shift = format_shift($row['workshift'],$row['hours'],$row['floor']);
+     $shift = format_shift($row['workshift'],$row['hours']);
      if ($row['Weeklong'] == $dummy_string) {
        $output = '';
        $colorcell = 'grey';

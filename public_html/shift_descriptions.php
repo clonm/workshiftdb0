@@ -23,16 +23,14 @@ table {
 <table border>
 <tr><th>Workshift</th><th>Earliest starting time</th><th>Latest ending time</th><th>Description</th></tr>
 <?php
-$res = $db->Execute("select `workshift`, `hours`, `floor`, `start_time`, `end_time`, `description` from `master_shifts`" .
-                    " order by `workshift`, `floor`, `hours`");
+$res = $db->Execute("select `workshift`, `hours`, `start_time`, `end_time`, `description` from `master_shifts`" .
+                    " order by `workshift`, `hours`");
 $workshift = null;
 $hours = null;
-$floor = null;
 
 $new_flag = false;
 while ($row = $res->FetchRow()) {
   if ($row['workshift'] === $workshift &&
-      $row['floor'] === $floor &&
       $row['hours'] === $hours) {
     continue;   
   }
@@ -40,9 +38,8 @@ while ($row = $res->FetchRow()) {
     $new_flag = true;
   }
   $workshift = $row['workshift'];
-  $floor = $row['floor'];
   $hours = $row['hours'];
-  $shift = escape_html(format_shift($row['workshift'],$row['hours'],$row['floor']));
+  $shift = escape_html(format_shift($row['workshift'],$row['hours']));
   print "<tr";
   if ($new_flag) {
     print " id='" . escape_html($row['workshift']) . "'";

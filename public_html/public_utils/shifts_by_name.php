@@ -6,8 +6,8 @@ $houselist = array();
 foreach(array("Monday","Tuesday","Wednesday","Thursday","Friday",
 	      "Saturday","Sunday","Weeklong") as $day) {
   $res = $db->Execute('SELECT ' . bracket('workshift') . ', ' . 
-		      bracket('floor') . ', ' . bracket($day) . 
-		       ' FROM ' . bracket($archive . 'master_shifts') .
+                      bracket($day) . 
+                      ' FROM ' . bracket($archive . 'master_shifts') .
 		      " WHERE " . bracket($day) . " <> ?",
 		      array($dummy_string));
   while ($row = $res->FetchRow()) {
@@ -19,7 +19,7 @@ foreach(array("Monday","Tuesday","Wednesday","Thursday","Friday",
     else
       $houselist[$row[$day] ] .= ', ';
     $houselist[$row[$day] ] .= ($day === 'Weeklong'?'':"$day ") . 
-      $row['workshift'] . ($row['floor']?' ' . $row['floor']:'');
+      $row['workshift'];
   }
 }
 //sort by keys, which are the names

@@ -6,7 +6,7 @@ require_once('default.inc.php');
 $time = microtime(1);
 $order_exp = 'workshift';
 $table_name = "{$archive}master_shifts";
-$col_formats = array('workshift' => '', 'floor' => '', 'hours' => '', 
+$col_formats = array('workshift' => '', 'hours' => '', 
 		     'Weeklong' => 'namegrey','Monday' => 'namegrey',
 		     'Tuesday' => 'namegrey','Wednesday' => 'namegrey', 
 		     'Thursday' => 'namegrey','Friday' => 'namegrey',

@@ -246,9 +246,8 @@ function decode_avail($av,$jj) {
 }
 
 //formatted workshift
-function format_shift($shift,$hours,$floor='') {
-  return $shift . ($floor? ' ' . $floor:'') .
-    ' (' . $hours . ')';
+function format_shift($shift,$hours) {
+  return $shift . ' (' . $hours . ')';
 }
 
 //End Section 0: utility functions
@@ -609,8 +608,7 @@ function query_day($day,$week_date = null) {
      "null as `autoid`, " .
      "ADDDATE('$week_date',interval $num day) as `date`, ":"") .
     "'$day' AS `day`, " .
-    "concat(`workshift`,if(`floor`,concat(' ',`floor`),'')) " .
-    "AS `workshift`, `$day` AS  `member_name`, `hours` AS `hours`, " .
+    "`workshift`, `$day` AS  `member_name`, `hours` AS `hours`, " .
     "`autoid` as `shift_id`, `start_time`, `end_time` " .
     "FROM " . bracket("${archive}master_shifts") .
     " WHERE not (`$day` <=> '$dummy_string')";

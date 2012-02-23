@@ -78,7 +78,7 @@ $headers = '';
 $shifts = '';
 //days is global from janakdb-utils
 foreach($days as $day) {
-  $res = $db->Execute("SELECT `workshift`, `floor`, `hours` FROM " . 
+  $res = $db->Execute("SELECT `workshift`, `hours` FROM " . 
                       "`{$archive}master_shifts` WHERE `$day` = ?",
                       array($member_name));
   //are there any assigned shifts?
@@ -90,9 +90,6 @@ foreach($days as $day) {
       $shifts .= "<a href='shift_descriptions.php#" . 
         escape_html($row['workshift']) .
         "'>" . escape_html($row['workshift']);
-      if ($row['floor']) {
-        $shifts .= " floor " . escape_html($row['floor']);
-      }
       $shifts .= " (" . escape_html($row['hours']) . " hrs)</a><br>\n";
     }
     $shifts .= "</td>";
