@@ -71,7 +71,12 @@ foreach ($houses as $house_name) {
      //     print "doing house $house_name\n";
    }
    else {
-     fwrite(STDERR,"ran out of time");
+     if (STDERR) {
+       fwrite(STDERR,"ran out of time");
+     }
+     else {
+       print "ran out of time";
+     }
      break;
    }
   $url_array['db'] = $db_basename . $house_name;
