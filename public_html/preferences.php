@@ -242,11 +242,11 @@ differently from the category, click on the "Expand" button next to the category
 $category = null;
 $workshifts_done = array();
 $firstflag = 0;
-$res = $db->Execute("select *, " .
+$res = $db->Execute("select GROUP_CONCAT(`autoid`) as `autoid`,`workshift`, " .
                     "if(isnull(category) or length(trim(category))=0,null,category) " .
                     "as `catcleaned` from `master_shifts` " .
                     "where `category` is null or " .
-                    "substring(`category`,1,1) != '*'" .
+                    "substring(`category`,1,1) != '*' GROUP BY `workshift`" .
                     "order by ISNULL(`catcleaned`), `catcleaned`, `workshift` ASC");
 print "<table>";
 $category = 'janakjanak';
@@ -259,11 +259,11 @@ while ($row = $res->FetchRow()) {
     print "<tr><td>";
     if ($category) {
       print "<input size=3 name='cat_" . 
-        escape_html($row['category']) . "' ";
-      if (isset($wanted_shifts['cat_' . $row['category']])) {
-        print " value='" . $wanted_shifts['cat_' . $row['category']] . "'";
+        escape_html($category) . "' ";
+      if (isset($wanted_shifts['cat_' . $category])) {
+        print " value='" . $wanted_shifts['cat_' . $category] . "'";
       }
-      print ">" . ucfirst(escape_html($row['category']));
+      print ">" . ucfirst(escape_html($category));
       if (!$no_js) {
         print " <input type=button value='Expand' ";
         print <<<ONCLICK
@@ -290,8 +290,12 @@ ONCLICK
   print "<input type=hidden name='nm_sft_" . escape_html($row['autoid']) . 
       "' value='" . escape_html($row['workshift']) . "'>" . 
     "<input size=3 name='sft_" . escape_html($row['autoid']) . "' ";
-  if (isset($wanted_shifts['sft_' . $row['autoid']])) {
-    print " value='" . $wanted_shifts['sft_' . $row['autoid']] . "'";
+  $shift_ids = explode(',',$row['autoid']);
+  foreach ($shift_ids as $shift_id) {
+    if (isset($wanted_shifts['sft_' . $shift_id])) {
+      print " value='" . $wanted_shifts['sft_' . $shift_id] . "'";
+      break;
+    }
   }
   print ">" . escape_html($row['workshift'])  . "<br/>";
 }

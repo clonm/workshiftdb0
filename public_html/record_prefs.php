@@ -311,10 +311,13 @@ if (!delete_old_prefs($member_name,$passwd)) {
 }
 
 foreach ($categories as $cat => $rating) {
-  $db->Execute("insert into `wanted_shifts` " .
-               "(`member_name`,`shift_id`,`rating`,`is_cat`) " .
-               "values (?,?,?,?)",
-               array($member_name,substr($cat,4),$rating,$cat{0} == 'c'));
+  $shift_ids = explode(',',substr($cat,4));
+  foreach ($shift_ids as $shift_id) {
+    $db->Execute("insert into `wanted_shifts` " .
+                 "(`member_name`,`shift_id`,`rating`,`is_cat`) " .
+                 "values (?,?,?,?)",
+                 array($member_name,$shift_id,$rating,$cat{0} == 'c'));
+  }
 }
 if (count($categories)) {
   set_mod_date('wanted_shifts');
