@@ -71,7 +71,7 @@ foreach ($houses as $house_name) {
      //     print "doing house $house_name\n";
    }
    else {
-     if (STDERR) {
+     if (defined(STDERR)) {
        fwrite(STDERR,"ran out of time");
      }
      else {
