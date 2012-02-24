@@ -174,9 +174,17 @@ $javascript_pre .= "var weekly_hours_quota = " . get_static('owed_default',5) .
 HEREDOC;
 
 $body_insert .= <<<HOURSCOUNT
+<table style='border-style: none'><tr style='border-style: none'><td style='border-style: none; width: 1%; white-space: nowrap'>
 <span id='assigned_hours'>0</span> hours have been assigned so far.<br/>
 <span id='unassigned_hours'>0</span> hours are still unassigned.<br/>
 <span id='total_hours'>0</span> is the total number of hours of shifts.<br/>
+  </td><td id='click_reset_people' onclick="parent.reset_list()" style='border-style: solid; display: none; text-align: center'>(Click here to reset sidebar)</td>
+</tr></table>
+<script>
+  if (parent != self) {
+    document.getElementById('click_reset_people').style.display = '';
+  }
+</script>
 HOURSCOUNT
 ;
 #$body_insert = "<input type=submit value='Assign Shifts Automatically' onclick='autoassign()'><br>";

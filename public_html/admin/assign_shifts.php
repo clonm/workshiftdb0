@@ -164,11 +164,14 @@ function is_wanted_person(member,styleflag) {
 //cant_do_person will override this size, as happens below
 function set_rating_person(member,workshift) {
   var rating = get_rating(member,workshift);
+  var st = get_style(member);
+  if (typeof(rating_color[rating]) == "undefined") {
+    rating = rating_color.length-1;
+  }
   //the houselist in people is used for sorting by various criteria
   //including the ratings people have given to the currently-selected
   //shift.  That rating is stored in the 3rd coordinate.
   self.people.houselist[listhouse[member]][3] = rating;
-  var st = get_style(member);
   if (rating == 0) {
     is_unwanted_person(st,true);
   }
@@ -241,6 +244,7 @@ function reset_list() {
 //currently has the workshift in blue, and change members' appearance
 //based on how good this shift is for them
 function offer_options(member,hours,workshift) {
+  reset_list();
   //workshift['day'] gives the day the workshift is done.  If it is less
   //than 0, it means that we haven't clicked into a specific day, but
   //rather are just somewhere on the row, so there is no one person
@@ -257,16 +261,12 @@ function offer_options(member,hours,workshift) {
     //remember, set_rating_person will change the members' displays
     set_rating_person(mem,workshift);
     //if the member actually can't do this particular shift, be more
-    //discouraging about it
-    var if_flag = true;
-    if (workshift['day'] >= 0) {
-      if_flag = self.master_shifts.can_do(mem,workshift,true);
+    //discouraging about it. Test as if it's a weeklong if no day
+    if (workshift['day'] < 0) {
+      workshift['day'] = 0;
     }
-    if (if_flag == false) {
+    if (!self.master_shifts.can_do(mem,workshift,true)) {
       cant_do_person(mem);
-    }
-    else {
-      is_unwanted_person(mem);
     }
   }
   //sort list, and tell function that all that's changed is ratings

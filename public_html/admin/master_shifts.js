@@ -192,10 +192,10 @@ function assign_shift(member, workshift, addshift, silent) {
 
 function find_match(wanteds,workshift) {
     if (typeof(wanteds[workshift['id']]) != 'undefined') {
-        return Object(workshift['id'],wanteds[workshift['id']][0],wanteds[workshift['id']][1]);
+        return Array(workshift['id'],wanteds[workshift['id']][0],wanteds[workshift['id']][1]);
     }
     if (typeof(wanteds[workshift['cat']]) != 'undefined') {
-        return Object(workshift['cat'],wanteds[workshift['cat']][0],wanteds[workshift['cat']][1]);
+        return Array(workshift['cat'],wanteds[workshift['cat']][0],wanteds[workshift['cat']][1]);
     }
     return null;
 }
@@ -512,9 +512,9 @@ function change_handler(elt) {
 }
 
 function blur_handler(elt) {
-  if (parent != self) {
-    parent.reset_list();
-  }
+  // if (parent != self) {
+  //   parent.reset_list();
+  // }
   default_blur_handler(elt);
   return true;
 }
