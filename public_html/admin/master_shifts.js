@@ -1,20 +1,12 @@
-var num_shift_mods = 0;
-//we need to be able to go between days and numbers
-var listdays = new Array();
-listdays['Monday'] = 0;
-listdays['Tuesday'] = 1;
-listdays['Wednesday'] = 2;
-listdays['Thursday'] = 3;
-listdays['Friday'] = 4;
-listdays['Saturday'] = 5;
-listdays['Sunday'] = 6;
-
-//and back again
+//the number of columns to the left of shift assignments.
+//Currently workshift,hours
+var num_shift_mods = 2;
+//we need to be able to go between numbers and days
 var dayslist = ['Weeklong', 'Monday', 'Tuesday', 'Wednesday', 
 		'Thursday','Friday','Saturday','Sunday'];
 
+//alert all errors at the end of an action, instead in multiple alert boxes
 var accumulated_errors = '';
-
 function store_alert(txt) {
     if (txt) {
         accumulated_errors += "\n" + txt;
@@ -28,12 +20,11 @@ function print_alerts() {
     }
 }
 
-//dummy function so we can call offer_options even if there's no assign_shifts.php
-//sitting on top of us
+//dummy function so we can call offer_options even if there's no
+//assign_shifts.php sitting on top of us
 function offer_options(elt,elt2,elt3,elt4) {
 }
 
-var prev_val;
 //how many hours is this shift worth?
 function hours_of(elt) {
   return elt.parentNode.parentNode.childNodes[2].firstChild.value;
@@ -44,7 +35,7 @@ function hours_of(elt) {
 function workshift_of(elt) {
   var row = elt.parentNode.parentNode.childNodes;
   var elts = get_cell(elt);
-  var day = elts[1]-num_shift_mods-2;
+  var day = elts[1]-num_shift_mods;
   //non-day elements all get -1 as a flag
   if (day < 0 || day > 7) {
     day = -1;
@@ -52,11 +43,11 @@ function workshift_of(elt) {
     var workshift = new Object();
     workshift['id'] = get_value(row[row.length-2]);
     workshift['name'] = get_value(row[0]);
-    workshift['hours'] = get_value(row[Number(1)+num_shift_mods]);
+    workshift['hours'] = get_value(row[num_shift_mods-1]);
     workshift['day'] = day;
-    workshift['start'] = get_value(row[Number(10)+num_shift_mods]);
-    workshift['end'] = get_value(row[Number(11)+num_shift_mods]);
-    workshift['cat'] = get_value(row[Number(12)+num_shift_mods]);
+    workshift['start'] = get_value(row[Number(8)+num_shift_mods]);
+    workshift['end'] = get_value(row[Number(9)+num_shift_mods]);
+    workshift['cat'] = get_value(row[Number(10)+num_shift_mods]);
     return workshift;
 }
 
@@ -391,6 +382,9 @@ function hours_change(elt,workshift,prev_val, interval_change) {
   }
 }
 
+//stores previous value of cell for use by change_handler later
+var prev_val;
+
 //what happens which someone clicks on an element?  this replaces the default
 //handler in table_edit.php.  Note that offer_options is a dummy unless this
 //is a frame in assign_shifts.php.  If this is a frame, the other frame should
@@ -482,9 +476,9 @@ function change_handler(elt) {
       //only gray out other cells if we just changed this cell from blank
       //or if it used to be dummy_string
       if (!prev_val || prev_val == dummy_string) {
-        if (coords[1] == 3) {
+        if (coords[1] == num_shift_mods) {
           var changed = '';
-          for (var jj = 4; jj < 11; jj++) {
+          for (var jj = num_shift_mods+1; jj < num_shift_mods+8; jj++) {
             this_elt = get_cell_elt(coords[0],jj);
             if (!get_value(this_elt)) {
               set_value(this_elt,dummy_string);
@@ -492,12 +486,12 @@ function change_handler(elt) {
               if (changed.length) {
                 changed += ', ';
               }
-              changed += dayslist[jj-3];
+              changed += dayslist[jj-num_shift_mods];
             }
           }
         }
         else {
-          wklng_elt = get_cell_elt(coords[0],3);
+          wklng_elt = get_cell_elt(coords[0],num_shift_mods);
           if (!get_value(wklng_elt)) {
             set_value(wklng_elt,dummy_string);
             change_handler(wklng_elt);
@@ -530,7 +524,7 @@ function initialize_master_shifts() {
     var cur_row = rows_array[ii];
     var workshift;
     for (var jj = 0; jj < 8; jj++) {
-      var elt = cur_row.childNodes[jj+num_shift_mods+2].firstChild;
+        var elt = cur_row.childNodes[Number(jj)+num_shift_mods].firstChild;
       var member = elt.value;
       //get the full workshift array if it's the first time
       if (jj == 0) {
@@ -558,6 +552,6 @@ function initialize_master_shifts() {
 //decode 8*rownum+colnum into an element
 function elt_of(ind) {
   var col_num = ind % 8;
-  return rows_array[(ind-col_num)/8].childNodes[2+num_shift_mods+col_num].firstChild;
+    return rows_array[(ind-col_num)/8].childNodes[Number(num_shift_mods)+col_num].firstChild;
 }
 
