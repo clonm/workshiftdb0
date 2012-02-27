@@ -20,42 +20,45 @@ tbody_elt.addEventListener('blur',pass_on_blur,true);
 tbody_elt.addEventListener('change',pass_on_change,true);
 tbody_elt.addEventListener('click',pass_on_click,true);
 
-function pass_on_event(e, action, default_handler) {
+function pass_on_event(e, action, default_handler_array) {
   var target = e.originalTarget;
   if (!is_cell(target)) {
     return true;
   }
+  for (var func in default_handler_array) {
+    target = default_handler_array[func](target);
+    if (!target) {
+      return false;
+    }
+  }
   var classes = target.className.split(' ');
-  var did_action = false;
-  var retval;
   for (var ii in classes) {
     if (class_handlers && class_handlers[classes[ii]] &&
         class_handlers[classes[ii]][action]) {
-      retval = class_handlers[classes[ii]][action](target);
-      did_action = true;
-      break;
+      return class_handlers[classes[ii]][action](target);
     }
   }
-  if (!did_action) {
-    retval = default_handler(target);
-  }
-  return retval;
+  return target;
 }
   
 function pass_on_focus(e) {
-  return pass_on_event(e,'onfocus',focus_handler);
+  return pass_on_event(e,'onfocus',
+                       new Array(default_focus_handler,focus_handler));
 }
 
 function pass_on_blur(e) {
-  return pass_on_event(e,'onblur',blur_handler);
+  return pass_on_event(e,'onblur',
+                      new Array(default_blur_handler,blur_handler));
 }
 
 function pass_on_change(e) {
-  return pass_on_event(e,'onchange',change_handler);
+  return pass_on_event(e,'onchange',
+                      new Array(default_change_handler,change_handler));
 }
 
 function pass_on_click(e) {
-  return pass_on_event(e,'onclick',change_handler);
+  return pass_on_event(e,'onclick',
+                      new Array());
 }
 
 //are we currently hiding rows?
@@ -567,7 +570,7 @@ function add_row() {
     new_in.setAttribute("autocomplete","off");
     //blank value
     new_in.setAttribute('value','');
-    new_in.onblur = blur_handler;
+//    new_in.onblur = blur_handler;
 //Janak commented out 5/29/08 as part of new handling mechanism
 //     new_in.onchange = change_handler;
 //     new_in.onblur = blur_handler;
@@ -615,8 +618,6 @@ function check_changed() {
 
 //mark/unmark row for deletion, called by inline handler
 function default_delete_row_handler(elt) {
-  var flag = false;
-  var ii;
   var rowid = get_value(elt.parentNode.previousSibling);
     //parentNode.parentNode.rowIndex-1;
   var rw = elt.parentNode.parentNode;
@@ -630,9 +631,12 @@ function default_delete_row_handler(elt) {
     color_row(rw,"black");
     check_changed();
   }
+  return elt;
 }
 
-//if nothing else is registered, this is called on changes
+//if nothing else is registered, this is called on changes.
+//Other change handlers that call this one should check its return value
+//and return themselves if this returns false.
 function default_change_handler (elt) {
   if (!elt.style && elt.target) {
     elt = elt.target;
@@ -643,6 +647,11 @@ function default_change_handler (elt) {
   else if (!elt.style && !this.screen) {
     elt = this;
   }
+    //I don't know why the change_handler gets fired if this element still
+    //has focus, but it does. This prevents anything from happening.
+    if (elt == document.activeElement) {
+        return false;
+    }
   //changed elements are colored red
   elt.style.color = "red";
   elt.style.border.color = "red";
@@ -654,7 +663,7 @@ function default_change_handler (elt) {
   var autoid = get_value_by_id("autoid-" + elts[0]);
   //elements in rows just added don't need to be recorded as "changed"
   if (autoid.indexOf("add-") == 0) {
-    return true;
+    return elt;
   }
   var ch = change_array[autoid];
   if (ch) {
@@ -666,7 +675,7 @@ function default_change_handler (elt) {
     change_array[autoid][elts[1]] = 1;
   }
   statustext.innerHTML = "Press CTRL-s to save your work.";
-  return true;
+  return elt;
 }
 
 function name_check(elt) {
@@ -751,7 +760,7 @@ function default_blur_handler(elt) {
     //it was going to.
     set_value(elt,firefox_2_hack_value);
   }
-  return true;
+  return elt;
 }
 
 //if nothing else is registered, this is called on focuses
@@ -760,6 +769,7 @@ function default_focus_handler(elt) {
   if (firefox_2_hack) {
     firefox_2_hack_value = get_value(elt);
   }
+  return elt;
 }
 
 //utility function, gives url-encoded value of any html element I need
@@ -1262,19 +1272,8 @@ function pre_process_default(a) {
 }
 
 function time_change_handler(elt) {
-  if (!elt.style && elt.target) {
-    elt = elt.target;
-  }
-  else if (!elt.style && elt.srcElement) {
-    elt = elt.srcElement;
-  }
-  else if (!elt.style && !this.screen) {
-    elt = this;
-  }
-  //call the table_edit change handler (turns things red)
-  default_change_handler(elt);
   if (!elt.value)
-    return true;
+    return elt;
   if (elt.value.toLowerCase() == 'noon') {
     elt.value = '12 pm';
   }
@@ -1294,5 +1293,5 @@ function time_change_handler(elt) {
       elt.value = elt.value + " pm";
     }
   }
-  return true;
+  return elt;
 }

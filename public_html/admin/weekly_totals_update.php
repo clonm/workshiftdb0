@@ -74,17 +74,16 @@ $javascript_pre .= <<<HEREDOC
 
 //when the owed hours are changed, the totals have to be updated
 function change_handler(elt) {
-  default_change_handler(elt);
   if (!is_input(elt)) {
-    return;
+    return elt;
   }
   var coords = get_cell(elt);
   if (!coords) {
-    return;
+    return elt;
   }
   //is this an owed field, i.e. before the Totals field
   if (coords[1] >= 5*week_num+Number(1)) {
-    return;
+    return elt;
   }
   var row = rows_array[coords[0]].cells;
   var key_weeks = 0;
@@ -328,6 +327,7 @@ HEREDOC
   ;
  }
 $javascript_pre .= <<<HEREDOC
+    return elt;
 }
 
     function change_cell(elt,new_val) {

@@ -390,43 +390,22 @@ var prev_val;
 //is a frame in assign_shifts.php.  If this is a frame, the other frame should
 //only have names which can do this shift, and they should be formatted.
 function focus_handler(elt) {
-  if (!elt.style && elt.target) {
-    elt = elt.target;
-  }
-  else if (!elt.style && elt.srcElement) {
-    elt = elt.srcElement;
-  }
-  else if (!elt.style && !this.screen) {
-    elt = this;
-  }
-  default_focus_handler(elt);
   //for the change handler
   prev_val = get_value(elt);
   //  if (is_nameinput(elt)) {
   //offer options for every cell -- it's a nameinput if the day is >= 0 in workshift_of
   parent.offer_options(elt.value,hours_of(elt),workshift_of(elt));
   //  }
-  return true;
+  return elt;
 }
 
 //what happens when an element loses focus?  many things.  This replaces the
 //default handler in table_edit.php
 function change_handler(elt) {
-  if (!elt.style && elt.target) {
-    elt = elt.target;
-  }
-  else if (!elt.style && elt.srcElement) {
-    elt = elt.srcElement;
-  }
-  else if (!elt.style && !this.screen) {
-    elt = this;
-  }
-  //call the table_edit change handler (turns things red)
-  default_change_handler(elt);
   //if it's a time element, we have to format it properly
   if (is_timeinput(elt)) {
     if (!elt.value)
-      return true;
+      return elt;
     if (elt.value.toLowerCase() == 'noon') {
       elt.value = '12 pm';
     }
@@ -449,14 +428,14 @@ function change_handler(elt) {
     //did we change when the shift started/ended??  check to see if everyone can
     //still do the shift
     hours_change(elt,workshift_of(elt), null, true);
-    return true;
+    return elt;
   }
   //did we change the hours?  update the people doing the shift
   if (is_hoursinput(elt)) {
     if (elt.value != prev_val) {
       hours_change(elt,workshift_of(elt),prev_val);
     }
-    return true;
+    return elt;
   }
   //did we change the name?
   if (is_nameinput(elt)) {
@@ -502,15 +481,7 @@ function change_handler(elt) {
     //change whose shift this is, if it did change
     shift_change(prev_val,elt.value,hours_of(elt),workshift_of(elt));
   }
-  return true;
-}
-
-function blur_handler(elt) {
-  // if (parent != self) {
-  //   parent.reset_list();
-  // }
-  default_blur_handler(elt);
-  return true;
+  return elt;
 }
 
 function initialize_master_shifts() {

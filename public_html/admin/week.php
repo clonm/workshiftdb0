@@ -186,8 +186,11 @@ onclick='blank_names()'>
       }
       for (var ii = rows_array.length-1; ii>=0; ii--) {
         prev_val = get_value(rows_array[ii].cells[3].firstChild);
-        set_value(rows_array[ii].cells[3].firstChild,'');
-        change_handler(rows_array[ii].cells[3].firstChild);
+        if (prev_val && prev_val.length) {
+          set_value(rows_array[ii].cells[3].firstChild,'');
+          default_change_handler(rows_array[ii].cells[3].firstChild);        
+          change_handler(rows_array[ii].cells[3].firstChild);
+        }
       }
       document.getElementById('unmod_blank_week').style.display = 'none';
       return false;
@@ -247,14 +250,9 @@ $javascript_pre .= <<<JAVASCRIPT_PRE
   var unassigned_hours = get_elt_by_id('week_unassigned_hours');
 
   function change_handler(elt) {
-    default_change_handler(elt);
-    if (!is_input(elt)) {
-      if (elt.target) elt = elt.target;
-      else if (elt.srcElement) elt = elt.srcElement;
-    }
     var coords = get_cell(elt);
     if (!coords) {
-      return;
+      return elt;
     }
     //change something that affected hours?
     if (coords[1] == 3 || coords[1] == 4) {
@@ -291,21 +289,13 @@ $javascript_pre .= <<<JAVASCRIPT_PRE
         change_cell(date_cell, week_dates[add_val]);
       }
     }
+    return elt;
   }
   //for keeping track of hours assigned this week
   function focus_handler(elt) {
-    if (!elt.style && elt.target) {
-      elt = elt.target;
-    }
-    else if (!elt.style && elt.srcElement) {
-      elt = elt.srcElement;
-    }
-    else if (!elt.style && !this.screen) {
-      elt = this;
-    }
-    default_focus_handler(elt);
     //for the change handler
     prev_val = get_value(elt);
+    return elt;
   }
 
   function delete_row_handler(elt) {
@@ -321,7 +311,7 @@ $javascript_pre .= <<<JAVASCRIPT_PRE
     }
     set_value(total_hours,Number(get_value(total_hours))+Number(hrs_val));
     set_value(elt_to_change,Number(get_value(elt_to_change))+Number(hrs_val));
-    default_delete_row_handler(elt);
+    return elt;
   }
 </script>
 JAVASCRIPT_PRE
