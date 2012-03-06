@@ -27,7 +27,7 @@ function offer_options(elt,elt2,elt3,elt4) {
 
 //how many hours is this shift worth?
 function hours_of(elt) {
-  return elt.parentNode.parentNode.childNodes[2].firstChild.value;
+  return elt.parentNode.parentNode.childNodes[num_shift_mods-1].firstChild.value;
 }
 
 //return all info about a workshift element -- shift name, day (as a number),
@@ -245,12 +245,12 @@ function can_do(member,workshift,listing,silent) {
     if (workshift['day'] == 0) {
         return success;
     }
-    var busyday = busylist[member][workshift['day']-1];
-    var start_time = workshift['start'];
-    var end_time = workshift['end'];
-    //is there no start time or end time, or they're nonsensical?
-    if (!start_time || !end_time || (start_time == end_time)) {
-        return success;
+  var busyday = busylist[member][workshift['day']-1];
+  var start_time = workshift['start'];
+  var end_time = workshift['end'];
+  //is there no start time or end time, or they're nonsensical?
+  if (!start_time || !end_time || (start_time == end_time)) {
+    return success;
   }
   //get the hoursminutes and am/pm part of the start_time
   var ampm = start_time.split(' ');
@@ -524,6 +524,30 @@ function initialize_master_shifts() {
 function elt_of(ind) {
   var col_num = ind % 8;
     return rows_array[(ind-col_num)/8].childNodes[Number(num_shift_mods)+col_num].firstChild;
+}
+
+function delete_row_handler(elt) {
+  default_delete_row_handler(elt);
+  var rownum = elt.parentNode.parentNode.rowIndex-1;
+  //num_shift_mods-1 should be the hours field, i hope
+  var hours = get_value(get_cell_elt(rownum,num_shift_mods-1));
+  for (ii = num_shift_mods; ii <= 7+num_shift_mods; ii++) {
+    var cell = get_cell_elt(rownum,ii);
+    var mem = get_value(cell);
+    if (mem == dummy_string) {
+      continue;
+    }
+    if (mem && mem.length) {
+      assign_shift(mem,workshift_of(cell),!elt.checked);
+    }
+    else {
+      set_value(unassigned_hours,Number(get_value(unassigned_hours))+
+                (elt.checked?-1:1)*Number(hours));
+      set_value(total_hours,Number(get_value(total_hours))+
+                (elt.checked?-1:1)*Number(hours));
+    }
+  }
+  return elt;
 }
 
 function copy_last_row() {
