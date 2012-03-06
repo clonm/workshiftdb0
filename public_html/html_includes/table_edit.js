@@ -26,6 +26,9 @@ function pass_on_event(e, action, default_handler_array) {
     return true;
   }
   for (var func in default_handler_array) {
+    if (!default_handler_array[func]) {
+      break;
+    }
     target = default_handler_array[func](target);
     if (!target) {
       return false;
@@ -43,17 +46,17 @@ function pass_on_event(e, action, default_handler_array) {
   
 function pass_on_focus(e) {
   return pass_on_event(e,'onfocus',
-                       new Array(default_focus_handler,focus_handler));
+                       new Array(default_focus_handler,'focus_handler' in self?focus_handler:null));
 }
 
 function pass_on_blur(e) {
   return pass_on_event(e,'onblur',
-                      new Array(default_blur_handler,blur_handler));
+                      new Array(default_blur_handler,'blur_handler' in self?blur_handler:null));
 }
 
 function pass_on_change(e) {
   return pass_on_event(e,'onchange',
-                      new Array(default_change_handler,change_handler));
+                      new Array(default_change_handler,'change_handler' in self?change_handler:null));
 }
 
 function pass_on_click(e) {
@@ -1019,16 +1022,16 @@ function process_beforeunload() {
   //if no problems, return no value so user isn't prompted
   return null;  
 }
-//if php script has not already generated javascript handlers, register these
-if (!('focus_handler' in self)) {
-  self.focus_handler = default_focus_handler;
-}
-if (!('change_handler' in self)) {
-  self.change_handler = default_change_handler;
-}
-if (!('blur_handler' in self)) {
-  self.blur_handler = default_blur_handler;
-}
+// //if php script has not already generated javascript handlers, register these
+// if (!('focus_handler' in self)) {
+//   self.focus_handler = default_focus_handler;
+// }
+// if (!('change_handler' in self)) {
+//   self.change_handler = default_change_handler;
+// }
+// if (!('blur_handler' in self)) {
+//   self.blur_handler = default_blur_handler;
+// }
 if (!('delete_row_handler' in self)) {
   self.delete_row_handler = default_delete_row_handler;
 }
