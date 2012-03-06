@@ -189,6 +189,7 @@ HOURSCOUNT
 ;
 #$body_insert = "<input type=submit value='Assign Shifts Automatically' onclick='autoassign()'><br>";
 $delete_flag = true;
+$post_table_text = '<input type=button class="button" onClick="copy_last_row()" value="Copy last row">';
 
 require_once("$php_includes/table_edit.php");
 ?>

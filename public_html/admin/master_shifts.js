@@ -526,3 +526,20 @@ function elt_of(ind) {
     return rows_array[(ind-col_num)/8].childNodes[Number(num_shift_mods)+col_num].firstChild;
 }
 
+function copy_last_row() {
+  add_row();
+  var last_row = rows_array[num_rows-1];
+  var penult_row = rows_array[num_rows-2];
+  for (ii = 0; ii < num_cols; ii++) {
+    var newval = get_value(penult_row.childNodes[ii].firstChild);
+    var oldval = get_value(last_row.childNodes[ii].firstChild);
+    set_value(last_row.childNodes[ii].firstChild,newval);
+    if (newval != oldval) {
+      event = document.createEvent("HTMLEvents");
+      event.initEvent("change", true, true);
+//      event.originalTarget = last_row.childNodes[ii].firstChild;
+      last_row.childNodes[ii].firstChild.dispatchEvent(event);
+    }
+  }
+}
+    
