@@ -2,6 +2,9 @@
 function get_cell(targ) {
   //need to get from name, because actual cells change order upon sorting
   var elts = targ.name.split("-");
+  if (elts[0] == "delete") {
+    return new Array(elts[1],num_cols);
+  }
   if (elts[0] != "cell") {
     return 0;
   }
