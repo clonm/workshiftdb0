@@ -299,7 +299,8 @@ $javascript_pre .= <<<JAVASCRIPT_PRE
   }
 
   function delete_row_handler(elt) {
-    var rownum = elt.parentNode.parentNode.rowIndex;
+    default_delete_row_handler(elt);
+    var rownum = elt.parentNode.parentNode.rowIndex-1;
     var is_mem = get_value(get_cell_elt(rownum,3));
     var elt_to_change = unassigned_hours;
     if (is_mem && is_mem.length) {
