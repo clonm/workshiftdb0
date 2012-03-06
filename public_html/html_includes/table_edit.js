@@ -46,17 +46,17 @@ function pass_on_event(e, action, default_handler_array) {
   
 function pass_on_focus(e) {
   return pass_on_event(e,'onfocus',
-                       new Array(default_focus_handler,'focus_handler' in self?focus_handler:null));
+                       new Array(default_focus_handler,('focus_handler' in self)?focus_handler:null));
 }
 
 function pass_on_blur(e) {
   return pass_on_event(e,'onblur',
-                      new Array(default_blur_handler,'blur_handler' in self?blur_handler:null));
+                       new Array(default_blur_handler,('blur_handler' in self)?blur_handler:null));
 }
 
 function pass_on_change(e) {
   return pass_on_event(e,'onchange',
-                      new Array(default_change_handler,'change_handler' in self?change_handler:null));
+                       new Array(default_change_handler,('change_handler' in self)?change_handler:null));
 }
 
 function pass_on_click(e) {
