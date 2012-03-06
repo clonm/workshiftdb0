@@ -562,7 +562,10 @@ foreach ($col_formats as $col => $junk) {
 //we can add rows if we can delete
 if ($delete_flag) {
   ?>
-<input type=button class="button" onClick="add_row()" value="Add row"><?php 
+<input type=button class="button" onClick="add_row()" value="Add row"><?php
+    if (isset($post_table_text)) {
+      print $post_table_text;
+    }
    }
 //now put in the form entries for non-javascript submissions
 if (!$read_only) {
