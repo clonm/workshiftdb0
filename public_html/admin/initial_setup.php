@@ -318,7 +318,9 @@ if (array_key_exists('reset_middle_bool',$_REQUEST)) {
    //unset any manual current week setting
    set_static('cur_week',null);
    $db->Execute("delete from `fining_data`");
+   $db->Execute("update `fining_data_totals` set `fines` = 0");
    set_mod_date('fining_data');
+   set_mod_date('fining_data_totals');
    print ("<h4>Delete successful</h4>");
    if ($db->CompleteTrans()) {
      print "<h4>Succeeded!</h4>\n";
