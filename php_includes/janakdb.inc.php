@@ -42,7 +42,9 @@ if (array_key_exists('REQUEST_URI',$_SERVER)) {
     $url_name = $url_components[++$house_name_component];
   }
   if ($url_name == 'cvsworkshift') {
-    exit("Do not access the site through http://..../cvsworkshift/... Use http://cvsworkshift..../ instead.");
+    ++$house_name_component;
+    $url_name = $url_components[++$house_name_component];
+    //    exit("Do not access the site through http://..../cvsworkshift/... Use http://cvsworkshift..../ instead.");
 }
   $house_name = $url_name;
   //To enable a link like http://workshift.bsc.coop/public_html/preferences.php

@@ -71,6 +71,11 @@ function is_class(elt,class_name) {
   return (elt.className.split(' ').indexOf(class_name) != -1);
 }
   
+//is this just a delete checkbox?
+function is_deletecheck(elt) {
+  return is_class(elt,'delete_check');
+}
+
 //the following functions can easily be extended.  There should be one for 
 //every cell which requires special handling behavior.  Currently there's
 //just name and time cells.

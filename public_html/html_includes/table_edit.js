@@ -655,6 +655,10 @@ function default_change_handler (elt) {
     if (elt == document.activeElement) {
         return false;
     }
+  //don't process changes of the delete checkbox
+  if (is_deletecheck(elt)) {
+    return false;
+  }
   //changed elements are colored red
   elt.style.color = "red";
   elt.style.border.color = "red";
