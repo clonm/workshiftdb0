@@ -13,7 +13,15 @@ if (isset($temp_houses['h'])) {
 $scratch_dir = "$php_includes/scratch";
 $backup_dir = "$scratch_dir/backupadmin";
 #if (false) {
-if (!file_exists($backup_dir)) {
+if (file_exists($backup_dir)) {
+  $dh = opendir($backup_dir);
+  while ($fname = readdir($dh)) {
+    if($fname=='.' || $fname=='..') continue;
+    unlink("$backup_dir/$fname") || 
+      janak_error("Couldn't delete $fname from $backup_dir");
+  }
+}
+else {
   if (!file_exists($scratch_dir)) {
     mkdir($scratch_dir);
   }
@@ -29,15 +37,6 @@ $uploader = new DropboxUploader($username, $password);
 $db->SetFetchMode(ADODB_FETCH_NUM);
 foreach ($houses as $house_name) {
   fwrite(STDERR,"doing $house_name\n");
-  if (!file_exists($backup_dir . '/' . $house_name)) {
-    mkdir($backup_dir . '/' . $house_name);
-  }
-  $dh = opendir($backup_dir . '/' . $house_name);
-  while ($fname = readdir($dh)) {
-    if($fname=='.' || $fname=='..') continue;
-    unlink("$backup_dir/$house_name/$fname") || 
-      janak_error("Couldn't delete $fname from $backup_dir/$house_name");
-  }
   $url_array['db'] = "$db_basename$house_name";
   $done_archives = array();
   $db->Connect($url_array['server'],$url_array['user'],$url_array['pwd'],
@@ -46,7 +45,7 @@ foreach ($houses as $house_name) {
                       "`emailed` is NULL order by `semester_start`");
   while ($row = $res->FetchRow()) {
     fwrite(STDERR,"doing " . $row[0]);
-    $filename = "$backup_dir/$house_name/$house_name";
+    $filename = "$backup_dir/$house_name";
     ($handle = fopen($filename,"w")) ||
       janak_error("Couldn't open $filename");
     fwrite($handle,"set autocommit=0;\nbegin;\n") ||
