@@ -94,7 +94,6 @@ foreach ($houses as $house_name) {
     unlink($zipfile) || janak_error("Couldn't delete $zipfile");
     
   }
-  rmdir($backup_dir . '/' . $house_name);
 }
 
 function db_quote($str) {
