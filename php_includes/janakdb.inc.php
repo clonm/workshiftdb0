@@ -154,7 +154,9 @@ if (get_magic_quotes_gpc() || ini_get('magic_quotes_sybase')) {
 //disappears from the already-submitted user data.
 if (array_key_exists('forget_login',$_REQUEST)) {
   foreach ($_COOKIE as $key => $val) {
-    setcookie($key,$val,time()-10800,"/");
+    if ($key == 'default_house' || $key == 'member_name') {
+      continue;
+    }
     setcookie($key,"",0,"/");
     unset($_REQUEST[$key]);
   }

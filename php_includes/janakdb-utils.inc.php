@@ -1609,7 +1609,7 @@ function set_session($member_name,$officer = false,$delete_session = false) {
                  array($member_name));
     //unique session id.  the member_name is so I can track it easily
     $session_id = time() . $member_name . rand();
-    //expires 1 hour from now
+    //expires 5 hours from now
     $db->Execute("insert into `session_data` " .
                  "(`member_name`,`session_id`,`expiration`) values " .
                  "(?,?,addtime(now(),'05:00:00'))",
@@ -1619,19 +1619,13 @@ function set_session($member_name,$officer = false,$delete_session = false) {
     $db->Execute("delete from `session_data` where `session_id` = ?",
                  array($member_name));
   }
-  //give user the cookie
-  foreach ($_COOKIE as $key => $val) {
-    if ((!$officer && $key == 'session_id') ||
-        ($officer && $key == 'officer_session_id')) {
-      setcookie($key,$val,time()-10800,"/");
-      setcookie($key,"",0,"/");
-      unset($_REQUEST[$key]);
-      break;
-    }
-  }
   if (!$delete_session) {
     setcookie(($officer?'officer_':'') . 'session_id',
               $session_id,null,"/");
+    //set cookie for username to be stored and pre-selected
+    if (!$officer) {
+      setcookie('member_name',$member_name,time()+60*60*24*365*10,"/");
+    }
   }
   $db->CompleteTrans();
   $db->Execute("unlock tables");
