@@ -73,6 +73,11 @@ function get_dbs_to_delete() {
     if (isset($havesem[0]) && isset($havesem[1]) && isset($havesem[2])) {
       break;
     }
+    //don't presume that current semester's backups mean we don't need
+    //to keep this season from a previous semester
+    if ($sem == $sem_start) {
+      continue;
+    }
     $sem_array = explode('-',$sem);
     if (count($sem_array) != 3) {
       continue;
