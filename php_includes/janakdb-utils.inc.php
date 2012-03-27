@@ -26,7 +26,7 @@ function dbl_quote($str) {
 }
 
 function transform_archive($archive) {
-  $archive_pre = 'zz_archive_';
+  global $archive_pre;
   return substr($archive,strlen($archive_pre),-1);
 }
 
@@ -1426,7 +1426,7 @@ function get_election_attrib($attrib,$for_race=true) {
 //potentially suspicious activity.  Most of the fields' meanings
 //depend on the particular action being logged.
 function elections_log($election_name,$subj_name,$attrib,$oldval,$val) {
-  global $db;
+  global $db, $archive;
   if ($attrib == 'start_president_modif') {
     $last_row = $db->GetRow('select `election_name`,`attrib` from ' .
                             '`elections_log` order by `autoid` desc limit 1');
@@ -1455,8 +1455,8 @@ function elections_log($election_name,$subj_name,$attrib,$oldval,$val) {
   if (is_array($val)) {
     $val = serialize($val);
   }
-  $ret = $db->Execute("insert into `elections_log` " .
-                      "(`time_entered`,`election_name`," .
+  $ret = $db->Execute("insert into " . bracket($archive . 'elections_log') .
+                      " (`time_entered`,`election_name`," .
                       "`subj_name`,`attrib`,`oldval`,`val`) " .
                       "values (now(),?,?,?,?,?)",
                       array($election_name,$subj_name,
