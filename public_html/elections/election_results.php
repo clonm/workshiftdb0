@@ -4,6 +4,24 @@ require_once('default.inc.php');
 //member name is used below in loops
 $member_name_real = $member_name;
 if (!array_key_exists('election_name',$_REQUEST)) {
+?>
+<html><head><title>Election Results</title></head><body>
+<?=$body_insert ?>
+<?php
+  if (!array_key_exists('archive',$_REQUEST)) {
+    $backups = get_backup_dbs();
+    array_unshift($backups,'');
+  }
+  else {
+    $backups = array($_REQUEST['archive']);
+  }
+  $first_backup_flag = true;
+  foreach ($backups as $archive) {
+    if ($archive) {
+      if (substr($archive,0,strlen($archive_pre)) !== $archive_pre) {
+        $archive = $archive_pre . $archive . '_';
+      }
+    }
   //get elections that have ended and been finalized, along with
   //elections which allow the viewing of interim results
   $res = $db->Execute('SELECT ' . bracket('election_name') . ' FROM ' .
@@ -15,20 +33,20 @@ if (!array_key_exists('election_name',$_REQUEST)) {
                       'order by `election_name`',
                       array('interim_results'));
   if (is_empty($res)) {
-    exit("No elections currently viewable.<p>\n");
+    continue;
   }
+  print "<form method='GET' action='" . this_url() . "'>" .
+    "<input type=hidden name='archive' value='" . 
+    escape_html($archive) . "'>";
+  if ($archive && $first_backup_flag) {
+        print "<h2>Older elections</h2>";
+        $first_backup_flag = false;
+  }
+  $ii = 0;
   while ($row = $res->FetchRow()) {
-    $elections[] = $row['election_name'];
-  }
-?>
-<html><head><title>Election Results</title></head><body>
-<?=$body_insert?>
-<form method='GET' action='<?=this_url()?>'>
-<?php 
-$ii = 0;
-foreach ($elections as $election) {
+    $election = $row['election_name'];
   //trick here -- if everything is checked, last one will be the one.
-?>
+    ?>
 <label for='<?=$ii?>' ><input type=radio name='election_name'
 id='<?=$ii++?>' value='<?=escape_html($election)?>'
 checked><?=escape_html($election)?></label><br>
@@ -36,7 +54,11 @@ checked><?=escape_html($election)?></label><br>
 }
 ?>
 <input type='submit' value='Choose election'>
-</form></body></html>
+</form>
+<?php
+   }
+?>
+</body></html>
 <?php
 exit;
 }
@@ -128,7 +150,7 @@ table {
 print $body_insert;
 #$db->debug = true;
 $interim_results = $db->GetRow("select `attrib_value` " .
-                               "from `elections_attribs`" .
+                               "from " . bracket($archive . 'elections_attribs') .
                                " where `election_name` = ? " .
                                "and `attrib_name` = ?",
                                array($election_name,'interim_results'));
@@ -191,7 +213,8 @@ sure no one's trying to cheat.</h3>
 #';
 
 //get *all* the votes
-$res = $db->Execute("select * from `votes` where `election_name` = ?",
+$res = $db->Execute("select * from " . bracket($archive . 'votes') .
+                    " where `election_name` = ?",
                     array($election_name));
 $all_votes = array();
 $members = array();
@@ -237,8 +260,8 @@ while ($row = $res->FetchRow()) {
 
 //get races in order
 $nameres = $db->Execute('select `autoid`,`race_name` ' .
-                        'from `elections_attribs` ' .
-                        'where `election_name` = ? and `attrib_name` = ? ' .
+                        'from ' . bracket($archive . 'elections_attribs') .
+                        ' where `election_name` = ? and `attrib_name` = ? ' .
                         'order by 0+`attrib_value`',
                         array($election_name,'race_name'));
 
@@ -249,7 +272,7 @@ while ($namerow = $nameres->FetchRow()) {
   $race_names[$race] = $race_name;
   $race_nums[] = $race;
   $res = $db->Execute('select `attrib_name`,`attrib_value` ' .
-                      'from `elections_attribs`' .
+                      'from ' . bracket($archive . 'elections_attribs') .
                       ' where `election_name` = ? and `race_name` = ?',
                       array($election_name,$race_name));
   $row = array();
