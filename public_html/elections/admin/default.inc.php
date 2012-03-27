@@ -8,5 +8,5 @@
 if (!isset($require_user)) {
   $require_user = 'president';
 }
-require_once('../default.inc.php');
+require_once('../../default.inc.php');
 ?>
