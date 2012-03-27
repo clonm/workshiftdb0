@@ -2,7 +2,6 @@
 // Gives common interface and setup to all scripts involving database.
 // Also has options that may need to be modified for different site setups.
 
-
 //settings that differ system to system
 require_once('Local-Settings.php');
 
