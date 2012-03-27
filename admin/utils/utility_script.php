@@ -1,5 +1,12 @@
 <?php
-print time();
+require_once('default.admin.inc.php');
+$db->Connect($url_array['server'],$url_array['user'],$url_array['pwd'],
+             $db_basename . 'aca');
+$db->SetFetchMode(ADODB_FETCH_NUM);
+$res = $db->Execute("show tables");
+while ($row = $res->FetchRow()) {
+  $db->Execute("drop table " . bracket($row[0]));
+}  
 exit;
 var_dump(preg_match('/[0-9][0-9][0-9][0-9](_[0-9][0-9]){5}/',"2006_08_25_20_30_41") == 1);
 exit;
