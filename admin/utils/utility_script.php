@@ -4,7 +4,7 @@ $db->Connect($url_array['server'],$url_array['user'],$url_array['pwd'],
              $db_basename . 'aca');
 $db->SetFetchMode(ADODB_FETCH_NUM);
 $db->debug = true;
-$res = $db->Execute("show tables");
+$res = $db->Execute("show tables rlike '^[^z]'");
 while ($row = $res->FetchRow()) {
   $db->Execute("optimize table " . bracket($row[0]));
 }  
