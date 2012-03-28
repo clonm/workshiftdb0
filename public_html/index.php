@@ -5,11 +5,11 @@ require_once('default.inc.php');
 ?>
 <html><head><title>Front page</title>
 <style>
-TD.first { vertical-align: top; padding-right: 3em}
+TD.first { vertical-align: top; padding-right: 3em;}
 TH { vertical-align: top; text-align: left; padding-right: 3em}
 </style>
 </head><body>
-<table border=0><tr><td width=650 class="first"><h3>First Things First</h3>
+<table border=0><tr><td style='min-width: 550px; width: auto !important;' class="first"><h3>First Things First</h3>
 Fill out your <a href="preferences.php">preference form</a>.<p>
 <a href="person.php">Your personal page</a><p>
 <hr>
@@ -166,7 +166,7 @@ PHP generated this page in
 <?=escape_html(round(array_sum(split(' ',microtime()))-$php_start_time,2))?>
  seconds.
 </td><td valign=top>
-<center><a href="https://docs.google.com/a/bsc.coop/spreadsheet/viewform?S&formkey=dHhBeDRjYkZzQUs1YTRLdFNsWGhyM0E6MQ#gid=0"><img src="http://bsc.coop/widfar/workshift_site_retrofit_banner.jpg" width=380 height=130 alt="what would YOU do for a retrofit?"></a></center>
+<center><a href="http://www.bsc.coop/"><img src="http://bsc.coop/workshift/GMM-Expansion.jpg" width=380 height=380 alt="general members meeting on expansion"></a></center>
 <br>
 <script src="http://widgets.twimg.com/j/2/widget.js"></script>
 <script>
