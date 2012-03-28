@@ -48,9 +48,6 @@ if (array_key_exists('REQUEST_URI',$_SERVER)) {
     //    exit("Do not access the site through http://..../cvsworkshift/... Use http://cvsworkshift..../ instead.");
   }
   $house_name = $url_name;
-  if ($house_name == 'aca') {
-    exit("just a minute . . . restoring data. Data entered in the past few hours may have been lost. Really sorry :(");
-  }
   //To enable a link like http://workshift.bsc.coop/public_html/preferences.php
   //to work for each house, a cookie can be set. Data should never be posted
   //to these urls -- they are only for initial access.
