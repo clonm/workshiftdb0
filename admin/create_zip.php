@@ -83,11 +83,14 @@ foreach ($houses as $house_name) {
     $db->Connect($url_array['server'],$url_array['user'],$url_array['pwd'],
                  $url_array['db']);
     $db->SetFetchMode(ADODB_FETCH_NUM);
-    $res = $db->Execute("show tables");
+    if (array_key_exists('all',$_REQUEST)) {
+      $res = $db->Execute("show tables");
+    }
+    else {
+      $res = $db->Execute("show tables where " . 
+                          bracket('Tables_in_' . $url_array['db']) . " REGEXP '^[^z]'");
+    }
     while ($row = $res->FetchRow()) {
-      if (substr($row[0],0,2) === 'zz' && !array_key_exists('all',$_REQUEST)) {
-        continue;
-      }
       if (array_key_exists('optimize',$_REQUEST)) {
         $db->Execute("optimize table " . bracket($row[0]));
       }
