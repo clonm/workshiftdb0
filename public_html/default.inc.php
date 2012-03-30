@@ -29,6 +29,6 @@ if (!$success) {
 }
 $php_includes = implode('/',$comps) . '/php_includes';
 if (!isset($delay_include)) {
-  include_once("$php_includes/janakdb.inc.php");
+  require_once("$php_includes/janakdb.inc.php");
 }
 ?>
