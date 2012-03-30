@@ -727,7 +727,8 @@ function get_houselist() {
 function get_backup_dbs() {
   global $db;
   $oldfetch = $db->SetFetchMode(ADODB_FETCH_ASSOC);
-  $res = $db->Execute("SELECT `archive` from `GLOBAL_archive_data`");
+  $res = $db->Execute("SELECT `archive` from `GLOBAL_archive_data`" .
+                      "order by `creation` desc");
   $dbnames = array();
   while ($row = $res->FetchRow()) {
     $dbnames[] = $row['archive'];
@@ -1109,8 +1110,10 @@ function janak_errhandler($errno,$errstr,$errfile,
       ob_start();
       while (count($arr) > 1) {
         $outer = $arr[count($arr)-1];
-        print("\nCalled in " . basename($outer['file']) . 
-          ' on line ' . $outer['line']);
+        if (isset($outer['file'])) {
+          print("\nCalled in " . basename($outer['file']) . 
+                ' on line ' . $outer['line']);
+        }
         array_pop($arr);
       }
       $str = ob_get_clean();
@@ -1152,6 +1155,45 @@ function janak_errhandler($errno,$errstr,$errfile,
       exit;
     }
   } 
+
+//As above, I want completely error-free operation.  Unfortunately,
+//adodb sometimes suppresses errors.  So I have my own error handler,
+//to make sure that all errors are fatal, unless the
+//janak_fatal_error_reporting level is lowered.  I can't just use the
+//error_reporting level to determine which errors are displayed
+//because adodb changes the level.  adodb is really more trouble than
+//it's worth.
+set_error_handler('janak_errhandler');
+//report all errors
+janak_error_reporting(E_ALL);
+
+
+//die on all errors
+janak_fatal_error_reporting(E_ALL);
+
+register_shutdown_function('handleShutdown');
+
+function handleShutdown() {
+  $error = error_get_last();
+  if($error['type'] === E_ERROR){
+    janak_errhandler($error['type'],$error['message'],$error['file'],
+                     $error['line'],null);
+  }
+}
+
+function janak_mysqlerr($errno,$errstr,$errfile,
+                          $errline,$errcontext) {
+  if (substr($errstr,-strlen("Too many connections")) == "Too many connections") {
+    exit("Sorry, the BSC shares its server with other accounts, and they're "
+         . "hogging the server.  Try connecting again in a minute.");
+  }
+//   if (substr($errstr,0,strlen("mysql_connect()")) == "mysql_connect()") {
+//     exit("Sorry, there was an error connecting to the workshift database.  Try"
+//          . " again in a minute and everything should be ok.  Otherwise, "
+//          . "email " . admin_email() . ".");
+//   }
+  janak_errhandler($errno,$errstr,$errfile,$errline,$errcontext);
+}
 
 //Functions so we know whether tables are up-to-date
 
@@ -1622,6 +1664,8 @@ function set_session($member_name,$officer = false,$delete_session = false) {
   if (!$delete_session) {
     setcookie(($officer?'officer_':'') . 'session_id',
               $session_id,null,"/");
+    //set session variable even for queries in this run
+    $_REQUEST[($officer?'officer_':'') . 'session_id'] = $session_id;
     //set cookie for username to be stored and pre-selected
     if (!$officer) {
       setcookie('member_name',$member_name,time()+60*60*24*365*10,"/");

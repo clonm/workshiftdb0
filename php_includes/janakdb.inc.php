@@ -1,10 +1,12 @@
 <?php
 // Gives common interface and setup to all scripts involving database.
 // Also has options that may need to be modified for different site setups.
-
 //settings that differ system to system
 require_once('Local-Settings.php');
 
+ini_set('display_errors',1);
+ini_set('zlib.output_compression',1);
+ini_set('zlib.output_compression_level', 6);
 ////////////  OPTIONS THAT MAY NEED TO BE CHANGED ON SITE CHANGES ///////////////
 
 //php_utils is a directory containing source files with functions that
@@ -32,7 +34,7 @@ $USE_MYSQL_50 = false;
 
 //////////////  CODE YOU SHOULD TRY NOT TO CHANGE /////////////////
 
-//for testing, we might run this on the command line, which is the else clause.
+//for testing/scripts, we might run this on the command line, which is the else clause.
 if (array_key_exists('REQUEST_URI',$_SERVER)) {
   $url_components = explode('/',$_SERVER['REQUEST_URI']);
   //house_name is the name of the house being accessed.
@@ -41,7 +43,7 @@ if (array_key_exists('REQUEST_URI',$_SERVER)) {
     $url_name = $url_components[++$house_name_component];
   }
   if ($url_name == 'cvsworkshift') {
-    ++$house_name_component;
+    $url_name = $url_components[++$house_name_component];
   }
   if ($url_name == 'workshiftdb0') {
     $url_name = $url_components[++$house_name_component];
@@ -85,7 +87,7 @@ else {
   ini_set('zlib.output_compression',true);
   ini_set('zlib.output_compression_level',6);
   //get house name from command line
-  $house_name = $url_name = $argv[$house_name_component];
+  $house_name = $url_name = $argv[1];
   $baseurl = '';
   //don't worry about passwords on the command line
   $secured = false;
@@ -124,18 +126,7 @@ require_once("$php_includes/adodb/tohtml.inc.php");
 //lots and lots of utility functions
 require_once('janakdb-utils.inc.php');
 
-//As above, I want completely error-free operation.  Unfortunately,
-//adodb sometimes suppresses errors.  So I have my own error handler,
-//to make sure that all errors are fatal, unless the
-//janak_fatal_error_reporting level is lowered.  I can't just use the
-//error_reporting level to determine which errors are displayed
-//because adodb changes the level.  adodb is really more trouble than
-//it's worth.
-set_error_handler('janak_errhandler');
-//report all errors
-janak_error_reporting(E_ALL);
-//die on all errors
-janak_fatal_error_reporting(E_ALL);
+
 
 //fuck magic_quotes_gpc.  Oh my god.  Fuck magic_quotes_gpc.
 //php quotes user input to php scripts, even though it's worse than useless.
@@ -261,17 +252,4 @@ if ($house_name !== 'admin') {
   }
 }
 
-function janak_mysqlerr($errno,$errstr,$errfile,
-                          $errline,$errcontext) {
-  if (substr($errstr,-strlen("Too many connections")) == "Too many connections") {
-    exit("Sorry, the BSC shares its server with other accounts, and they're "
-         . "hogging the server.  Try connecting again in a minute.");
-  }
-//   if (substr($errstr,0,strlen("mysql_connect()")) == "mysql_connect()") {
-//     exit("Sorry, there was an error connecting to the workshift database.  Try"
-//          . " again in a minute and everything should be ok.  Otherwise, "
-//          . "email " . admin_email() . ".");
-//   }
-  janak_errhandler($errno,$errstr,$errfile,$errline,$errcontext);
-}
 ?>
