@@ -162,6 +162,9 @@ while ($row = $res->FetchRow()) {
   } 
   else {
     print "<h3>Log in to see member up/down hours</h3>";
+    if (isset($_REQUEST['passwd'])) {
+        print "You entered an incorrect password. Please try again.<br/>\n";
+      }
 require_once($php_includes . "/member_check.php");  }?>
 <p id="phptime" style='font-size: 10px'>
 PHP generated this page in 
