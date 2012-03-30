@@ -1,6 +1,6 @@
 <?php
 $php_start_time = array_sum(split(' ',microtime()));
-$require_user = false;
+$require_user = 'ok_nouser';
 require_once('default.inc.php');
 ?>
 <html><head><title>Front page</title>
@@ -33,6 +33,7 @@ if (get_static('online_signoff',null)) {
 </td></tr></tbody></table>
 <hr>
 <?php
+  if (get_session_member()) {
 $week_num = get_cur_week();
 if ($week_num < 0) {
   exit("System not yet set up</body></html>");
@@ -130,10 +131,6 @@ while ($row = $res->FetchRow()) {
       }
     }
   }
-#if ($url_name == 'kng') {
-#  print "<pre>";
-#  print_r($GLOBALS);
-#}
   for ($jj = 0; $jj < $week_num; $jj++) {
     $total += $row[$jj];
     if ($max_up_hours[$jj] && $total > $max_up_hours[$jj]) {
@@ -161,12 +158,17 @@ while ($row = $res->FetchRow()) {
 }
 ?>
 </tr></table>
+<?php 
+  } 
+  else {
+    print "<h3>Log in to see member up/down hours</h3>";
+require_once($php_includes . "/member_check.php");  }?>
 <p id="phptime" style='font-size: 10px'>
 PHP generated this page in 
 <?=escape_html(round(array_sum(split(' ',microtime()))-$php_start_time,2))?>
  seconds.
 </td><td valign=top>
-<center><a href="http://www.bsc.coop/"><img src="http://bsc.coop/workshift/GMM-Expansion.jpg" width=380 height=380 alt="general members meeting on expansion"></a></center>
+<center><a href="http://www.bsc.coop/"><img src="http://www.bsc.coop/docs/GMM-Expansion.jpg" width=380 height=380 alt="general members meeting on expansion"></a></center>
 <br>
 <script src="http://widgets.twimg.com/j/2/widget.js"></script>
 <script>
