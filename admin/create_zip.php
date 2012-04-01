@@ -220,6 +220,6 @@ $body = $mime->get();
 $hdrs = $mime->headers($hdrs);
 
 $mail =& Mail::factory('mail');
-$mail->send('workshiftadmin@gmail.com', $hdrs, $body);
+$mail->send('workshiftbackup1@gmail.com', $hdrs, $body);
 }
 ?>
