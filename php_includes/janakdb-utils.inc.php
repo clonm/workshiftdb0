@@ -1787,8 +1787,10 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
           require_once("$php_includes/common/set_passwd.php");
           exit;
         }
-        //unsuccessful authentication.  Put up the auth page again.
-        print "<h3>You entered an incorrect password. Please try again.</h3>\n";
+        if ($passwd !== null) {
+          //unsuccessful authentication.  Put up the auth page again.
+          print "<h3>You entered an incorrect password. Please try again.</h3>\n";
+        }
         require_once($php_includes . "/common/member_check.php");
         exit;
       }
