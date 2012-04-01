@@ -1,3 +1,5 @@
+<IfModule mod_php5.c>
+php_value error_reporting -1
 php_flag zlib.output_compression on
 php_value zlib.output_compression_level 6
 php_flag magic_quotes_gpc off
@@ -6,8 +8,9 @@ php_flag display_errors on
 #this is incredibly important.  Without it, the user could inject whatever
 #variables they want into the script, and if some variable wasn't set
 #somewhere, it could be set by the user, and potentially lead to a security
-#hole.  No decent php setup should have this on, but apparently ours does.
+#hole.  No decent php setup should have this on, but one of ours used to.
 php_flag register_globals off
+</IfModule>
 
 RewriteEngine on
 RewriteRule ^/workshift/(.*) http://workshift.bsc.coop/$1 [L,R]
