@@ -1,4 +1,8 @@
 <?php
+print error_reporting() . " ";
+error_reporting(E_NOTICE);
+print error_reporting();
+exit;
 require_once('default.admin.inc.php');
 $db->Connect($url_array['server'],$url_array['user'],$url_array['pwd'],
              $db_basename . 'aca');

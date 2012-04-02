@@ -4,7 +4,6 @@
 //tables.  It should return nothing when called by javascript -- any text
 //returned indicates an error.  It can also be posted to directly, in which
 //case it should output and tell the user what it's doing
-
 require_once('adodb/adodb.inc.php');
 require_once('adodb/drivers/adodb-mysqlt.inc.php');
 
