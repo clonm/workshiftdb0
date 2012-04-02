@@ -349,11 +349,13 @@ pre {
 <?php
 print $body_insert;
 $description = get_election_attrib('descript',null);
-//if not html, escape it and pre-space it
+//maybe escape it
 if (!get_election_attrib('descript_html',null)) {
-  $description = "<div style='" . white_space_css() . "'>" . 
-    escape_html($description) . "</div>";
+  $description = escape_html($description);
 }
+//pre-space it
+$description = "<div style='" . white_space_css() . "'>" .
+  $description . "</div>";
 if ($descript_file) {
   print "<p><a href='descript_file.php?election_name=" .
     escape_html(rawurlencode($election_name)) . "'>File with more info on election " .
