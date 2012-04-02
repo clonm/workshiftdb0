@@ -4,6 +4,12 @@
 //tables.  It should return nothing when called by javascript -- any text
 //returned indicates an error.  It can also be posted to directly, in which
 //case it should output and tell the user what it's doing
+
+//hack to prevent adodb from spitting out E_STRICT errors that display to user
+function fake_errhandler($errno,$errstr,$errfile,
+                         $errline,$errcontext) {}
+$old_handler = set_error_handler('fake_errhandler',E_STRICT);
+
 require_once('adodb/adodb.inc.php');
 require_once('adodb/drivers/adodb-mysqlt.inc.php');
 
