@@ -31,10 +31,27 @@ else {
 if ($page_status == 'initial') {
 //';
   $elections = array();
-  $res = $db->Execute("SELECT `election_name` FROM `elections_record` "
-                      . "order by `election_name` desc");
-  while ($row = $res->FetchRow()) {
-    $elections[] = $row['election_name'];
+
+  $backups = get_backup_dbs();
+  array_unshift($backups,'');
+  foreach ($backups as $arch) {
+    if ($arch) {
+      if (substr($archive,0,strlen($archive_pre)) !== $archive_pre) {
+        $arch = $archive_pre . $arch . '_';
+      }
+    }
+    $res = $db->Execute('SELECT ' . bracket('election_name') . ' FROM ' .
+                        bracket($arch . 'elections_record') . 
+                        ' order by `election_name`');
+    if (is_empty($res)) {
+      continue;
+    }
+    $ii = 0;
+    while ($row = $res->FetchRow()) {
+      if (!isset($elections[$row['election_name']])) {
+          $elections[$row['election_name']] = $arch;
+      }
+    }
   }
   if (!count($elections)) {
     $page_status = 'user entry';
@@ -54,11 +71,12 @@ if ($page_status == 'initial') {
    <?php 
 
    $ii = 1;
-   foreach ($elections as $election) {
+   foreach ($elections as $election => $arch) {
      $election = escape_html($election);
      ?>
-     <input type=radio name='clone_election_name' value='<?=$election?>'
-        id='<?=$ii?>'><label for='<?=$ii++?>'><?=$election?></label><br/>
+     <input type=radio name='clone_election_name' value='<?=$election . 
+    escape_html('|' . $arch) ?>' id='<?=$ii?>'>
+<label for='<?=$ii++?>'><?=$election?></label><br/>
      <?php 
    }
   ?>
@@ -112,8 +130,17 @@ action="<?=this_url()?>" onsubmit='return validate_election_form()'>
  //are we modifying, as opposed to creating a new one?
  if ($page_status == 'modify' || array_key_exists('clone_election_name',$_REQUEST) && strlen($_REQUEST['clone_election_name'])) {
    $data_election_name = $_REQUEST[$page_status == 'modify'?'election_name':'clone_election_name'];
+   if ($page_status != 'modify') {
+     $data_election_name = explode('|',$data_election_name);
+     $arch = $data_election_name[1];
+     $data_election_name = $data_election_name[0];
+   }
+   else {
+     $arch = '';
+   }
    $elect_row = $db->GetRow("select `election_name`,`anon_voting`, `end_date` " .
-                            "from `elections_record` where `election_name` = ? ",
+                            "from " . bracket($arch . 'elections_record') . 
+                            " where `election_name` = ? ",
                             array($data_election_name));
    if (is_empty($elect_row)) {
      exit("The election you're trying to modify, " . 
@@ -149,7 +176,8 @@ action="<?=this_url()?>" onsubmit='return validate_election_form()'>
    //get all attributese of election.  Note that races are always
    //ordered by autoid in create_election.php, even though they
    //are ordered by the attrib_value of race_name in other pages.
-   $res = $db->Execute("select * from `elections_attribs` where " .
+   $res = $db->Execute("select * from " . bracket($arch . 'elections_attribs') .
+                       " where " .
                        "`election_name` = ? order by `autoid`",
                        array($elect_row['election_name']));
    //attribs are retrieved by race name, but we're going to need them
@@ -198,7 +226,7 @@ action="<?=this_url()?>" onsubmit='return validate_election_form()'>
  if ($page_status != 'modify') {
    if ($elect_row) {
      print "<p>Your new election has been based on " .
-       escape_html($_REQUEST['clone_election_name']) . ".  Please enter the " .
+       escape_html($data_election_name) . ".  Please enter the " .
        "election name, and make sure all other values are right.  You will " .
        "probably want to change the <b>ending date</b>, and if any of the races have " .
        "visible <b>voter comments</b>, you probably want to delete those.</p>";
@@ -288,7 +316,7 @@ Check here to treat it
 <?php #';?>
 as HTML (otherwise it will be treated as plain text):
 <input type=checkbox name='descript_html'
-<?=$elect_row && $elect_row['descript_html']?' checked':''?>>
+<?=!$elect_row || $elect_row['descript_html']?' checked':''?>>
 <textarea name='descript' rows=8 cols=60 wrap=soft>
 <?=$elect_row?escape_html($elect_row['descript']):''?>
 </textarea>

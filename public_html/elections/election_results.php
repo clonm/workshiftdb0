@@ -16,6 +16,7 @@ if (!array_key_exists('election_name',$_REQUEST)) {
     $backups = array($_REQUEST['archive']);
   }
   $first_backup_flag = true;
+  $all_elections = array();
   foreach ($backups as $archive) {
     if ($archive) {
       if (substr($archive,0,strlen($archive_pre)) !== $archive_pre) {
@@ -27,24 +28,32 @@ if (!array_key_exists('election_name',$_REQUEST)) {
   $res = $db->Execute('SELECT ' . bracket('election_name') . ' FROM ' .
                       bracket($archive . 'elections_record') . 
                       ' WHERE unix_timestamp() >= `end_date` and ' .
-                      '`anon_voting` > 1 union ' .
-                      'select `election_name` from `elections_attribs` ' .
-                      'where `attrib_name` = ? and `attrib_value` != 0 ' .
-                      'order by `election_name`',
-                      array('interim_results'));
+                      '`anon_voting` > 1' . 
+                      ($archive?'':' union ' .
+                       'select `election_name` from `elections_attribs` ' .
+                       'where `attrib_name` = "interim_results" and `attrib_value` != 0') .
+                      ' order by `election_name`');
   if (is_empty($res)) {
     continue;
   }
-  print "<form method='GET' action='" . this_url() . "'>" .
-    "<input type=hidden name='archive' value='" . 
-    escape_html($archive) . "'>";
-  if ($archive && $first_backup_flag) {
-        print "<h2>Older elections</h2>";
-        $first_backup_flag = false;
-  }
+  $first_print_flag = true;
   $ii = 0;
   while ($row = $res->FetchRow()) {
     $election = $row['election_name'];
+    if (isset($all_elections[$election])) {
+      continue;
+    }
+    $all_elections[$election] = true;
+    if ($first_print_flag) {
+      print "<form method='GET' action='" . this_url() . "'>" .
+        "<input type=hidden name='archive' value='" . 
+        escape_html($archive) . "'>";
+      if ($archive && $first_backup_flag) {
+        print "<h2>Older elections</h2>";
+        $first_backup_flag = false;
+      }
+      $first_print_flag = false;
+    }
   //trick here -- if everything is checked, last one will be the one.
     ?>
 <label for='<?=$ii?>' ><input type=radio name='election_name'
@@ -52,10 +61,12 @@ id='<?=$ii++?>' value='<?=escape_html($election)?>'
 checked><?=escape_html($election)?></label><br>
 <?php 
 }
+  if (!$first_print_flag) {
 ?>
 <input type='submit' value='Choose election'>
 </form>
 <?php
+      }
    }
 ?>
 </body></html>
