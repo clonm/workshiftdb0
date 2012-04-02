@@ -1156,6 +1156,14 @@ function janak_errhandler($errno,$errstr,$errfile,
     }
   } 
 
+
+//We want to die on anything.  It's possible we don't actually want to die on
+//anything, but my fear is that if we don't, some "notice" about an uninitialized
+//variable will be ignored, maybe because it shows up in javascript, and then
+//either break the javascript or cause a massive data loss error.  Better for the
+//page not to load.
+error_reporting(E_ALL  & ~E_STRICT);
+
 //As above, I want completely error-free operation.  Unfortunately,
 //adodb sometimes suppresses errors.  So I have my own error handler,
 //to make sure that all errors are fatal, unless the
@@ -1164,12 +1172,12 @@ function janak_errhandler($errno,$errstr,$errfile,
 //because adodb changes the level.  adodb is really more trouble than
 //it's worth.
 set_error_handler('janak_errhandler');
-//report all errors
-janak_error_reporting(E_ALL);
+//report all errors that aren't about best practices
+janak_error_reporting(E_ALL  & ~E_STRICT);
 
 
 //die on all errors
-janak_fatal_error_reporting(E_ALL);
+janak_fatal_error_reporting(E_ALL  & ~E_STRICT);
 
 register_shutdown_function('handleShutdown');
 
