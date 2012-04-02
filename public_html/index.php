@@ -33,7 +33,7 @@ if (get_static('online_signoff',null)) {
 </td></tr></tbody></table>
 <hr>
 <?php
-  if (get_session_member()) {
+  if (get_session_member() || check_admin_priv()) {
 $week_num = get_cur_week();
 if ($week_num < 0) {
   exit("System not yet set up</body></html>");
