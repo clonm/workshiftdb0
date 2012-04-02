@@ -43,6 +43,11 @@ else if ($backup_ext{0} == '"' && $backup_ext{count($backup_ext)-1} == '"') {
   //stupid managers might put quotes around
   $backup_ext = substr($backup_ext,1,count($backup_ext)-2);
 }
+//check for funky characters
+if (preg_match('/\/|\\|:|\*|\?|"|<|>|`|\|/',$backup_ext)) {
+  exit("Your backup name has illegal characters. You can't use any of the " .
+       "characters `\\/:*?\"<>|. Please go back and try again!");
+}
 $temp = $backup_ext;
 //recover flag can only be set when this script is include()d
 if (!isset($recover) || !$recover) {
@@ -57,12 +62,12 @@ $ctr = 1;
 //note that archive_pre (zz_archive_) starts every backup name
 if (!$recover) {
   while (table_exists($archive_pre . "{$temp}_house_list")) {
-    $temp = $backup_ext . "_$ctr";
+    $temp = $backup_ext . "-$ctr";
     $ctr++;
   }
 }
-
 $backup_ext = $temp;
+
 //mysql has a table length limit of 64, so be conservative about the length
 //of table names we might have to deal with
 if (strlen($backup_ext) > 30) {
@@ -74,20 +79,6 @@ if (strlen($backup_ext) > 30) {
                 "new name.");
   }
 }
-//I can't handle tables with backticks -- it's just too confusing
-if (strpos($backup_ext,'`') !== false) {
-  janak_error("You can't use ` in your backup name.  Try a different name.");
-}
-//this is silly -- we shouldn't error on this -- informational messages
-//should be prettier.  Oh well.
-janak_fatal_error_reporting(E_ALL & ~E_NOTICE);
-//check for funky characters
-if (preg_match('/\/|\\|:|\*|\?|"|<|>|\|/',$backup_ext)) {
-  janak_error("Your backup name has funky characters. " 
-    . "Your backup might fail.  Try a different name if it does.",
-                E_USER_NOTICE);
-}
-janak_fatal_error_reporting(E_ALL);
 echo "backup name " . escape_html($backup_ext) . "<p>";
 
   $oldfetch = $db->SetFetchMode(ADODB_FETCH_NUM);
