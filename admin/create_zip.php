@@ -1,15 +1,13 @@
 <?php
+$backup_email = 'workshiftbackups1@gmail.com';
+$max_email_size = 3000000;
+
 $php_start_time = array_sum(split(' ',microtime()));
 require_once('default.admin.inc.php');
-$max_email_size = 3000000;
 ini_set('zlib.output_compression',false);
 if (!array_key_exists('REQUEST_URI',$_SERVER)) {
   $_REQUEST = array_flip($argv);
-  $_REQUEST['houses'] = getopt('h::');
-  if (!isset($_REQUEST['houses']) || !is_array($_REQUEST['houses']) ||
-  !count($_REQUEST['houses'])) {
-    $_REQUEST['houses'] = $houses;
-  }
+  $_REQUEST['houses'] = $houses;
   $command_line = true;
 }
 else {
@@ -147,38 +145,29 @@ foreach ($houses as $house_name) {
 }
 #}
 // We'll be outputting a ZIP file
-if (!$command_line) {
+if (!$command_line && !array_key_exists('mail',$_REQUEST)) {
   header('Content-Type: application/zip');
   header('Content-disposition: attachment; filename="' . 
          date('Y-m-d-H-i-s') . '-' . 
-         join('-',$done_houses) . '-workshift-backup.zip"');
-}
-if (!array_key_exists('mail',$_REQUEST)) {
+         join('-',$done_houses) . '-weekly-backup.zip"');
   passthru("zip -j - " . addslashes($backup_dir) . "/*");
 }
 else {
   $datestring = date('Y-m-d-H-i-s');
-  $filename = addslashes($backup_dir) . "/" . $datestring . 
-    '-workshift-backup.zip';
-  system("zip -j $filename " . addslashes($backup_dir) . "/* 2>&1");
-  //negative maybe because wraparound of integers
-  if (filesize($filename) > $max_email_size || filesize($filename) < 0) {
-    chdir($backup_dir);
-    system("cd " . addslashes($backup_dir) . 
-      " && split --bytes=$max_email_size $filename $datestring-part-");
-    $ii = 1;
-    foreach (glob("$datestring-part-*") as $filetozip) {
-      mail_backup($filetozip,$datestring,$ii);
-#      system("mutt -s 'Backup for " . $datestring . " part $ii' -a " .  
-      #      $filetozip .
-            # " workshiftadmin@gmail.com < /dev/null 2>&1");
-      $ii++;
+  $zip_houses = array();
+  $this_size = 0;
+  foreach ($houses as $house_name) {
+    $this_size += filesize(addslashes($backup_dir) . "/" . $house_name);
+    $zip_houses[] = $house_name;
+    //zip compression is around 1/6
+    if ($this_size > 6*$max_email_size) {
+      process_houses($zip_houses,$datestring,$backup_dir);
+      $this_size = 0;
+      $zip_houses = array();
     }
   }
-  else {
-  mail_backup($filename,$datestring);
-  #  system("mutt -s 'Backup for " . $datestring . "' -a " .  $filename .
-  #" workshiftadmin@gmail.com < /dev/null 2>&1");
+  if (count($zip_houses)) {
+    process_houses($zip_houses,$datestring,$backup_dir);
   }
 }
 #*/;
@@ -191,27 +180,39 @@ if ($dh = opendir($backup_dir)) {
   }
 }
 
+function process_houses($zip_houses,$datestring,$backup_dir) {
+  global $php_includes,$php_utils,$backup_email;
+  $backup_sdir = addslashes($backup_dir . "/");
+  $filename = $backup_sdir . $datestring . 
+    '-weekly-backup.zip';
+  system("zip -j $filename " . $backup_sdir . 
+         implode(' ' . $backup_sdir . "/",$zip_houses) .
+         " 2>&1");
+  mail_backup($filename,' ' . implode(' ',$zip_houses) . ' ' . $datestring);
+  unlink($filename);
+  foreach ($zip_houses as $delete_file) {
+    unlink($backup_dir . '/' . $delete_file);
+  }
+}
+
 function db_quote($str) {
   global $db;
   return $db->quote($str);
 }
 
-function mail_backup($filename, $datestring, $ii = 0) {
-  global $houses,$house_name;
+function mail_backup($filename, $subjline) {
+  global $backup_email,$php_includes,$php_utils;
   static $init = false;
   static $crlf = "\n";
   if (!$init) {
-    set_include_path(get_include_path() . PATH_SEPARATOR . "/home/bsccoo5/php");
+    set_include_path(get_include_path() . PATH_SEPARATOR . $php_includes . '/' . $php_utils);
     require_once('Mail.php');
     require_once('Mail/mime.php');
     $init = true;
   }
   $hdrs = array(
-              'From'    => 'bsccoo5 <webmaster@bsc.coop>',
-              'Subject' => "Backup for " .
-              (count($houses) == 1? "$house_name " : '') .
-              $datestring . ($ii?", part $ii":'')
-              );
+              'From'    => 'Workshift backup system <webmaster@bsc.coop>',
+              'Subject' => "Backup for " . $subjline);
 $mime = new Mail_mime($crlf);
 $mime->addAttachment($filename, 'application/octet-stream');
 
@@ -220,6 +221,6 @@ $body = $mime->get();
 $hdrs = $mime->headers($hdrs);
 
 $mail =& Mail::factory('mail');
-$mail->send('workshiftbackup1@gmail.com', $hdrs, $body);
+$mail->send($backup_email, $hdrs, $body);
 }
 ?>
