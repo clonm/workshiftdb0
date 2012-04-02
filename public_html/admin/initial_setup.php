@@ -26,7 +26,12 @@ function monthtosem($month) {
   case 8: case 9: return 'fall';
   default: return 'unknown';
   }
-  }
+}
+
+function datetosem($date) {
+  $date_array = split('-',$date);
+  return monthtosem($date_array[count($date_array)-2]);
+}
 
 function order_archives($a,$b) {
   $am = $a['mod_date'];
@@ -68,10 +73,7 @@ if ($page_status != 'submit') {
                               "`num_assigned` as `master`, `owed_default` " .
                               " from `GLOBAL_archive_data` order by `mod_date`");
   while ($archive_row = $archive_res->FetchRow()) {
-    $semester_start = split('-',$archive_row['semester']);
-    $semester_time = mktime(0,0,0,$semester_start[1],$semester_start[2],
-                            $semester_start[0]);
-    $archive_sem = monthtosem($semester_start[1]);
+    $archive_sem = datetosem($archive_row['semester']);
     $archive_data = array('name' => $archive_row['archive'], 
                           'owed' => $archive_row['owed_default'],
                           'shifts' => $archive_row['master'], 
@@ -82,10 +84,10 @@ if ($page_status != 'submit') {
     }
     else {
       //do we not have something for this semester already?
-      if (!isset($options_array[$archive_sem][$semester_time])) {
-        $options_array[$archive_sem][$semester_time] = array();
+      if (!isset($options_array[$archive_sem][$archive_row['semester']])) {
+        $options_array[$archive_sem][$archive_row['semester']] = array();
       }
-      $options_array[$archive_sem][$semester_time][] = $archive_data;
+      $options_array[$archive_sem][$archive_row['semester']][] = $archive_data;
     }
   }
   foreach ($options_array as $key => $junk) {
@@ -130,12 +132,12 @@ function uncouplecheckbox(newval) {
   print '"' . date('Y ',$last_time) . $last_sem . '"';
   ?> (without quotes).</p>
   <hr>
-Start of semester (first Monday of week 0 -- enter August 29, 2005 as
-2005-08-29): 
-<input name='semester_start' value='<?= get_static('semester_start')?>'><br/>
+Start of semester (first Monday of week 0 -- enter August 29 as
+08-29): 
+<input name='semester_start' value='<?=date('m-d',strtotime(get_static('semester_start')))?>'><br/>
 (Even if week 0 started on a Thursday, enter the date of the Monday that the
-week started.  So in Fall 2006, the contract starts Thursday 2006-08-24, but
-you should enter 2006-08-21, since that is the date of the Monday.)<br/>
+week started.  So in Fall 2006, the contract starts Thursday 08-24, but
+you should enter 08-21, since that is the date of the Monday.)<br/>
 <hr/>
 <?php
   switch ($current_sem) {
@@ -195,8 +197,9 @@ default:
   }
 foreach ($sem_order as $sem) {
   print "<optgroup label='" . ucfirst($sem) . "'>\n";
-  foreach ($options_array[$sem] as $start_time => $sem_archives) {
-    print "<optgroup label='" . date('F j, Y',$start_time) . "'>\n";
+  foreach ($options_array[$sem] as $start_date => $sem_archives) {
+    //format like January 8, 2011
+    print "<optgroup label='" . date('F j, Y',strtotime($start_date)) . "'>\n";
     foreach ($sem_archives as $archive_data) {
       print "<option value='" . escape_html($archive_data['name']) . "'>";
       print escape_html($archive_data['name']) . ", default owed: " .
@@ -238,6 +241,24 @@ will still be in the backup, but not in the current database.
 exit;
 }
 
+$sem_start = $_REQUEST['semester_start'];
+if (!preg_match('/\d\d?-\d\d?/',$sem_start)) {
+  exit("Your semester start date is not in the proper format.  " .
+       "Enter the two-digit month, then a dash, then the two-digit date, like " .
+       "08-26 for August 26.");
+}
+
+if (date('w',strtotime(date('Y') . '-' . $sem_start))!=1) {
+  exit("Your semester start date is not a Monday!  " .
+       "Please go back and change it!");
+}
+if (($sem_string = datetosem($sem_start)) != $current_sem) {
+  print("Your semester start date says that you are in the $sem_string season, " .
+       "but you should be in the $current_sem season. Please email " . admin_email());
+}
+
+$sem_start = date('Y-') . $sem_start;
+
 print "<h4>This may take some time -- be patient and wait until the end.</h4>";
 require_once('backup_database.php');
 print "<hr>";
@@ -249,49 +270,78 @@ if (isset($_REQUEST['settings_archive']) && strlen($_REQUEST['settings_archive']
   $settings_tables = array('static_data','fining_data','master_shifts');
   $db->Execute("drop table if exists `zz" . join('`, `zz',$settings_tables) .
                "`,`$tmppre" . join("`, `$tmppre",$settings_tables));
+
   function delete_temp_tables_then_die($errno,$errstr,$errfile,$errline,$errcontext) {
     global $db, $tmppre, $settings_tables, $user_errmsg, $admin_email, $house_name,
       $bug_report_url, $old_errhandler;
     $db->Execute("drop table if exists `$tmppre" . join("`, `$tmppre",$settings_tables));
     $old_errhandler($errno,$errstr,$errfile,$errline,$errcontext);
   }
+
   $old_errhandler = set_error_handler('delete_temp_tables_then_die');
   foreach ($settings_tables as $table) {
     $db->Execute("create table `$tmppre$table` like `$table`");
     $db->Execute("insert into `$tmppre$table` select * from " .
                  bracket($arch . "_$table"));
   }
+
   function rename_tempmap($arg) {
     global $tmppre;
     return bracket($tmppre . $arg) . " to " . bracket("$arg");
   }
+
   function rename_origmap($arg) {
     global $tmppre;
     return bracket($arg) . " to " . bracket("zz$arg");
   }
+
   $db->Execute("rename table " .
                join(",", array_map('rename_origmap',$settings_tables)) . "," .
                join(",",array_map('rename_tempmap',$settings_tables)));
+
   //Janak 8/20/11: current week shouldn't carry over from previous semester.
   //this is probably true for other things as well.
   set_static('cur_week',null);
   $db->debug = false;
   set_error_handler($old_errhandler);
 }
-               
 
-//semester *must* start on a Monday
-$sem_start = $_REQUEST['semester_start'];
-if (!preg_match('/\d\d\d\d-\d\d?-\d\d?/',$sem_start)) {
-  exit("Your semester start date is not in the proper format.  " .
-       "Enter the four-digit year, then a dash, then the two-digit " .
-       "month, then a dash, then the two-digit date, then a dash, like " .
-       "2009-08-26 for August 26, 2009.");
+//are we changing semesters?
+if (datetosem(get_static('semester_start')) != $current_sem) {
+  //delete closed elections not from this semester
+  $tables_array = array('votes','voting_record','elections_record','elections_log','elections_text',
+                        'elections_attribs');
+  $sem_prefix = substr($sem_start,0,4) . ($current_sem == 'fall'?'_':'-') . $current_sem;
+  if (table_exists('elections_record')) {
+    //find closed elections that weren't started this semester
+    $res = $db->Execute('SELECT `election_name` FROM ' .
+                        bracket('elections_record') . 
+                        ' where `anon_voting`>=2 AND ' .
+                        'NOT LEFT(`election_name`,' . strlen($sem_prefix) .
+                        ') = ? order by `election_name` desc',array($sem_prefix));
+    if (!$res->EOF) {
+      print "Deleting ";
+      while ($row = $res->FetchRow()) {
+        print $row['election_name'] . ", ";
+        //don't want election half-deleted
+        $db->StartTrans();
+        $db->Execute("lock tables " . bracket('modified_dates') .
+                     " write, `" . 
+                     join("` write, `",$tables_array) . "` write");
+        foreach ($tables_array as $table) {
+          $db->Execute("delete from " .  
+                       bracket($table) . " where `election_name` = ?", 
+                       array($row['election_name'] )); 
+        }
+        elections_log($row['election_name'],null,'election_deleted',null,"(scheduled)");
+        $db->CompleteTrans();
+        $db->Execute("unlock tables");
+      }
+      print "<br/>";
+    }
+  }
 }
-if (date('w',strtotime($sem_start))!=1) {
-  exit("Your semester start date is not a Monday!  " .
-       "Please go back and change it!");
-}
+
 set_static('semester_start',$sem_start);
 
 //set up the owed table.  It will be modified as needed if the default number
