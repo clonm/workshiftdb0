@@ -185,7 +185,7 @@ function process_houses($zip_houses,$datestring,$backup_dir) {
   $backup_sdir = addslashes($backup_dir . "/");
   $filename = $backup_sdir . $datestring . 
     '-weekly-backup.zip';
-  system("zip -j $filename " . $backup_sdir . 
+  system("$zipexec -j $filename " . $backup_sdir . 
          implode(' ' . $backup_sdir . "/",$zip_houses) .
          " 2>&1");
   mail_backup($filename,' ' . implode(' ',$zip_houses) . ' ' . $datestring);

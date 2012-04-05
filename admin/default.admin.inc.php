@@ -14,6 +14,9 @@ $php_includes = '';
 $houses = array('ath','aca','caz','clo','con','dav','euc','fen','hip','hoy',
 		'kid','kng','lot','nsc','rid','roc','she','stb','wil','wol','co');
 
+//path for zip
+$zipexec = "/usr/local/bin/zip";
+
 //See default.inc.php for the logic here.  This code should be copied
 //directly from that file, except for the error message on exit.
 if (!$php_includes) {

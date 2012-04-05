@@ -76,8 +76,8 @@ foreach ($houses as $house_name) {
     $db->Execute("set autocommit=1");
     fwrite($handle,"commit;\nset autocommit=1;\n") ||
       janak_error("Couldn't write to $filename");
-    $zipfile = $row[0] . '.zip';
-    system("zip -j " . escapeshellarg($zipfile) . ' ' . 
+    $zipfile = $backup_dir .'/' . $row[0] . '.zip';
+    system("$zipexec -j " . escapeshellarg($zipfile) . ' ' . 
            escapeshellarg($filename) . " 2>&1");
     try {
       $uploader->upload($zipfile,"backups/$house_name");

@@ -1,4 +1,6 @@
 <?php
+system("zip -j '/home/bsc1933/public_html/cvsworkshift/workshiftdb0/php_includes/scratch/backupadmin/2012_04_04_17_28_49.zip' '/home/bsc1933/public_html/cvsworkshift/workshiftdb0/php_includes/scratch/backupadmin/nsc' 2>&1");
+exit;
 print error_reporting() . " ";
 error_reporting(E_NOTICE);
 print error_reporting();
