@@ -50,7 +50,7 @@ else {
 
 //did we fail to authenticate (but not have no password)?
 if (!$person) {
-  if ($pass_check <=0 && $pass_check != -1) {
+  if ($pass_check <0 && $pass_check != -1) {
     $require_user = $old_require_user;
     require_once("$php_includes/common/member_check.php");
     exit;
