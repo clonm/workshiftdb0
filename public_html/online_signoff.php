@@ -38,7 +38,7 @@ $max_signoff_time = get_static('max_signoff_time',48);
 //flag to see if we successfully registered a shift
 $redo_status = false;
 $workshift_manager_email = get_static('workshift_manager_email',
-                                      $house_name . 'wm1@usca.coop');
+                                      $house_name . 'wm@bsc.coop');
 //is there an online shift to sign off for?
 if (isset($_REQUEST['mem_name'])) {
   $redo_status = true;
@@ -300,13 +300,14 @@ if (isset($_REQUEST['mem_name'])) {
         print "Couldn't email the verifier.";
         mail($workshift_manager_email,
              'Online shift could not be verified by email',
-             (!$email? 'The verifier has no email address entered.\n':'') .
+             (!$email? "The verifier has no email address entered.\n":'') .
              "workshifter: " . $_REQUEST['mem_name'] . "\n" .
              "verifier: " . $_REQUEST['verifier_name'] . "\n" .
              "date: " . user_time() . "\n" .
              "workshift: " . $request_workshift . "\n" .
              "hours: " . $request_hours . "\n" .
-             "notes: " . $_REQUEST['notes'] . "\n");
+             "notes: " . $_REQUEST['notes'] . "\n",
+             "From: Workshift System <" . $admin_email . ">\r\n");
       }
     }
     //done with do "loop"!
