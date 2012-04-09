@@ -1760,7 +1760,15 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
   //I rarely call require_user with an argument, so here's where
   //member_name gets set for real.
   if (!$member_name && isset($_REQUEST['member_name'])) {
-    $member_name = $_REQUEST['member_name'];
+    if (isset($_POST['member_name'])) {
+      $member_name = $_POST['member_name'];
+    }
+    else if (isset($_GET['member_name'])) {
+      $member_name = $_GET['member_name'];
+    }
+    else {
+      $member_name = $_REQUEST['member_name'];
+    }
   }
   //here's the member_name we thought we had.
   $session_member = get_session_member();
@@ -1775,7 +1783,9 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
     //password check failed
     else {
       //doesn't matter much if we didn't *need* a user
-      if (in_array('ok_nouser',$require_user) || $officer_skip_flag) {
+      //don't let user without password go on
+      if ($pass_check != -1 && 
+          (in_array('ok_nouser',$require_user) || $officer_skip_flag)) {
         //don't pass back an incorrect member name
         if ($pass_check != -1) {
           $member_name = null;
