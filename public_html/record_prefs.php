@@ -210,31 +210,23 @@ function update_member_info($main_arr, $workshift_arr, $member_name,$passwd) {
   for ($ii = 0; $ii<7;$ii++) {
     $shift_arr["av_$ii"] = $workshift_arr[1+$ii];
   }
-  if ($main_arr[0]) {
-    $mn_arr['room'] = $main_arr[0];
+  $mn_arr['room'] = $main_arr[0];
+  $mn_arr['email'] = $main_arr[1];
+  $email_row = $db->GetRow("select `email` from `house_info` where " .
+                           "`member_name` = ?",
+                           array($mn_arr['member_name']));
+  if (is_empty($email_row)) {
+    $email_row['email'] = null;
   }
-  if ($main_arr[1]) {
-    $mn_arr['email'] = $main_arr[1];
-    $email_row = $db->GetRow("select `email` from `house_info` where " .
-                              "`member_name` = ?",
-                              array($mn_arr['member_name']));
-    if (is_empty($email_row)) {
-      $email_row['email'] = null;
-    }
-    if ($email_row['email'] != $mn_arr['email']) {
-      elections_log(null,'member email change',$mn_arr['member_name'],
-                    $email_row['email'],
-                    $mn_arr['email']);
-    }
+  if ($email_row['email'] != $mn_arr['email']) {
+    elections_log(null,'member email change',$mn_arr['member_name'],
+                  $email_row['email'],
+                  $mn_arr['email']);
   }
-  if ($main_arr[2]) {
-    $mn_arr['phone'] = $main_arr[2];
-  }
-  if (count($mn_arr) > 1) {
-    if (!$db->Replace(bracket('house_info'),
-                      $mn_arr,'member_name',true)) {
-      return null;
-    }
+  $mn_arr['phone'] = $main_arr[2];
+  if (!$db->Replace(bracket('house_info'),
+                    $mn_arr,'member_name',true)) {
+    return null;
   }
   $db->Execute("update `personal_info` set `submit_date` = now() " .
                "where `member_name` = ?",
