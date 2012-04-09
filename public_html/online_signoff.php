@@ -300,6 +300,7 @@ if (isset($_REQUEST['mem_name'])) {
         print "Couldn't email the verifier.";
         mail($workshift_manager_email,
              'Online shift could not be verified by email',
+             (!$email? 'The verifier has no email address entered.\n':'') .
              "workshifter: " . $_REQUEST['mem_name'] . "\n" .
              "verifier: " . $_REQUEST['verifier_name'] . "\n" .
              "date: " . user_time() . "\n" .
