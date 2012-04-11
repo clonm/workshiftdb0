@@ -181,7 +181,7 @@ if ($dh = opendir($backup_dir)) {
 }
 
 function process_houses($zip_houses,$datestring,$backup_dir) {
-  global $php_includes,$php_utils,$backup_email;
+  global $php_includes,$php_utils,$backup_email,$zipexec;
   $backup_sdir = addslashes($backup_dir . "/");
   $filename = $backup_sdir . $datestring . 
     '-weekly-backup.zip';
