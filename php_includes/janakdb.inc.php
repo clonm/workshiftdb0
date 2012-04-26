@@ -205,6 +205,10 @@ set_error_handler('janak_mysqlerr');
 $db = ADONewConnection('mysqlt');
 //turn on debugging?
 #$db->debug = true;
+
+//enable bulk-binding -- pass 2d-array into Execute to repeat query
+$db->bulkBind = true;
+
 //these are supposed to enable multi-queries for exec_proc, but it
 //seems like we don't need them.  It was hard to find them online,
 //though, so they're staying here.

@@ -879,7 +879,7 @@ function submit_data () {
     data += "col_names[]=" + val_of(document.getElementById('col_name_' + ii)) + "&";
   }
   data += "table_name=" + escape(table_name);
-  //statustext.innerHTML = data;
+  //  statustext.innerHTML = data;
   req.send(data);
   return false;
 }
