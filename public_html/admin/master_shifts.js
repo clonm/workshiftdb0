@@ -130,6 +130,7 @@ function shift_string(workshift) {
 //assign a shift to a member, or remove a shift from a member, depending if
 //addshift is true or false.  silent says whether can_do() warns about problems.
 function assign_shift(member, workshift, addshift, silent) {
+//member doesn't really exist?
   if (typeof(hourslist[member]) == 'undefined') {
     alter_hours(member,(addshift?1:-1)*workshift['hours']);
     return false;
