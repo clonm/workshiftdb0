@@ -1,7 +1,7 @@
 Options +Indexes
 AuthType Basic
 AuthName "Workshiftdb Admin"
-AuthUserFile /home/bsccoo5/public_html/workshift/php_includes/apache_users
+AuthUserFile /home/bsc1933/public_html/workshift/php_includes/apache_users
 Require user workshiftadmin
 
 Options +ExecCGI
