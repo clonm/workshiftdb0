@@ -47,7 +47,7 @@
  * @author    Sean Coates <sean@php.net>
  * @copyright 2003-2006 PEAR <pear-group@php.net>
  * @license   http://www.opensource.org/licenses/bsd-license.php BSD License
- * @version   CVS: $Id: mime.php,v 1.1 2012/04/02 06:04:08 kanaj Exp $
+ * @version   CVS: $Id: mime.php,v 1.2 2012/04/26 04:25:53 kanaj Exp $
  * @link      http://pear.php.net/package/Mail_mime
  *
  *            This class is based on HTML Mime Mail class from
@@ -390,13 +390,7 @@ class Mail_mime
         if ($filesize == 0) {
             $cont =  "";
         } else {
-            if ($magic_quote_setting = get_magic_quotes_runtime()) {
-                set_magic_quotes_runtime(0);
-            }
             $cont = fread($fd, $filesize);
-            if ($magic_quote_setting) {
-                set_magic_quotes_runtime($magic_quote_setting);
-            }
         }
         fclose($fd);
         return $cont;

@@ -7,37 +7,8 @@ $attribs = array('day');
 $days = array('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday');
 //strips slashes from form input, assuming php is quoting things
 if (!function_exists('stripformslash')) {
-  if (!ini_get('magic_quotes_sybase')) {
-    if (get_magic_quotes_gpc()) {
-      function stripformslash($str) {
-        global $first_strip;
-        if (!$first_strip) {
-          return $str;
-        }
-        if (is_array($str)) {
-          return array_map('stripformslash',$str);
-        }
-        return stripslashes($str);
-      }
-    }
-    else {
-      function stripformslash($str) {
-        return $str;
-      }
-    }
-  }
-  else {
-    //quoting for database?  Man, you're stupid -- databases quote things already
-    function stripformslash($str) {
-      global $first_strip;
-      if (!$first_strip) {
-        return $str;
-      }
-      if (is_array($str)) {
-        return array_map('stripformslash',$str);
-      }
-      return str_replace("''","'",$str);
-    }
+  function stripformslash($str) {
+    return $str;
   }
 }
 $first_strip = true;

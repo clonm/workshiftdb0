@@ -128,17 +128,18 @@ require_once('janakdb-utils.inc.php');
 
 
 
+//25-04-2012, the below is hopefully gone because php wised up
 //fuck magic_quotes_gpc.  Oh my god.  Fuck magic_quotes_gpc.
 //php quotes user input to php scripts, even though it's worse than useless.
-if (get_magic_quotes_gpc() || ini_get('magic_quotes_sybase')) {
-  $first_strip = true;
-  $_GET = stripformslash($_GET);
-  $_POST = stripformslash($_POST);
-  $_REQUEST = stripformslash($_REQUEST);
-  $_COOKIE = stripformslash($_COOKIE);
-  $_FILES = stripformslash($_FILES);
-  $first_strip =false;
-}
+/* if (get_magic_quotes_gpc() || ini_get('magic_quotes_sybase')) { */
+/*   $first_strip = true; */
+/*   $_GET = stripformslash($_GET); */
+/*   $_POST = stripformslash($_POST); */
+/*   $_REQUEST = stripformslash($_REQUEST); */
+/*   $_COOKIE = stripformslash($_COOKIE); */
+/*   $_FILES = stripformslash($_FILES); */
+/*   $first_strip =false; */
+/* } */
 
 //user authentication is done with cookies.  Logging out is very
 //simple, and is just done by having forget_login as a user input
