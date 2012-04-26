@@ -1,6 +1,6 @@
 <?php
 /*
-V5.05 11 July 2008   (c) 2000-2008 John Lim (jlim#natsoft.com). All rights reserved.
+V5.16 26 Mar 2012  (c) 2000-2012 John Lim (jlim#natsoft.com). All rights reserved.
   Released under both BSD license and Lesser GPL library license. 
   Whenever there is any discrepancy between the two licenses, 
   the BSD license will take precedence.
@@ -78,14 +78,14 @@ class ADODB_sqlite extends ADOConnection {
 	}
 	
 	// mark newnham
-	function MetaColumns($tab)
+	function MetaColumns($table, $normalize=true) 
 	{
 	  global $ADODB_FETCH_MODE;
 	  $false = false;
 	  $save = $ADODB_FETCH_MODE;
 	  $ADODB_FETCH_MODE = ADODB_FETCH_ASSOC;
 	  if ($this->fetchMode !== false) $savem = $this->SetFetchMode(false);
-	  $rs = $this->Execute("PRAGMA table_info('$tab')");
+	  $rs = $this->Execute("PRAGMA table_info('$table')");
 	  if (isset($savem)) $this->SetFetchMode($savem);
 	  if (!$rs) {
 	    $ADODB_FETCH_MODE = $save; 
@@ -104,7 +104,8 @@ class ADODB_sqlite extends ADOConnection {
 	    $fld->max_length = $size;
 	    $fld->not_null = $r['notnull'];
 	    $fld->default_value = $r['dflt_value'];
-	    $fld->scale = 0;
+	    $fld->scale = 0;	
+		if (isset($r['pk']) && $r['pk']) $fld->primary_key=1;
 	    if ($save == ADODB_FETCH_NUM) $arr[] = $fld;	
 	    else $arr[strtoupper($fld->name)] = $fld;
 	  }
@@ -261,7 +262,7 @@ class ADODB_sqlite extends ADOConnection {
 		return @sqlite_close($this->_connectionID);
 	}
 
-	function MetaIndexes($table, $primary = FALSE, $owner=false)
+	function MetaIndexes($table, $primary = FALSE, $owner=false, $owner = false)
 	{
 		$false = false;
 		// save old fetch mode

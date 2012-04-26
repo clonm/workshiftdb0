@@ -1,6 +1,6 @@
 <?php
 /* 
-V5.05 11 July 2008   (c) 2000-2008 John Lim (jlim#natsoft.com). All rights reserved.
+V5.16 26 Mar 2012  (c) 2000-2012 John Lim (jlim#natsoft.com). All rights reserved.
   Released under both BSD license and Lesser GPL library license. 
   Whenever there is any discrepancy between the two licenses, 
   the BSD license will take precedence. 
@@ -84,9 +84,9 @@ class ADODB_mssql extends ADOConnection {
 	var $metaDatabasesSQL = "select name from sysdatabases where name <> 'master'";
 	var $metaTablesSQL="select name,case when type='U' then 'T' else 'V' end from sysobjects where (type='U' or type='V') and (name not in ('sysallocations','syscolumns','syscomments','sysdepends','sysfilegroups','sysfiles','sysfiles1','sysforeignkeys','sysfulltextcatalogs','sysindexes','sysindexkeys','sysmembers','sysobjects','syspermissions','sysprotects','sysreferences','systypes','sysusers','sysalternates','sysconstraints','syssegments','REFERENTIAL_CONSTRAINTS','CHECK_CONSTRAINTS','CONSTRAINT_TABLE_USAGE','CONSTRAINT_COLUMN_USAGE','VIEWS','VIEW_TABLE_USAGE','VIEW_COLUMN_USAGE','SCHEMATA','TABLES','TABLE_CONSTRAINTS','TABLE_PRIVILEGES','COLUMNS','COLUMN_DOMAIN_USAGE','COLUMN_PRIVILEGES','DOMAINS','DOMAIN_CONSTRAINTS','KEY_COLUMN_USAGE','dtproperties'))";
 	var $metaColumnsSQL = # xtype==61 is datetime
-"select c.name,t.name,c.length,
-	(case when c.xusertype=61 then 0 else c.xprec end),
-	(case when c.xusertype=61 then 0 else c.xscale end) 
+	"select c.name,t.name,c.length,c.isnullable, c.status,
+		(case when c.xusertype=61 then 0 else c.xprec end),
+		(case when c.xusertype=61 then 0 else c.xscale end) 
 	from syscolumns c join systypes t on t.xusertype=c.xusertype join sysobjects o on o.id=c.id where o.name='%s'";
 	var $hasTop = 'top';		// support mssql SELECT TOP 10 * FROM TABLE
 	var $hasGenID = true;
@@ -103,6 +103,7 @@ class ADODB_mssql extends ADOConnection {
 	var $identitySQL = 'select SCOPE_IDENTITY()'; // 'select SCOPE_IDENTITY'; # for mssql 2000
 	var $uniqueOrderBy = true;
 	var $_bindInputArray = true;
+	var $forceNewConnect = false;
 	
 	function ADODB_mssql() 
 	{		
@@ -159,6 +160,41 @@ class ADODB_mssql extends ADOConnection {
 		}
 	}
 
+
+
+	/**
+	* Correctly quotes a string so that all strings are escaped. We prefix and append
+	* to the string single-quotes.
+	* An example is  $db->qstr("Don't bother",magic_quotes_runtime());
+	* 
+	* @param s         the string to quote
+	* @param [magic_quotes]    if $s is GET/POST var, set to get_magic_quotes_gpc().
+	*              This undoes the stupidity of magic quotes for GPC.
+	*
+	* @return  quoted string to be sent back to database
+	*/
+	function qstr($s,$magic_quotes=false)
+	{
+ 		if (!$magic_quotes) {
+ 			return  "'".str_replace("'",$this->replaceQuote,$s)."'";
+		}
+
+ 		// undo magic quotes for " unless sybase is on
+ 		$sybase = ini_get('magic_quotes_sybase');
+ 		if (!$sybase) {
+ 			$s = str_replace('\\"','"',$s);
+ 			if ($this->replaceQuote == "\\'")  // ' already quoted, no need to change anything
+ 				return "'$s'";
+ 			else {// change \' to '' for sybase/mssql
+ 				$s = str_replace('\\\\','\\',$s);
+ 				return "'".str_replace("\\'",$this->replaceQuote,$s)."'";
+ 			}
+ 		} else {
+ 			return "'".$s."'";
+		}
+	}
+// moodle change end - see readme_moodle.txt
+
 	function _affectedrows()
 	{
 		return $this->GetOne('select @@rowcount');
@@ -210,7 +246,11 @@ class ADODB_mssql extends ADOConnection {
 		if ($nrows > 0 && $offset <= 0) {
 			$sql = preg_replace(
 				'/(^\s*select\s+(distinctrow|distinct)?)/i','\\1 '.$this->hasTop." $nrows ",$sql);
-			$rs = $this->Execute($sql,$inputarr);
+				
+			if ($secs2cache)
+				$rs = $this->CacheExecute($secs2cache, $sql, $inputarr);
+			else
+				$rs = $this->Execute($sql,$inputarr);
 		} else
 			$rs = ADOConnection::SelectLimit($sql,$nrows,$offset,$inputarr,$secs2cache);
 	
@@ -283,8 +323,8 @@ class ADODB_mssql extends ADOConnection {
 	{
 		if ($this->transOff) return true; 
 		$this->transCnt += 1;
-	   	$this->Execute('BEGIN TRAN');
-	   	return true;
+	   	$ok = $this->Execute('BEGIN TRAN');
+	   	return $ok;
 	}
 		
 	function CommitTrans($ok=true) 
@@ -292,15 +332,15 @@ class ADODB_mssql extends ADOConnection {
 		if ($this->transOff) return true; 
 		if (!$ok) return $this->RollbackTrans();
 		if ($this->transCnt) $this->transCnt -= 1;
-		$this->Execute('COMMIT TRAN');
-		return true;
+		$ok = $this->Execute('COMMIT TRAN');
+		return $ok;
 	}
 	function RollbackTrans()
 	{
 		if ($this->transOff) return true; 
 		if ($this->transCnt) $this->transCnt -= 1;
-		$this->Execute('ROLLBACK TRAN');
-		return true;
+		$ok = $this->Execute('ROLLBACK TRAN');
+		return $ok;
 	}
 	
 	function SetTransactionMode( $transaction_mode ) 
@@ -326,14 +366,73 @@ class ADODB_mssql extends ADOConnection {
 		
 		See http://www.swynk.com/friends/achigrik/SQL70Locks.asp
 	*/
-	function RowLock($tables,$where,$flds='top 1 null as ignore') 
+	function RowLock($tables,$where,$col='1 as adodbignore') 
 	{
+		if ($col == '1 as adodbignore') $col = 'top 1 null as ignore';
 		if (!$this->transCnt) $this->BeginTrans();
-		return $this->GetOne("select $flds from $tables with (ROWLOCK,HOLDLOCK) where $where");
+		return $this->GetOne("select $col from $tables with (ROWLOCK,HOLDLOCK) where $where");
 	}
 	
 	
-	function MetaIndexes($table,$primary=false)
+	function MetaColumns($table, $normalize=true)
+	{
+//		$arr = ADOConnection::MetaColumns($table);
+//		return $arr;
+
+		$this->_findschema($table,$schema);
+		if ($schema) {
+			$dbName = $this->database;
+			$this->SelectDB($schema);
+		}
+		global $ADODB_FETCH_MODE;
+		$save = $ADODB_FETCH_MODE;
+		$ADODB_FETCH_MODE = ADODB_FETCH_NUM;
+		
+		if ($this->fetchMode !== false) $savem = $this->SetFetchMode(false);
+		$rs = $this->Execute(sprintf($this->metaColumnsSQL,$table));
+		
+		if ($schema) {
+			$this->SelectDB($dbName);
+		}
+		
+		if (isset($savem)) $this->SetFetchMode($savem);
+		$ADODB_FETCH_MODE = $save;
+		if (!is_object($rs)) {
+			$false = false;
+			return $false;
+		}
+			
+		$retarr = array();
+		while (!$rs->EOF){
+			$fld = new ADOFieldObject();
+			$fld->name = $rs->fields[0];
+			$fld->type = $rs->fields[1];		
+		
+			$fld->not_null = (!$rs->fields[3]);
+			$fld->auto_increment = ($rs->fields[4] == 128);		// sys.syscolumns status field. 0x80 = 128 ref: http://msdn.microsoft.com/en-us/library/ms186816.aspx 
+		
+			if (isset($rs->fields[5]) && $rs->fields[5]) {
+				if ($rs->fields[5]>0) $fld->max_length = $rs->fields[5];
+				$fld->scale = $rs->fields[6];
+				if ($fld->scale>0) $fld->max_length += 1;
+			} else
+				$fld->max_length = $rs->fields[2];
+
+			if ($save == ADODB_FETCH_NUM) {
+				$retarr[] = $fld;
+			} else {
+				$retarr[strtoupper($fld->name)] = $fld;
+			}
+				$rs->MoveNext();
+			}
+		
+			$rs->Close();
+			return $retarr;	
+			
+	}
+	
+	
+	function MetaIndexes($table,$primary=false, $owner=false)
 	{
 		$table = $this->qstr($table);
 
@@ -365,7 +464,7 @@ class ADODB_mssql extends ADOConnection {
 
 		$indexes = array();
 		while ($row = $rs->FetchRow()) {
-			if (!$primary && $row[5]) continue;
+			if ($primary && !$row[5]) continue;
 			
             $indexes[$row[0]]['unique'] = $row[6];
             $indexes[$row[0]]['columns'][] = $row[1];
@@ -436,7 +535,7 @@ order by constraint_name, referenced_table_name, keyno";
 
 	// "Stein-Aksel Basma" <basma@accelero.no>
 	// tested with MSSQL 2000
-	function MetaPrimaryKeys($table)
+	function MetaPrimaryKeys($table, $owner=false)
 	{
 	global $ADODB_FETCH_MODE;
 	
@@ -508,11 +607,11 @@ order by constraint_name, referenced_table_name, keyno";
 	   else return -1;
 	}
 	
-	// returns true or false
-	function _connect($argHostname, $argUsername, $argPassword, $argDatabasename)
+	// returns true or false, newconnect supported since php 5.1.0.
+	function _connect($argHostname, $argUsername, $argPassword, $argDatabasename,$newconnect=false)
 	{
 		if (!function_exists('mssql_pconnect')) return null;
-		$this->_connectionID = mssql_connect($argHostname,$argUsername,$argPassword);
+		$this->_connectionID = mssql_connect($argHostname,$argUsername,$argPassword,$newconnect);
 		if ($this->_connectionID === false) return false;
 		if ($argDatabasename) return $this->SelectDB($argDatabasename);
 		return true;	
@@ -535,6 +634,11 @@ order by constraint_name, referenced_table_name, keyno";
 		return true;	
 	}
 	
+	function _nconnect($argHostname, $argUsername, $argPassword, $argDatabasename)
+    {
+		return $this->_connect($argHostname, $argUsername, $argPassword, $argDatabasename, true);
+    }
+
 	function Prepare($sql)
 	{
 		$sqlarr = explode('?',$sql);
@@ -546,7 +650,7 @@ order by constraint_name, referenced_table_name, keyno";
 		return array($sql,$this->qstr($sql2),$max,$sql2);
 	}
 	
-	function PrepareSP($sql)
+	function PrepareSP($sql,$param=true)
 	{
 		if (!$this->_has_mssql_init) {
 			ADOConnection::outp( "PrepareSP: mssql_init only available since PHP 4.1.0");
@@ -659,7 +763,7 @@ order by constraint_name, referenced_table_name, keyno";
 	}
 	
 	// returns query ID if successful, otherwise false
-	function _query($sql,$inputarr)
+	function _query($sql,$inputarr=false)
 	{
 		$this->_errorMsg = false;
 		if (is_array($inputarr)) {
@@ -866,11 +970,19 @@ class ADORecordset_mssql extends ADORecordSet {
 			if (is_array($this->fields)) {
 				if (ADODB_ASSOC_CASE == 0) {
 					foreach($this->fields as $k=>$v) {
-						$this->fields[strtolower($k)] = $v;
+						$kn = strtolower($k);
+						if ($kn <> $k) {
+							unset($this->fields[$k]);
+							$this->fields[$kn] = $v;
+						}
 					}
 				} else if (ADODB_ASSOC_CASE == 1) {
 					foreach($this->fields as $k=>$v) {
-						$this->fields[strtoupper($k)] = $v;
+						$kn = strtoupper($k);
+						if ($kn <> $k) {
+							unset($this->fields[$k]);
+							$this->fields[$kn] = $v;
+						}
 					}
 				}
 			}
@@ -911,11 +1023,19 @@ class ADORecordset_mssql extends ADORecordSet {
 			if (!$this->fields) {
 			} else if (ADODB_ASSOC_CASE == 0) {
 				foreach($this->fields as $k=>$v) {
-					$this->fields[strtolower($k)] = $v;
+					$kn = strtolower($k);
+					if ($kn <> $k) {
+						unset($this->fields[$k]);
+						$this->fields[$kn] = $v;
+					}
 				}
 			} else if (ADODB_ASSOC_CASE == 1) {
 				foreach($this->fields as $k=>$v) {
-					$this->fields[strtoupper($k)] = $v;
+					$kn = strtoupper($k);
+					if ($kn <> $k) {
+						unset($this->fields[$k]);
+						$this->fields[$kn] = $v;
+					}
 				}
 			}
 		} else {

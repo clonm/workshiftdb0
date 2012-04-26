@@ -1,6 +1,6 @@
 <?php
 /* 
-V5.05 11 July 2008   (c) 2000-2008 John Lim (jlim#natsoft.com). All rights reserved.
+V5.16 26 Mar 2012  (c) 2000-2012 John Lim (jlim#natsoft.com). All rights reserved.
   Released under both BSD license and Lesser GPL library license. 
   Whenever there is any discrepancy between the two licenses, 
   the BSD license will take precedence. 
@@ -161,6 +161,12 @@ class ADODB_odbc extends ADOConnection {
 				$num += 1;
 				$this->genID = $num;
 				return $num;
+			} elseif ($this->affected_rows() == 0) {
+				// some drivers do not return a valid value => try with another method
+				$value = $this->GetOne("select id from $seq");
+				if ($value == $num + 1) {
+					return $value;
+				}
 			}
 		}
 		if ($fn = $this->raiseErrorFn) {
@@ -370,7 +376,7 @@ See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbc/htm/od
 		}
 	}
 	
-	function MetaColumns($table)
+	function MetaColumns($table, $normalize=true)
 	{
 	global $ADODB_FETCH_MODE;
 	

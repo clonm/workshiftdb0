@@ -1,6 +1,6 @@
 <?php
 /*
- V5.05 11 July 2008   (c) 2000-2008 John Lim (jlim#natsoft.com). All rights reserved.
+ V5.16 26 Mar 2012  (c) 2000-2012 John Lim (jlim#natsoft.com). All rights reserved.
   Released under both BSD license and Lesser GPL library license. 
   Whenever there is any discrepancy between the two licenses, 
   the BSD license will take precedence.
@@ -104,9 +104,12 @@ WHERE relkind in ('r','v') AND (c.relname='%s' or c.relname = lower('%s'))
 	var $random = 'random()';		/// random function
 	var $autoRollback = true; // apparently pgsql does not autorollback properly before php 4.3.4
 							// http://bugs.php.net/bug.php?id=25404
-							
+	
+	var $uniqueIisR = true;
 	var $_bindInputArray = false; // requires postgresql 7.3+ and ability to modify database
 	var $disableBlobs = false; // set to true to disable blob checking, resulting in 2-5% improvement in performance.
+	
+	var $_pnum = 0;
 	
 	// The last (fmtTimeStamp is not entirely correct: 
 	// PostgreSQL also has support for time zones, 
@@ -177,10 +180,10 @@ a different OID if a database must be reloaded. */
 		return @pg_Exec($this->_connectionID, "begin ".$this->_transmode);
 	}
 	
-	function RowLock($tables,$where,$flds='1 as ignore') 
+	function RowLock($tables,$where,$col='1 as adodbignore') 
 	{
 		if (!$this->transCnt) $this->BeginTrans();
-		return $this->GetOne("select $flds from $tables where $where for update");
+		return $this->GetOne("select $col from $tables where $where for update");
 	}
 
 	// returns true/false. 
@@ -205,19 +208,17 @@ a different OID if a database must be reloaded. */
 	{
 		$info = $this->ServerInfo();
 		if ($info['version'] >= 7.3) {
-	    	$this->metaTablesSQL = "select tablename,'T' from pg_tables where tablename not like 'pg\_%'
-			  and schemaname  not in ( 'pg_catalog','information_schema')
-	union 
-        select viewname,'V' from pg_views where viewname not like 'pg\_%'  and schemaname  not in ( 'pg_catalog','information_schema') ";
+		$this->metaTablesSQL = "select table_name,'T' from information_schema.tables where table_schema not in ( 'pg_catalog','information_schema')
+			union
+		       select table_name,'V' from information_schema.views where table_schema not in ( 'pg_catalog','information_schema') ";
 		}
 		if ($mask) {
 			$save = $this->metaTablesSQL;
 			$mask = $this->qstr(strtolower($mask));
 			if ($info['version']>=7.3)
-				$this->metaTablesSQL = "
-select tablename,'T' from pg_tables where tablename like $mask and schemaname not in ( 'pg_catalog','information_schema')  
- union 
-select viewname,'V' from pg_views where viewname like $mask and schemaname  not in ( 'pg_catalog','information_schema')  ";
+				$this->metaTablesSQL = "select table_name,'T' from information_schema.tables where table_name like $mask and table_schema not in ( 'pg_catalog','information_schema')
+			union
+		       select table_name,'V' from information_schema.views where table_name like $mask and table_schema not in ( 'pg_catalog','information_schema') ";
 			else
 				$this->metaTablesSQL = "
 select tablename,'T' from pg_tables where tablename like $mask 
@@ -236,6 +237,8 @@ select viewname,'V' from pg_views where viewname like $mask";
 	// if magic quotes disabled, use pg_escape_string()
 	function qstr($s,$magic_quotes=false)
 	{
+		if (is_bool($s)) return $s ? 'true' : 'false';
+		 
 		if (!$magic_quotes) {
 			if (ADODB_PHPVER >= 0x5200) {
 				return  "'".pg_escape_string($this->_connectionID,$s)."'";
@@ -441,7 +444,6 @@ select viewname,'V' from pg_views where viewname like $mask";
 	// assumes bytea for blob, and varchar for clob
 	function UpdateBlob($table,$column,$val,$where,$blobtype='BLOB')
 	{
-	
 		if ($blobtype == 'CLOB') {
     		return $this->Execute("UPDATE $table SET $column=" . $this->qstr($val) . " WHERE $where");
 		}
@@ -457,7 +459,10 @@ select viewname,'V' from pg_views where viewname like $mask";
 			if (10 <= $len && $len <= 12) $date = 'date '.$date;
 			else $date = 'timestamp '.$date;
 		}
-		return "($date+interval'$dayFraction days')";
+		
+		
+		return "($date+interval'".($dayFraction * 1440)." minutes')";
+		#return "($date+interval'$dayFraction days')";
 	}
 	
 
@@ -577,8 +582,14 @@ select viewname,'V' from pg_views where viewname like $mask";
 			return $retarr;	
 		
 	}
-
-	  function MetaIndexes ($table, $primary = FALSE)
+	
+	function Param($name,$type='C')
+	{
+		$this->_pnum += 1;
+		return '$'.$this->_pnum;
+	}
+	
+	  function MetaIndexes ($table, $primary = FALSE, $owner = false)
       {
          global $ADODB_FETCH_MODE;
                 
@@ -659,7 +670,7 @@ WHERE (c2.relname=\'%s\' or c2.relname=lower(\'%s\'))';
 			if (strlen($db) == 0) $db = 'template1';
 			$db = adodb_addslashes($db);
 		   	if ($str)  {
-			 	$host = split(":", $str);
+			 	$host = explode(":", $str);
 				if ($host[0]) $str = "host=".adodb_addslashes($host[0]);
 				else $str = '';
 				if (isset($host[1])) $str .= " port=$host[1]";
@@ -713,8 +724,9 @@ WHERE (c2.relname=\'%s\' or c2.relname=lower(\'%s\'))';
 	
 
 	// returns queryID or false
-	function _query($sql,$inputarr)
+	function _query($sql,$inputarr=false)
 	{
+		$this->_pnum = 0;
 		$this->_errorMsg = false;
 		if ($inputarr) {
 		/*
@@ -892,6 +904,7 @@ class ADORecordSet_postgres64 extends ADORecordSet{
 		$row = ADORecordSet::GetRowAssoc($upper);
 		return $row;
 	}
+	
 
 	function _initrs()
 	{
@@ -943,8 +956,9 @@ class ADORecordSet_postgres64 extends ADORecordSet{
 	
 	function _decode($blob)
 	{
-		eval('$realblob="'.adodb_str_replace(array('"','$'),array('\"','\$'),$blob).'";');
-		return $realblob;	
+		if ($blob === NULL) return NULL;
+//		eval('$realblob="'.adodb_str_replace(array('"','$'),array('\"','\$'),$blob).'";');
+		return pg_unescape_bytea($blob);
 	}
 	
 	function _fixblobs()
@@ -1049,7 +1063,7 @@ class ADORecordSet_postgres64 extends ADORecordSet{
 				case 'INT4':
 				case 'INT2':
 					if (isset($fieldobj) &&
-				empty($fieldobj->primary_key) && empty($fieldobj->unique)) return 'I';
+				empty($fieldobj->primary_key) && (!$this->connection->uniqueIisR || empty($fieldobj->unique))) return 'I';
 				
 				case 'OID':
 				case 'SERIAL':
