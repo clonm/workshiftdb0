@@ -1,5 +1,5 @@
 <?php
-$php_start_time = array_sum(split(' ',microtime()));
+$php_start_time = array_sum(explode(' ',microtime()));
 $require_user = 'ok_nouser';
 require_once('default.inc.php');
 ?>
@@ -168,7 +168,7 @@ while ($row = $res->FetchRow()) {
 require_once($php_includes . "/member_check.php");  }?>
 <p id="phptime" style='font-size: 10px'>
 PHP generated this page in 
-<?=escape_html(round(array_sum(split(' ',microtime()))-$php_start_time,2))?>
+<?=escape_html(round(array_sum(explode(' ',microtime()))-$php_start_time,2))?>
  seconds.
 </td><td valign=top>
 <center><a href="http://www.bsc.coop/"><img src="http://www.bsc.coop/docs/GMM-Expansion.jpg" width=380 height=380 alt="general members meeting on expansion"></a></center>

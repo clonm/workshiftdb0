@@ -22,8 +22,8 @@ if (array_key_exists('col_wids',$_REQUEST)) {
   }  
   set_static('signoff_col_wids',join("\n",$col_wids));
 }
-$cols = split("\n",get_static('signoff_cols',''));
-$col_wids = split("\n",get_static('signoff_col_wids',''));
+$cols = explode("\n",get_static('signoff_cols',''));
+$col_wids = explode("\n",get_static('signoff_col_wids',''));
 while (count($cols) && !strlen(end($cols))) {
   array_pop($cols);
   array_pop($col_wids);
@@ -80,7 +80,7 @@ then click below.<br/>
  exit; 
 }
 if (!isset($php_start_time)) {
-  $php_start_time = array_sum(split(' ',microtime()));
+  $php_start_time = array_sum(explode(' ',microtime()));
 }
 $body_insert = "<div style='" . white_space_css() . "'>" . $signoff_message . "</div>";
    if (isset($_REQUEST['week_num']) && strlen($_REQUEST['week_num'])) {

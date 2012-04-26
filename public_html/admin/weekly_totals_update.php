@@ -1,5 +1,5 @@
 <?php
-$php_start_time = array_sum(split(' ',microtime()));
+$php_start_time = array_sum(explode(' ',microtime()));
 $body_insert = '';
 require_once('default.inc.php');
 #$db->debug = true;

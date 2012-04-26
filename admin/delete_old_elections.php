@@ -46,7 +46,7 @@ foreach ($backups as $archive) {
     $row = array();
     $row['semester_start'] = get_static('semester_start');
   }
-  $semester_start = split('-',$row['semester_start']);
+  $semester_start = explode('-',$row['semester_start']);
   $this_sem = monthtosem($semester_start[1]);
   $sem_string = $semester_start[0] . ($this_sem == 'fall'?'_':'-') . $this_sem;
   if (!table_exists('elections_record')) {

@@ -1,6 +1,6 @@
 <?php
 //show house members the weekly totals
-$php_start_time = array_sum(split(' ',microtime()));
+$php_start_time = array_sum(explode(' ',microtime()));
 $read_only_weekly = true;
 $body_insert = '';
 require_once('default.inc.php');

@@ -1,6 +1,6 @@
 <?php
 require 'DropboxUploader.php';
-$php_start_time = array_sum(split(' ',microtime()));
+$php_start_time = array_sum(explode(' ',microtime()));
 require_once('default.admin.inc.php');
 $temp_houses = getopt('h::');
 if (isset($temp_houses['h'])) {

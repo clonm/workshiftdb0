@@ -3,7 +3,7 @@
 //been redone a number of times, but it still probably has legacy
 //issues.
 if (!isset($php_start_time)) {
-  $php_start_time = array_sum(split(' ',microtime()));
+  $php_start_time = array_sum(explode(' ',microtime()));
 }
 //this file will define $php_includes, the includes directory, and include
 //the main includes file, which creates the database object and initializes it.
@@ -376,7 +376,7 @@ Notes:</p><p> <textarea rows=10 cols=40 id="notes" name="notes">
 </p>
 </form>
 <p id="phptime" style="font-size: 10px">
-PHP generated this page in <?=round(array_sum(split(' ',microtime()))-$php_start_time,2)?> seconds.
+PHP generated this page in <?=round(array_sum(explode(' ',microtime()))-$php_start_time,2)?> seconds.
 </p>
 </body>
 </html>

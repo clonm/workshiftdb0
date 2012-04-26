@@ -2,7 +2,7 @@
 $backup_email = 'workshiftbackups1@gmail.com';
 $max_email_size = 3000000;
 
-$php_start_time = array_sum(split(' ',microtime()));
+$php_start_time = array_sum(explode(' ',microtime()));
 require_once('default.admin.inc.php');
 ini_set('zlib.output_compression',false);
 if (!array_key_exists('REQUEST_URI',$_SERVER)) {

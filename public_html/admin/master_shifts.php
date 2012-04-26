@@ -5,7 +5,7 @@
 //javascript file, master_shifts.js, where the heavy lifting is done.
 
 //just so we know how long this took
-$php_start_time = array_sum(split(' ',microtime()));
+$php_start_time = array_sum(explode(' ',microtime()));
 require_once('default.inc.php');
 //see table_edit for further explanations of these variables
 //sort list alphabetically by workshift

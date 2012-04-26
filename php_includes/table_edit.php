@@ -9,7 +9,7 @@
 //just to see how long this took
 
 if (!isset($php_start_time)) {
-  $php_start_time = array_sum(split(' ',microtime()));
+  $php_start_time = array_sum(explode(' ',microtime()));
 }
 
 if (!isset($archive)) {
@@ -539,7 +539,7 @@ while ($row =& $res->FetchRow()) {
   echo "</tr>\n";
   $num_rows++;
 }
-//print("<!-- full time generated in " . (array_sum(split(' ',microtime()))-$start_whole_shebang) . "-->\n");
+//print("<!-- full time generated in " . (array_sum(explode(' ',microtime()))-$start_whole_shebang) . "-->\n");
 ?></tbody></table>
 <style type="text/css">
 <?php //we know how much space each column takes up now 
@@ -652,7 +652,7 @@ need to include this file beforehand -->
 ?>
 
 <p id="phptime">
-PHP generated this page in <?=round(array_sum(split(' ',microtime()))-$php_start_time,2)?> seconds.
+PHP generated this page in <?=round(array_sum(explode(' ',microtime()))-$php_start_time,2)?> seconds.
 </p>
 </body>
 </html>

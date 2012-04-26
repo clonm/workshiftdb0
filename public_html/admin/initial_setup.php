@@ -29,7 +29,7 @@ function monthtosem($month) {
 }
 
 function datetosem($date) {
-  $date_array = split('-',$date);
+  $date_array = explode('-',$date);
   return monthtosem($date_array[count($date_array)-2]);
 }
 

@@ -18,7 +18,7 @@ $require_user = array('workshift','president');
 
 require_once('default.inc.php');
 if (!isset($php_start_time)) {
-  $php_start_time = array_sum(split(' ',microtime()));
+  $php_start_time = array_sum(explode(' ',microtime()));
 }
 if (!isset($dbnames)) {
   $dbnames = get_backup_dbs();

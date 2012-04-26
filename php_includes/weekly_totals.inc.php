@@ -1,6 +1,6 @@
 <?php
 if (!isset($php_start_time)) {
-  $php_start_time = array_sum(split(' ',microtime()));
+  $php_start_time = array_sum(explode(' ',microtime()));
 }
 
 // include file which regenerates the views and subviews that 

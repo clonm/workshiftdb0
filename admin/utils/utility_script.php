@@ -405,7 +405,7 @@ exit;
   }
   $short_names = array_unique($short_names);
   foreach ($short_names as $mem) {
-    $names = split(' ',$mem);
+    $names = explode(' ',$mem);
     $names[] = '';
     $row = $db->GetRow("select `member_name` from `house_list` where `member_name` like '{$names[1]}%, {$names[0]}'");
     if (is_empty($row)) {

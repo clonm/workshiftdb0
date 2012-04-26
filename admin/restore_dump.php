@@ -32,7 +32,7 @@ trying to restore.  Then comes the output, if any, of the msyql command to
 restore the database (there should be no output normally). This will take a while, so be patient.  Any warnings or errors will stop the script, because this is a very dangerous operation.
 STROUTPUT
       );
-$php_start_time = array_sum(split(' ',microtime()));
+$php_start_time = array_sum(explode(' ',microtime()));
 $filedata = $_FILES['userfile'];
 $scratch_dir = "$php_includes/scratch";
 $restore_dir = "$scratch_dir/adminrestore";
@@ -194,8 +194,8 @@ function clean_up($errno,$errstr,$errfile,$errline,$errcontext) {
   rmdir($restore_dir) ||
     print("<b>Warning</b>: Couldn't delete $restore_dir in " .
             __FILE__ . " on line " . __LINE__ . "<br>\n");
-  $arr = split(' ',microtime());
-  print("Page took " . round(array_sum(split(' ',microtime()))-$php_start_time,2) . 
+  $arr = explode(' ',microtime());
+  print("Page took " . round(array_sum(explode(' ',microtime()))-$php_start_time,2) . 
         " seconds to generate<br>\n");
 janak_errhandler($errno,$errstr,$errfile,
                  $errline,$errcontext);

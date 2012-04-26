@@ -12,7 +12,7 @@ require_once('default.inc.php');
 
 //time how long rendering takes
 if (!isset($php_start_time)) {
-  $php_start_time = array_sum(split(' ',microtime()));
+  $php_start_time = array_sum(explode(' ',microtime()));
 }
 ?>
 <html><head><title>Shift history for <?=escape_html($member_name)?></title>
@@ -22,7 +22,7 @@ print $body_insert;
 //if the workshift manager is viewing this page, we need to relativize
 //links (I'm not sure there are any, but in any case)
 if ($secured) {
-  $base_uri = split('/',$_SERVER['REQUEST_URI']);
+  $base_uri = explode('/',$_SERVER['REQUEST_URI']);
   array_pop($base_uri);
   array_pop($base_uri);
   $base_uri = join('/',$base_uri);
@@ -769,5 +769,5 @@ if ($row_owed['notes']) {
 print $weekly_shift_printout;
 ?>
 <p id="phptime" style='font-size: 10px'>
-PHP generated this page in <?=round(array_sum(split(' ',microtime()))-$php_start_time,2)?> seconds.
+PHP generated this page in <?=round(array_sum(explode(' ',microtime()))-$php_start_time,2)?> seconds.
 </p>

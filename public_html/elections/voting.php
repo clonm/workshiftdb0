@@ -767,7 +767,7 @@ SQLSTMT
   function race_num($val,$key) {
     global $selected;
     //figure out what race we have
-    $arr = split('-',$key);
+    $arr = explode('-',$key);
     $race_num = array_shift($arr);
     if (!is_numeric($race_num)) {
       return;
