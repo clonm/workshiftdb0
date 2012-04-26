@@ -65,42 +65,43 @@ function escape_html($str,$display_all = false) {
   return strtr($str,$html_ent_tables);
 }
 
+//25-04-2012 -- should no longer be needed in php 5.3
 //strips slashes from form input, assuming php is quoting things with
 //magic_quotes_gpc or magic_quotes_sybase, which should both die
-if (!function_exists('stripformslash')) {
-  if (!ini_get('magic_quotes_sybase')) {
-    if (get_magic_quotes_gpc()) {
-      function stripformslash($str) {
-        global $first_strip;
-        if (!$first_strip) {
-          return $str;
-        }
-        if (is_array($str)) {
-          return array_map('stripformslash',$str);
-        }
-        return stripslashes($str);
-      }
-    }
-    else {
+/* if (!function_exists('stripformslash')) { */
+/*   if (!ini_get('magic_quotes_sybase')) { */
+/*     if (get_magic_quotes_gpc()) { */
+/*       function stripformslash($str) { */
+/*         global $first_strip; */
+/*         if (!$first_strip) { */
+/*           return $str; */
+/*         } */
+/*         if (is_array($str)) { */
+/*           return array_map('stripformslash',$str); */
+/*         } */
+/*         return stripslashes($str); */
+/*       } */
+/*     } */
+/*     else { */
       function stripformslash($str) {
         return $str;
       }
-    }
-  }
-  else {
-    //quoting for database?  You're stupid -- databases quote things already
-    function stripformslash($str) {
-      global $first_strip;
-      if (!$first_strip) {
-        return $str;
-      }
-      if (is_array($str)) {
-        return array_map('stripformslash',$str);
-      }
-      return str_replace("''","'",$str);
-    }
-  }
-}
+/*     } */
+/*   } */
+/*   else { */
+/*     //quoting for database?  You're stupid -- databases quote things already */
+/*     function stripformslash($str) { */
+/*       global $first_strip; */
+/*       if (!$first_strip) { */
+/*         return $str; */
+/*       } */
+/*       if (is_array($str)) { */
+/*         return array_map('stripformslash',$str); */
+/*       } */
+/*       return str_replace("''","'",$str); */
+/*     } */
+/*   } */
+/* } */
 
 //takes php array, returns string which, when surrounded by [ and ],
 //gives a javascript array.
@@ -799,8 +800,6 @@ function export_csv_file($table_name,$query=null ,$col_formats = null,
 
 //incredibly useful time function.  Puts out a date in the user's time
 //zone.  The user's time zone is guessed by some javascript code.
-//Both this function and the next have to set the environment variable
-//TZ, which could be problematic.
 function user_time($timestamp = null,$format = null) {
   $tz_user = get_static('tz_user',null);
   //will output in any date format, but here's the default
@@ -809,8 +808,11 @@ function user_time($timestamp = null,$format = null) {
     $format = "g:i a \o\\n l";
   }
   if ($tz_user) {
-    $oldtz = getenv("TZ");
-    putenv("TZ=" . escapeshellcmd($tz_user));
+    //25-04-2012 PHP version change lets us set the timezone this way
+    $oldtz = date_default_timezone_get();
+    // $oldtz = getenv("TZ");
+    date_default_timezone_set($tz_user);
+    //    putenv("TZ=" . escapeshellcmd($tz_user));
   }
   if ($timestamp) {
     return date($format,$timestamp);
@@ -819,7 +821,7 @@ function user_time($timestamp = null,$format = null) {
     return date($format);
   }
   if ($tz_user || isset($oldtz)) {
-    putenv("TZ=" . escapeshellarg($oldtz));
+    date_default_timezone_set($oldtz);
   }
 }
 
@@ -855,7 +857,7 @@ function print_help($section=null,$span=false) {
   }
   $done = true;
   //public_utils has no help file, so we have to link back to admin
-  $url_components = split('/',$_SERVER['REQUEST_URI']);
+  $url_components = explode('/',$_SERVER['REQUEST_URI']);
   $public_utils = (count($url_components) > 2 &&
                    $url_components[count($url_components)-2] == 
                    'public_utils');
@@ -2887,12 +2889,12 @@ function check_php_time() {
   }
   global $php_start_time, $max_time_allowed;
   if (!isset($php_start_time)) {
-    $php_start_time = array_sum(split(' ',microtime()));
+    $php_start_time = array_sum(explode(' ',microtime()));
   }
   if (!isset($max_time_allowed)) {
     $max_time_allowed = 20;
   }
-  if (array_sum(split(' ',microtime()))-$php_start_time >= $max_time_allowed) {
+  if (array_sum(explode(' ',microtime()))-$php_start_time >= $max_time_allowed) {
     return false;
   }
   return true;
