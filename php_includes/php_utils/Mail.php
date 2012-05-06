@@ -16,7 +16,7 @@
 // | Author: Chuck Hagenbuch <chuck@horde.org>                            |
 // +----------------------------------------------------------------------+
 //
-// $Id: Mail.php,v 1.1 2012/04/02 06:04:08 kanaj Exp $
+// $Id: Mail.php,v 1.2 2012/05/06 18:30:45 kanaj Exp $
 
 require_once 'PEAR.php';
 
@@ -26,7 +26,7 @@ require_once 'PEAR.php';
  * useful in multiple mailer backends.
  *
  * @access public
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @package Mail
  */
 class Mail
@@ -151,7 +151,7 @@ class Mail
         foreach ($headers as $key => $value) {
             if (strcasecmp($key, 'From') === 0) {
                 include_once 'Mail/RFC822.php';
-                $parser = &new Mail_RFC822();
+                $parser = new Mail_RFC822();
                 $addresses = $parser->parseAddressList($value, 'localhost', false);
                 if (PEAR::isError($addresses)) {
                     return $addresses;
