@@ -68,7 +68,7 @@ function escape_html($str,$display_all = false) {
 //25-04-2012 -- should no longer be needed in php 5.3
 //strips slashes from form input, assuming php is quoting things with
 //magic_quotes_gpc or magic_quotes_sybase, which should both die
-/* if (!function_exists('stripformslash')) { */
+ if (!function_exists('stripformslash')) { 
 /*   if (!ini_get('magic_quotes_sybase')) { */
 /*     if (get_magic_quotes_gpc()) { */
 /*       function stripformslash($str) { */
@@ -101,7 +101,7 @@ function escape_html($str,$display_all = false) {
 /*       return str_replace("''","'",$str); */
 /*     } */
 /*   } */
-/* } */
+ }
 
 //takes php array, returns string which, when surrounded by [ and ],
 //gives a javascript array.
