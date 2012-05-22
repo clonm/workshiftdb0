@@ -5,8 +5,10 @@
 require_once('Local-Settings.php');
 
 ini_set('display_errors',1);
-ini_set('zlib.output_compression',1);
-ini_set('zlib.output_compression_level', 6);
+if (!headers_sent()) {
+  ini_set('zlib.output_compression',1);
+  ini_set('zlib.output_compression_level', 6);
+}
 ////////////  OPTIONS THAT MAY NEED TO BE CHANGED ON SITE CHANGES ///////////////
 
 //php_utils is a directory containing source files with functions that
