@@ -1678,7 +1678,7 @@ function set_session($member_name,$officer = false,$delete_session = false) {
     $_REQUEST[($officer?'officer_':'') . 'session_id'] = $session_id;
     //set cookie for username to be stored and pre-selected
     if (!$officer) {
-      setcookie('member_name',$member_name,time()+60*60*24*365*10,"/");
+      setcookie('default_member_name',$member_name,time()+60*60*24*365*10,"/");
     }
   }
   $db->CompleteTrans();

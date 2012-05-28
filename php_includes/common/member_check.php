@@ -28,6 +28,10 @@ if (array_key_exists('member_name',$_REQUEST)) {
 else {
   $member_name = null;
 }
+if (!$member_name && 
+    array_key_exists('default_member_name',$_REQUEST)) {
+  $member_name = $_REQUEST['default_member_name'];
+}
 ?>
 
 <form action='<?=this_url()?>' method=POST>

@@ -8,6 +8,19 @@ ini_set('display_errors',1);
 if (!headers_sent()) {
   ini_set('zlib.output_compression',1);
   ini_set('zlib.output_compression_level', 6);
+  if (isset($_COOKIE['member_name'])) {
+    if (isset($_POST['member_name'])) {
+      $_REQUEST['member_name'] = $_POST['member_name'];
+    }
+    else if (isset($_GET['member_name'])) {
+      $_REQUEST['member_name'] = $_GET['member_name'];
+    }
+    else {
+      unset($_REQUEST['member_name']);
+    }
+    setcookie('member_name',"",0,"/");
+    unset($_COOKIE['member_name']);
+  }
 }
 ////////////  OPTIONS THAT MAY NEED TO BE CHANGED ON SITE CHANGES ///////////////
 
@@ -149,7 +162,7 @@ require_once('janakdb-utils.inc.php');
 //disappears from the already-submitted user data.
 if (array_key_exists('forget_login',$_REQUEST)) {
   foreach ($_COOKIE as $key => $val) {
-    if ($key == 'default_house' || $key == 'member_name') {
+    if ($key == 'default_house' || $key == 'default_member_name') {
       continue;
     }
     setcookie($key,"",0,"/");
