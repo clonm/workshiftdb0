@@ -36,7 +36,7 @@ $password = rtrim(fgets($passfile));
 $uploader = new DropboxUploader($username, $password);
 $db->SetFetchMode(ADODB_FETCH_NUM);
 foreach ($houses as $house_name) {
-  fwrite(STDERR,"doing $house_name\n");
+  //  fwrite(STDERR,"doing $house_name\n");
   $url_array['db'] = "$db_basename$house_name";
   $done_archives = array();
   $db->Connect($url_array['server'],$url_array['user'],$url_array['pwd'],
@@ -44,7 +44,7 @@ foreach ($houses as $house_name) {
   $res = $db->Execute("select `archive` from `GLOBAL_archive_data` where " .
                       "`emailed` is NULL order by `semester_start`");
   while ($row = $res->FetchRow()) {
-    fwrite(STDERR,"doing " . $row[0]);
+    //    fwrite(STDERR,"doing " . $row[0]);
     $filename = "$backup_dir/$house_name";
     ($handle = fopen($filename,"w")) ||
       janak_error("Couldn't open $filename");
@@ -77,8 +77,11 @@ foreach ($houses as $house_name) {
     fwrite($handle,"commit;\nset autocommit=1;\n") ||
       janak_error("Couldn't write to $filename");
     $zipfile = $backup_dir .'/' . $row[0] . '.zip';
-    system("$zipexec -j " . escapeshellarg($zipfile) . ' ' . 
-           escapeshellarg($filename) . " 2>&1");
+    exec("$zipexec -j " . escapeshellarg($zipfile) . ' ' . 
+         escapeshellarg($filename) . " 2>&1",$output,$return_var);
+    if ($return_var) {
+      janak_error(implode("\n",$output));
+    }
     try {
       $uploader->upload($zipfile,"backups/$house_name");
     }

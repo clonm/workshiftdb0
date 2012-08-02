@@ -411,7 +411,9 @@ value='<?=escape_html($backup_arr[$ii])?>'/>
 $num_deleted++;
 $ret = true;
 if ($running_shell) {
+  if (!isset($quiet_flag)) {
     print $house_name . " " . $backup . "\n";
+  }
 }
 else {
   print "<h4>Deleting " . escape_html($backup) . "</h4>\n";

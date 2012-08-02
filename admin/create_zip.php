@@ -61,16 +61,16 @@ set_error_handler('janak_errhandler');
 $done_houses = array();
 $max_time_allowed = 10;
 foreach ($houses as $house_name) {
-  if ($command_line) {
-    fwrite(STDERR,"doing $house_name\n");
-  }
+  /* if ($command_line) { */
+  /*   fwrite(STDERR,"doing $house_name\n"); */
+  /* } */
    if ($command_line || check_php_time()) {
      $done_houses[] = $house_name;
      //     print "doing house $house_name\n";
    }
    else {
      if (defined('STDERR')) {
-       fwrite(STDERR,"ran out of time");
+       fwrite(STDERR,"ran out of time doing $house_name");
      }
      break;
    }
@@ -140,7 +140,11 @@ foreach ($houses as $house_name) {
       " 2>&1 1> " . escapeshellarg($backup_dir) . "/" . 
            escapeshellarg($house_name);
     //    print $exec_string;
-    system($exec_string);
+    //    system($exec_string);
+    exec($exec_string,$output,$return_var);
+    if ($return_var) {
+      janak_error(implode("\n",$output));
+    }
   }
 }
 #}
@@ -185,9 +189,12 @@ function process_houses($zip_houses,$datestring,$backup_dir) {
   $backup_sdir = addslashes($backup_dir . "/");
   $filename = $backup_sdir . $datestring . 
     '-weekly-backup.zip';
-  system("$zipexec -j $filename " . $backup_sdir . 
+  exec("$zipexec -j $filename " . $backup_sdir . 
          implode(' ' . $backup_sdir . "/",$zip_houses) .
-         " 2>&1");
+       " 2>&1",$output,$return_var);
+  if ($return_var) {
+    janak_error(implode("\n",$output));
+  }
   mail_backup($filename,' ' . implode(' ',$zip_houses) . ' ' . $datestring);
   unlink($filename);
   foreach ($zip_houses as $delete_file) {
