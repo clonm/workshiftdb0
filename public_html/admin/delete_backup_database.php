@@ -49,26 +49,35 @@ function get_dbs_to_delete() {
     "unix_timestamp(`mod_date`) as `mod_date`,`cur_week` as `week`, " .
     "`num_wanted` as `wanted`, `emailed`+0 as `emailed`, " .
     "`num_assigned` as `master`, unix_timestamp(`creation`) as `time`, " .
-    "`autobackup`+0 as `autobackup` from `GLOBAL_archive_data`" .
+    "`autobackup`+0 as `autobackup`, `semester_end`+0 as `semester_end`" .
+                              " from `GLOBAL_archive_data`" .
                               " order by `mod_date`,`creation`");
   while ($row = $archive_res->FetchRow()) {
     $num_done++;
     if (!isset($backups)) {
       $backups = array();
     }
-    if (!isset($backups[$row['semester']])) {
-      $backups[$row['semester']] = array();
+    $sem_array = explode('-',$row['semester']);
+    if (count($sem_array) != 3) {
+      $backups[$row['semester']] = $row;
+      continue;
     }
-    $backups[$row['semester']][] = $row;
+    $archive_sem = $sem_array[0] . monthtosem($sem_array[1]);
+    if (!isset($backups[$archive_sem])) {
+      $backups[$archive_sem] = array();
+    }
+    $backups[$archive_sem][] = $row;
   }
   if (!isset($backups)) {
     return array(array(),$corrupt, $num_done,array());
   }
   //sort by semester (the key)
   ksort($backups);
-  $sem_start = get_static('semester_start');
+  $sem_array = explode('-',get_static('semester_start'));
+  $sem_start = $sem_array[0] . monthtosem($sem_array[1]);
   $needed_semesters = array();
   $havesem = array();
+  //figure out which semesters we need
   foreach (array_reverse(array_keys($backups),true) as $sem) {
     if (isset($havesem[0]) && isset($havesem[1]) && isset($havesem[2])) {
       break;
@@ -78,25 +87,23 @@ function get_dbs_to_delete() {
     if ($sem == $sem_start) {
       continue;
     }
-    $sem_array = explode('-',$sem);
-    if (count($sem_array) != 3) {
-      continue;
-    }
-    $archive_sem = monthtosem($sem_array[1]);
-    if (!isset($havesem[$archive_sem])) {
+    if (!isset($havesem[substr($sem,-1)])) {
       $needed_semesters[$sem] = true;
-      $havesem[$archive_sem] = true;
+      $havesem[substr($sem,-1)] = true;
     }
   }
+  //curren semester is "needed," in that we don't want to delete much from it
+  $needed_semesters[$sem_start] = true;
   $to_delete = array();
   $can_delete = array();
+  //
   //ok, time to find databases we can delete
 /*   print "<pre>"; */
   foreach ($backups as $sem => $backupsems) {
-    //don't delete anything from the current semester
-    if ($sem == $sem_start) {
-      continue;
-    }
+    /* //don't delete anything from the current semester */
+    /* if ($sem == $sem_start) { */
+    /*   continue; */
+    /* } */
     //are there no backups here?  I don't know how that happens
     if (!$ct = count($backupsems)) {
       continue;
@@ -124,12 +131,20 @@ function get_dbs_to_delete() {
       if ($ii == $ct-1) {
         break;
       }
+      //nothing here?  Don't know how that could happen
+      if (!$backupsems[$ii]) {
+        continue;
+      }
       //don't delete backups that haven't been offloaded
       if (!$backupsems[$ii]['emailed']) {
         continue;
       }
-      //nothing here?  Don't know how that could happen
-      if (!$backupsems[$ii]) {
+      //don't delete backups made in the last week
+      if (time()-$backupsems[$ii]['mod_date']<7*24*60*60) {
+        continue;
+      }
+      //don't delete named backups from this semester
+      if ($sem == $sem_start && !$backupsems[$ii]['autobackup']) {
         continue;
       }
       //even if this is a needed semester, we can still throw out
@@ -179,6 +194,10 @@ function get_dbs_to_delete() {
 }
 
 function total_comp_backup_dbs($arr1,$arr2) {
+  //last backup before semester change is the "biggest"
+  if ($arr1['semester_end'] != $arr2['semester_end']) {
+    return $arr1['semester_end']?1:-1;
+  }
   if ($arr1['autobackup'] !== $arr2['autobackup']) {
     return $arr1['autobackup']?-1:1;
   }
@@ -205,8 +224,8 @@ function comp_backup_dbs($arr1,$arr2) {
                 $arr1['week'] >= $arr2['week'] &&
                 $arr1['mod_date'] >= $arr2['mod_date'] &&
                 $arr1['master'] >= $arr2['master']);
-  //if first was a user backup, it can't possibly be less.
-  if (!$arr1['autobackup']) {
+  //if first was a user backup or semester-ending, it can't possibly be less.
+  if (!$arr1['autobackup'] || $arr1['semester_end']) {
     //it wasn't more, so must be 0
     if (!$raw_comp1) {
       return 0;
@@ -222,7 +241,7 @@ function comp_backup_dbs($arr1,$arr2) {
                 $arr2['week'] >= $arr1['week'] &&
                 $arr2['mod_date'] >= $arr1['mod_date'] &&
                 $arr2['master'] >= $arr1['master']);
-  if (!$arr2['autobackup']) {
+  if (!$arr2['autobackup'] || $arr2['semester_end']) {
     if (!$raw_comp2) {
       return 0;
     }
@@ -375,13 +394,12 @@ $backup_arr = $_REQUEST['backup_name'];
 //which case the other file wants us to delete everything redundant
 //that we can.
 if (!is_array($backup_arr)) {
-$delete_dbs = get_dbs_to_delete();
-$backup_arr = array_merge($delete_dbs[0],$delete_dbs[1]);
-if (isset($can_delete_flag)) {
-  $backup_arr = array_unique(array_merge($backup_arr,$delete_dbs[3]));
+  $delete_dbs = get_dbs_to_delete();
+  $backup_arr = array_merge($delete_dbs[0],$delete_dbs[1]);
+  if (isset($can_delete_flag)) {
+    $backup_arr = array_unique(array_merge($backup_arr,$delete_dbs[3]));
+  }
 }
-}
-
 $oldfetch = $db->fetchMode;
 $db->SetFetchMode(ADODB_FETCH_NUM); 
 
@@ -428,7 +446,7 @@ if (!$row[0]) {
 
 //quote whatever funky name they gave us to avoid mysql regular expressions
 $res = $db->Execute("show tables like ?",
-                    array(quote_mysqlreg("$archive_pre$backup") . '_%'));
+                    array(quote_mysqlreg("$archive_pre$backup" . "_") . '%'));
 if (is_empty($res)) {
   print("<h4>Backup " . escape_html($backup) . " does not exist.</h4>");
   $db->Execute("delete from `GLOBAL_archive_data` where `archive` = ?",

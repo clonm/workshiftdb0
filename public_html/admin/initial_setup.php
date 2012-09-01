@@ -260,6 +260,9 @@ if (($sem_string = datetosem($sem_start)) != $current_sem) {
 $sem_start = date('Y-') . $sem_start;
 
 print "<h4>This may take some time -- be patient and wait until the end.</h4>";
+if (datetosem(get_static('semester_start')) != $current_sem) {
+  $backup_database_change_sem = true;
+}
 require_once('backup_database.php');
 print "<hr>";
 
