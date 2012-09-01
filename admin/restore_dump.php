@@ -109,7 +109,7 @@ while ($fname = readdir($dh)) {
   // Return associative arrays
   $db->SetFetchMode(ADODB_FETCH_ASSOC); 
   //enable transactions -- MyISAM doesn't have transactions
-  $db->Execute("set table_type = 'InnoDB'");
+  $db->Execute("set storage_engine = 'InnoDB'");
   //are there any tables anyway?
   if (!is_empty($db->GetRow("show tables"))) {
     $_REQUEST['backup_ext'] = '';
@@ -117,11 +117,12 @@ while ($fname = readdir($dh)) {
     require("../public_html/admin/backup_database.php");
   }
   $db->debug = false;
-  $retval = system("mysql -u" .escapeshellarg($user) . " -p" .
+  $retstr = system("/usr/local/bin/mysql -u" .escapeshellarg($user) . " -p" .
                    escapeshellarg($url_array['pwd']) . " -h" . escapeshellarg($server) .
                    " " . escapeshellarg("$db_basename$fname") .
                    " < " . escapeshellarg($restore_dir) . "/" .
-                   escapeshellarg($fname) . " 2>&1");
+                   escapeshellarg($fname) . " 2>&1", $retval);
+  print $retstr;
   if ($filedata['name'] !== "janakjanak.zip") {
     $archive = $archive_pre . substr($filedata['name'],0,-4) . "_";
     $db_props = array();
