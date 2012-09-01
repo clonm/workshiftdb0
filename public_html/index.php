@@ -165,7 +165,7 @@ while ($row = $res->FetchRow()) {
     if (isset($_REQUEST['passwd'])) {
         print "You entered an incorrect password. Please try again.<br/>\n";
       }
-require_once($php_includes . "/member_check.php");  }?>
+require_once("$php_includes/common/member_check.php");  }?>
 <p id="phptime" style='font-size: 10px'>
 PHP generated this page in 
 <?=escape_html(round(array_sum(explode(' ',microtime()))-$php_start_time,2))?>
