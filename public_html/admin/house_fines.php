@@ -25,13 +25,11 @@ if (!strlen($fining_rate) || $fining_rate <= 0) {
 }
 //as always, monster query
 $table_edit_query = '';
-$sql_begin = "select `{$archive}houselist`.`member_name`";
+$sql_begin = "select `{$archive}weekly_totals_data`.`member_name`";
 $sql_mid = ", `{$archive}fining_data_totals`.`fines` as `Other Fines` " .
-"from `{$archive}weekly_totals_data`, `{$archive}fining_data_totals` " .
-  ", `{$archive}houselist`";
-$sql_end = " where `{$archive}houselist`.`autoid` = " .
-"`{$archive}fining_data_totals`.`member_name` and " .
-"`{$archive}houselist`.`autoid` = `{$archive}weekly_data_totals`.`member_name`";
+"from `{$archive}weekly_totals_data`, `{$archive}fining_data_totals` ";
+$sql_end = " where `{$archive}weekly_totals_data`.`member_name` = " .
+"`{$archive}fining_data_totals`.`member_name`";
 $col_names = array('member_name');
 $col_formats = array();
 //for 
@@ -58,7 +56,7 @@ if ($cash_hours_auto = get_static('cash_hours_auto',false,$archive)) {
   //how much of the other fines is refundable?
   $cash_res = $db->Execute("select `{$archive}house_list`.`member_name`, sum(`fine`) as `val` " .
                            "from `{$archive}house_list` left join `{$archive}fining_data`" .
-                           " on `{$archive}house_list`.`autoid` = `{$archive}fining_data`.`member_name` " .
+                           " on `{$archive}house_list`.`member_name` = `{$archive}fining_data`.`member_name` " .
                            "and `fine` > 0 and `refundable` " .
                            "group by `member_name` order by `member_name`");
   //you can only cash in as many hours as you've been refundably fined
@@ -125,7 +123,7 @@ if (!$archive || table_exists('special_fining')) {
   $special_fining = array();
   //get all the special fines
   while ($special_row = $special_res->FetchRow()) {
-    $special_fining[get_member_name($special_row['member_name'])] = $special_row;
+    $special_fining[$special_row['member_name']] = $special_row;
   }
 }
 

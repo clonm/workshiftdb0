@@ -56,7 +56,7 @@ information is</a><p>
 }
 //end of stuff member can do.  Now for all the information about member
 $row = $db->GetRow("SELECT * FROM `{$archive}house_info` where `member_name` = ?",
-                   array($member_id));
+                   array($member_name));
 //put out all house info on one line -- room, phone, email
 foreach ($row as $key => $val) {
   if ($key == 'autoid' || $key == 'member_name' || $key == 'privacy') {
@@ -80,7 +80,7 @@ $shifts = '';
 foreach($days as $day) {
   $res = $db->Execute("SELECT `workshift`, `hours` FROM " . 
                       "`{$archive}master_shifts` WHERE `$day` = ?",
-                      array($member_id));
+                      array($member_name));
   //are there any assigned shifts?
   if (!is_empty($res)) {
     $headers .= "<th>" . escape_html($day) . "</th>";
@@ -106,7 +106,7 @@ ob_start();
 //get the owed hours for each week
 $row_owed = $db->GetRow("select * from `{$archive}weekly_totals_data` " .
                         "where `member_name` = ?",
-                        array($member_id));
+                        array($member_name));
 //set up variables for calculations
 $fining_rate = get_static('fining_rate',12);
 //is it possible to be fined on non-fining period weeks?
@@ -147,7 +147,7 @@ if ($cash_hours_auto = get_static('cash_hours_auto',false)) {
                           bracket("{$archive}fining_data") .
                           " where `member_name` = ? and (`fine` > 0 " .
                           "and `refundable`)",
-                          array($member_id));
+                          array($member_name));
   //fines scaled by hourly rate
   $cash_max = $cash_max['val']/$fining_rate;
   //might cashed-in hours happen from max_hours overflow?
@@ -179,13 +179,13 @@ $special_row = array();
 if (!$archive || table_exists('special_fining')) {
 $special_row = $db->GetRow("select * from `{$archive}special_fining` " .
                            "where `member_name` = ?",
-                           array($member_id));
+                           array($member_name));
 //maybe member has nothing special.  
 if (is_empty($special_row)) {
   $db->Execute('insert into ' .
                bracket("{$archive}special_fining") . 
                ' (`member_name`) values (?)',
-               array($member_id));
+               array($member_name));
   $special_row = null;
 }
 }
@@ -273,7 +273,7 @@ for ($ii = 0; $ii <= $week_num; $ii++) {
     "<td>Notes</td></tr>\n";
   $res = $db->Execute("SELECT `date`, `day`, `workshift`, `hours`, `notes` " .
                       " FROM `{$archive}week_$ii` WHERE `member_name` = ?",
-                      array($member_id));
+                      array($member_name));
   while ($row = $res->FetchRow()) {
     echo "<tr>\n";
     foreach ($row as $key => $val) {
@@ -556,7 +556,7 @@ if ($weekly_fining && !is_empty($weekly_fines)) {
   $fine_exists[1] = 'true';
 }
 $res = $db->Execute("select * from `{$archive}fining_data` where `member_name` = ?",
-                    array($member_id));
+                    array($member_name));
 //"other" fines? fining_data has them, and cashing in also goes here
 if (!is_empty($res) || $cash_flag) {
   echo "<th><b>Other</b></th>";

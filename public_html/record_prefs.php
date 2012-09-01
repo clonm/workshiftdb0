@@ -253,7 +253,7 @@ switch($ch) {
  default:
 }
 if (!update_member_info($house_info_array,$workshift_info_array,
-			$member_id,$passwd)) {
+			$member_name,$passwd)) {
   fail('update_member_info');
 }
 //set privacy
@@ -266,10 +266,10 @@ foreach (array('room','phone','email') as $attrib) {
   $ii <<=  1;
 }
 $db->Execute("update `house_info` set `privacy` = ? where `member_name` = ?",
-             array($val,$member_id));
+             array($val,$member_name));
 set_mod_date('house_info');
 
-if (!delete_old_prefs($member_id,$passwd)) {
+if (!delete_old_prefs($member_name,$passwd)) {
   fail('delete old preferences');
 }
 
@@ -279,7 +279,7 @@ foreach ($categories as $cat => $rating) {
     $db->Execute("insert into `wanted_shifts` " .
                  "(`member_name`,`shift_id`,`rating`,`is_cat`) " .
                  "values (?,?,?,?)",
-                 array($member_id,$shift_id,$rating,$cat{0} == 'c'));
+                 array($member_name,$shift_id,$rating,$cat{0} == 'c'));
   }
 }
 if (count($categories)) {

@@ -91,19 +91,6 @@ if (!isset($col_formats) && isset($col_names)) {
 if (!isset($col_names) && isset($col_formats)) {
   $col_names = array_keys($col_formats);
 }
-
-//8/5/12 get formatting functions from styles, if caller gave those
-if (isset($col_styles)) {
-  foreach ($col_styles as $key => $val) {
-    if ($val == 'member_name') {
-      $col = $col_names[$key];
-      if (!isset($col_formats[$col]) || $col_formats[$col] == '') {
-        $col_formats[$col] = 'memberformat';
-      }
-    }
-  }
-}
-
 //we may need to know how big columns are -- the sizes can be initialized later
 if (!isset($col_sizes)) {
   $col_sizes = array_fill(0,count($col_formats),1);
@@ -238,17 +225,6 @@ function dateformat($str, $num_rows, $escapehtml = true) {
   return $date;
   //  $len = strlen($date);
   //return array(($escapehtml?escape_html($date):$date),$len);
-}
-
-function memberformat($str, $num_rows = null, $jj = null) {
-  if (!$str) {
-    return '';
-  }
-  $member_lookup = get_member_lookup();
-  if (isset($member_lookup[$str])) {
-    return $member_lookup[$str];
-  }
-  return $str;
 }
 
 //format a time by putting in the pm or am, possibly stripping the minute
@@ -630,12 +606,9 @@ var table_name = <?=dbl_quote($table_name_update)?>;
  var other_color = <?=dbl_quote(escape_html($orig_other_color))?>;
  var switch_color_frequency = <?=dbl_quote(escape_html($switch_color_frequency))?>;
 <?php
- js_assoc_array('reverse_member_lookup',get_reverse_member_lookup());
-
 if (isset($change_text_on_update)) {
 ?>
  var change_text_on_update = <?=dbl_quote($change_text_on_update)?>;
-
 <?php
     }
 ?>

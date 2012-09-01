@@ -53,7 +53,7 @@ if ($init_flag) {
   $mem_info = $db->GetRow("SELECT * FROM `house_info`,`personal_info` " .
                           "WHERE `house_info`.`member_name` = ? AND " .
                           "`personal_info`.`member_name` = ?",
-                          array($member_id,$member_id));
+                          array($member_name,$member_name));
   if (!count($mem_info)) {
     $mem_info['email'] = '';
     $mem_info['phone'] = '';
@@ -76,7 +76,7 @@ if ($init_flag) {
   }
   $wanted_shifts = array();
   $res = $db->Execute("select * from `wanted_shifts` where `member_name` = ?",
-                      array($member_id));
+                      array($member_name));
   while ($row = $res->FetchRow()) {
     if (!$row['is_cat']) {
       $prefix = 'sft_';

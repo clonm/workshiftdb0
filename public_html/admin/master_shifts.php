@@ -48,7 +48,7 @@ function namemung($str, $rownum, $colnum) {
   return array("<input name='cell-{$rownum}-{$colnum}' " .
                "id='cell-{$rownum}-{$colnum}' " . 
                "class='member_name tblin' " .
-               " value='" . escape_html(memberformat($str)) . "' " .
+               " value='" . escape_html($str) . "' " .
                "autocomplete=off" . 
 	       (($str === $dummy_string)?' style="background-color: grey;"':'') .
 	       '>',strlen($str));

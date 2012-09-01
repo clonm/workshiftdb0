@@ -12,7 +12,7 @@ $col_styles[$ctr] = '';
 
 //they can click on a name and login to see their page
 function namelink($str,$ii) {
-  return array("<a href='person.php?member_name=$str' target='person'>" . nameformat($str) . "</a>",
+  return array("<a href='person.php?member_name=$str' target='person'>$str</a>",
 	       strlen($str));
 }
 

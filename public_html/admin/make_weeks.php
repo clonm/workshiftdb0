@@ -82,7 +82,7 @@ for ($ii = $start_week; $ii <= $end_week; $ii++) {
 		    $db->qstr($week_date) . ', ' . 
 		    bracket('day') . ' VARCHAR(20) DEFAULT NULL, ' .
 		    bracket('workshift') . ' VARCHAR(50) DEFAULT NULL, ' .
-		    bracket('member_name') . ' int(11) DEFAULT NULL, ' .
+		    bracket('member_name') . ' VARCHAR(50) DEFAULT NULL, ' .
 		    bracket('hours') . ' DOUBLE DEFAULT NULL, ' .
                     '`notes` longtext default null, ' .
                     '`shift_id` int(11) default null, ' .

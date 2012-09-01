@@ -88,7 +88,7 @@ if (!$archive || table_exists('special_fining')) {
 $special_res = $db->Execute("select * from `{$archive}special_fining`");
 $special_fining = array();
 while ($special_row = $special_res->FetchRow()) {
-  $special_fining[get_member_name($special_row['member_name'])] = $special_row;
+  $special_fining[$special_row['member_name']] = $special_row;
   if ($max_period < count($backup_fine_weeks)) {
     for ($ii = $max_period+1; $ii <= count($backup_fine_weeks); $ii++) {
       if (isset($special_row["fine_week_$ii"]) &&
@@ -116,7 +116,7 @@ if ($nonzeroed_total = get_static('nonzeroed_total_hours',null,$archive)) {
 if ($cash_hours_auto = get_static('cash_hours_auto',false,$archive)) {
   $cash_res = $db->Execute("select `{$archive}house_list`.`member_name`, sum(`fine`) as `val` " .
                            "from `{$archive}house_list` left join `{$archive}fining_data`" .
-                           " on `{$archive}house_list`.`autoid` = `{$archive}fining_data`.`member_name` " .
+                           " on `{$archive}house_list`.`member_name` = `{$archive}fining_data`.`member_name` " .
                            "and `fine` > 0 and `refundable` " .
                            "group by `member_name` order by `member_name`");
   $cash_maxes = array();
@@ -219,7 +219,6 @@ function mung_whole_row(&$row) {
   static $key_weeks = null;
   $cash_hours = 0;
   $row['Total Fines'] = $row['Other Fines'];
-  $row['member_name'] = get_member_name[$row['member_name']];
   $zero_partial = $global_zero_partial;
   $fining_percent_fine = $global_fining_percent_fine;
   $javascript_pre = substr($javascript_pre,0,-9) . "other_fines[" . dbl_quote($row['member_name']) . "] = " . escape_html($row['Other Fines']) .

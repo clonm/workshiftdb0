@@ -9,17 +9,16 @@ foreach(array("Monday","Tuesday","Wednesday","Thursday","Friday",
                       bracket($day) . 
                       ' FROM ' . bracket($archive . 'master_shifts') .
 		      " WHERE " . bracket($day) . " <> ?",
-		      array($dummy_id));
+		      array($dummy_string));
   while ($row = $res->FetchRow()) {
     if (!$row[$day])
       continue;
-    $mem = get_member_name($row[$day]);
-    if (!array_key_exists($mem,$houselist)) {
-      $houselist[$mem] = '';
+    if (!array_key_exists($row[$day],$houselist)) {
+      $houselist[$row[$day] ] = '';
     }
     else
-      $houselist[$mem] .= ', ';
-    $houselist[$mem] .= ($day === 'Weeklong'?'':"$day ") . 
+      $houselist[$row[$day] ] .= ', ';
+    $houselist[$row[$day] ] .= ($day === 'Weeklong'?'':"$day ") . 
       $row['workshift'];
   }
 }
@@ -31,7 +30,7 @@ ksort($houselist);
 <title>Shifts By Name</title></head><body>
 <table>
 <?php foreach ($houselist as $member_name => $shifts) { ?>
-<tr><td><?=$member_name?></td><td><?=$shifts?></td></tr>
+  <tr><td><?=$member_name?></td><td><?=$shifts?></td></tr>
      <?php } ?>
 </table>
 </body>

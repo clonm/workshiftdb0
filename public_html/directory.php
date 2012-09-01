@@ -15,10 +15,10 @@ if (array_key_exists('modify_privacy',$_REQUEST)) {
     $ii <<=  1;
   }
   $db->Execute("update `house_info` set `privacy` = ? where `member_name` = ?",
-               array($val,$member_id));
+               array($val,$member_name));
 }
 $privacy = $db->GetRow("select `privacy` from `house_info` where `member_name` = ?",
-                   array($member_id));
+                   array($member_name));
 if (array_key_exists('privacy',$privacy)) {
   $privacy = $privacy['privacy'];
 ?>
@@ -34,7 +34,7 @@ $res = $db->Execute("select `house_list`.`member_name`, if(`privacy` & 1,`room`,
                     "if (`privacy` & 2,`phone`,null) as `phone`, " .
                     "if (`privacy` & 4,`email`,null) as `email` " .
                     " from `house_list`,`house_info` " .
-                    "where `house_list`.`autoid` = `house_info`.`member_name` " .
+                    "where `house_list`.`member_name` = `house_info`.`member_name` " .
                     "order by `member_name`");
 $other_td = '';
 print "<table border><tr><td>";
