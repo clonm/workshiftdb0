@@ -781,13 +781,17 @@ function default_focus_handler(elt) {
 
 //utility function, gives url-encoded value of any html element I need
 function val_of(thing,idflag) {
+  return encodeURIComponent(noescape_val_of(thing,idflag));
+}
+
+function noescape_val_of(thing,idflag) {
   if (!thing) {
     return "";
   }
   if (idflag) {
     thing = document.getElementById(thing);
   }
-  return encodeURIComponent(get_value(thing));
+  return get_value(thing);
 }
 
 //takes all data, wraps it up, and sends it to update php script
@@ -833,8 +837,24 @@ function submit_data () {
       for (jj = 0; jj< ch.length; jj++) {
         if (ch[jj]) {
           data += "changed_row-" + id + "[]=" + jj + "&";
-          data += "cell-" + id + "-" + jj + "=" + 
-            val_of(get_cell_elt(irow,jj)) + "&";
+          data += "cell-" + id + "-" + jj + "=";
+          var cell = get_cell_elt(irow,jj);
+          if (is_class(cell,'member_name')) {
+            var val = noescape_val_of(cell);
+            var rev_val = reverse_member_lookup[val];
+            if (rev_val) {
+              data += rev_val;
+              alert(rev_val);
+            }
+            else {
+              alert(val + " is not a house member");
+              return false;
+            }
+          }
+          else {
+            data += val_of(cell);
+          }
+          data += '&';
         }
       }
     }

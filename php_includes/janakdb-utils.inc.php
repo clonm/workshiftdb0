@@ -11,6 +11,7 @@ $days = array('Monday','Tuesday','Wednesday',
               'Thursday','Friday','Saturday','Sunday','Weeklong');
 //name for empty shifts
 $dummy_string = 'XXXXX';
+$dummy_id = -1;
 //all backups are prefixed with this string.  See transform_archive below too
 $archive_pre = 'zz_archive_';
 //the kind of officer logins that there are
@@ -313,7 +314,7 @@ function check_passwd($member_name = null, $passwd = null) {
     }
     $row = $db->GetRow("SELECT `passwd` FROM `password_table` " .
                        "WHERE `member_name` = ?",
-                       array($member_name));
+                       array(get_member_id($member_name)));
     //no password set AND user didn't enter a password this time?
     if ((is_empty($row) || !$row['passwd']) && !$passwd) {
       return -1;
@@ -354,7 +355,8 @@ function set_passwd($member_name, $newpasswd,$oldpasswd,$officer_flag = false,
                         "(`" .
                         ($officer_flag?'officer':'member') .
                         "_name`,`passwd`) VALUES (?,md5(?)) ",
-                        array($member_name,$newpasswd));
+                        array($officer_flag?$member_name:get_member_id($member_name),
+                              $newpasswd));
     set_mod_date(($officer_flag?'officer_':'') . 'password_table');
     return $ret;
   }
@@ -390,7 +392,7 @@ function get_email($member_name) {
   global $db;
   $email_row = $db->GetRow("select `email` from `house_info` " .
                             "where `member_name` = ?",
-                            array($member_name));
+                           array(get_member_id($member_name)));
   if (!is_empty($email_row)) {
     return $email_row['email'];
   }
@@ -512,7 +514,7 @@ function create_and_update_week_totals($ii) {
       get_mod_date("house_list",false) >
       get_mod_date("week_$ii" . "_totals",true)) {
     $tot_tbl = bracket("{$archive}weekly_totals_data");
-    $wk_tbl = bracket("{$archive}week_$ii");
+    $wk_tbl = bracket("{$archive}week");
     //the totals we keep track of are the done hours (all the
     //positives), the blown (all the negatives), and the grand total.
     //Unfortunately, if someone didn't do any shifts one week, their
@@ -524,6 +526,7 @@ ifnull(sum(least(0,hours)),0) as `blown`,
 ifnull(sum(hours),0) as `tot`
 from $tot_tbl left join ($wk_tbl)
 on ($wk_tbl.`member_name` = $tot_tbl.`member_name`)
+where $wk_tbl.`week_num` = $ii 
 group by `member_name` order by `member_name`
 SELECT
 ;
@@ -721,6 +724,66 @@ function get_houselist() {
     $houselist[] = $row['member_name'];
   }
   return $houselist;
+}
+
+//get lookup of ids to names for members
+function get_member_name($id = null) {
+  global $db, $archive;
+  static $member_lookup;
+  if (isset($member_lookup)) {
+    if ($id === null) {
+      return $member_lookup;
+    }
+    else {
+      return $member_lookup[$id];
+    }
+  }
+  $oldfetch = $db->SetFetchMode(ADODB_FETCH_ASSOC);
+  $res = $db->Execute('SELECT `autoid`,`member_name` FROM ' .
+                      bracket($archive . 'house_list'));
+  $member_lookup = array();
+  while ($row = $res->FetchRow()) {
+    $member_lookup[$row['autoid']] = $row['member_name'];
+  }
+  $db->SetFetchMode($oldfetch);
+  if ($id === null) {
+    return $member_lookup;
+  }
+  else {
+    return $member_lookup[$id];
+  }
+}
+
+//get reverse lookup, of names to ids for members
+function get_member_id($mem = null) {
+  global $db, $archive,$dummy_string,$dummy_id;
+  if ($mem === $dummy_string) {
+    return $dummy_id;
+  }
+  static $reverse_member_lookup;
+  if (isset($reverse_member_lookup)) {
+    if ($mem === null) {
+      return $reverse_member_lookup;
+    }
+    else {
+      return $reverse_member_lookup[$mem];
+    }
+  }
+  $oldfetch = $db->SetFetchMode(ADODB_FETCH_ASSOC);
+  $res = $db->Execute('SELECT `autoid`,`member_name` FROM ' .
+                      bracket($archive . 'house_list'));
+  $reverse_member_lookup = array();
+  while ($row = $res->FetchRow()) {
+#    $reverse_member_lookup[$row['member_name']] = $row['autoid'];
+$reverse_member_lookup[$row['member_name']] = $row['member_name'];
+  }
+  $db->SetFetchMode($oldfetch);
+  if ($mem === null) {
+    return $reverse_member_lookup;
+  }
+  else {
+    return $reverse_member_lookup[$mem];
+  }
 }
 
 //get a list of all the backups, without the backup prefix, for
@@ -1539,7 +1602,7 @@ function user_privileges($member_name) {
   $attribs = $db->GetRow("select `privileges` " .
                          "from `privilege_table` where " .
                          "`member_name` = ?",
-                         array($member_name));
+                         array(get_member_id($member_name)));
   if (is_empty($attribs)) {
     return array();
   }
@@ -1579,7 +1642,7 @@ function users_with_privileges($type) {
   while ($row = $res->FetchRow()) {
     $attribs = explode(',',$row['privileges']);
     if (in_array($type,$attribs)) {
-      $ret[] = $row['member_name'];
+      $ret[] = get_member_name($row['member_name']);
     }
   }
   return $ret;
@@ -1612,7 +1675,8 @@ function add_authorized_user($mem_name,$type) {
     return $db->Execute("insert into `privilege_table` (`member_name`," .
                         "`privileges`) values (?,?) " .
                         "on duplicate key update `privileges` = ?",
-                        array($mem_name,join(',',$privs),join(',',$privs)));
+                        array(get_member_id($mem_name),
+                              join(',',$privs),join(',',$privs)));
   }
   //we're adding the privilege.
   elections_log(null,'change_privilege',$mem_name,
@@ -1622,7 +1686,7 @@ function add_authorized_user($mem_name,$type) {
                       "`privileges`) values (?,?) " .
                       "on duplicate key update " .
                       "`privileges` = concat(`privileges`,?)",
-                      array($mem_name,$type,$type));
+                      array(get_member_id($mem_name),$type,$type));
 }
 
 //get member corresponding to the current session id, if it exists.
@@ -1697,7 +1761,7 @@ function set_session($member_name,$officer = false,$delete_session = false) {
 //Useful occasionally.
 function require_user($type = null,$mem_name=null,$passwd=null) {
   global $db, $baseurl,$php_includes,$secured, $house_name, $set_passwd_flag,
-    $member_name,$basedir,$body_insert,$require_user, $secured,$officer_name;
+    $member_name, $member_id,$basedir,$body_insert,$require_user, $secured,$officer_name;
   //do we not need a user?
   if (isset($require_user) && $require_user === false) {
     return true;
@@ -1759,6 +1823,7 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
   }
   //we just set a global variable!  Awesome!
   $member_name = $mem_name;
+
   //I rarely call require_user with an argument, so here's where
   //member_name gets set for real.
   if (!$member_name && isset($_REQUEST['member_name'])) {
@@ -1820,6 +1885,9 @@ function require_user($type = null,$mem_name=null,$passwd=null) {
     //we already had a session
     $member_name = $session_member;
   }
+  //another global variable -- the id of the member
+  $member_id = get_member_id($member_name);
+
   //here's the logout button
   print "<form style='margin: 0px; display: inline' action='" . this_url() . 
     "' method=post>";
