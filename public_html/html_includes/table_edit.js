@@ -22,6 +22,9 @@ tbody_elt.addEventListener('click',pass_on_click,true);
 
 function pass_on_event(e, action, default_handler_array) {
   var target = e.originalTarget;
+  if (!target) {
+    target = e;
+  }
   if (!is_cell(target)) {
     return true;
   }
@@ -706,9 +709,12 @@ function name_check(elt) {
     alert(elt.value + " is not in the database.");
     return false;
   }
+
   return true;
 }
 
+
+// this code is resurrected for firefox 15, since same bug(?) reintroduced
 
 //firefox_2_hack because of bug with programmatic changes stopping
 //onchange from firing.  https://bugzilla.mozilla.org/show_bug.cgi?id=355367
@@ -727,9 +733,7 @@ if (firefox_2_hack_is_firefox != -1) {
   //7 is length of 'Firefox'
   var firefox_2_hack_version = 
     parseFloat(navigator.userAgent.substring(firefox_2_hack_is_firefox+7+1));
-  //bug is scheduled (as of 4/2007) for removal in Firefox 3
-  //if it isn't, this code will have to be changed.
-  if (firefox_2_hack_version >= 2 && firefox_2_hack_version < 3) {
+  if (firefox_2_hack_version >= 15) {
     firefox_2_hack = true;
   }
 }
@@ -754,7 +758,8 @@ function default_blur_handler(elt) {
   //hack to get around Firefox 2.+ bug with onchange and programmatic changes
   if (firefox_2_hack && firefox_2_hack_value != get_value(elt)) {
     //avoid calling again by accident
-    change_handler(elt);
+    pass_on_change(elt);
+//    change_handler(elt);
     firefox_2_hack_value = get_value(elt);
     //use the bug to avoid calling change_handler twice, if this change_handler
     //really would have been fired
@@ -1085,7 +1090,7 @@ function ts_resortTable(lnk,clid) {
     sortfn = ts_sort_caseinsensitive;
     if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d\d\d$/)) sortfn = ts_sort_date;
     if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d$/)) sortfn = ts_sort_date;
-    if (itm.match(/^[£$]/)) sortfn = ts_sort_currency;
+    if (itm.match(/^[?$]/)) sortfn = ts_sort_currency;
     if (itm.match(/^[\d\.]+$/)) sortfn = ts_sort_numeric;
   }
   var firstRow = new Array();
