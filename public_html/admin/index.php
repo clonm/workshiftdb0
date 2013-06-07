@@ -144,6 +144,7 @@ if (!$archive) {
 <a href="set_passwd.php">Change your password</a><br>
 <a href="reset_user_password.php">Reset the password of a user who has
 forgotten it</a><br>
+<a href="resync_weekly_totals.php">Redo weekly totals calculations</a>. If the totals on the front page or in one of your house-wide weekly totals pages don't match the hours listed for an individual member, click on this link to correct the system.<br>
 <a href='administer_users.php'>Add/remove workshift privilege from users</a>.
 This allows a user to administer site without logging in as 
 <?=$officer_name?$officer_name:$house_name . 'workshift'?>.  You should definitely

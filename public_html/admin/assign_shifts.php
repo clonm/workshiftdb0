@@ -101,7 +101,7 @@ for ($ii = 0; $ii <= $max_rating; $ii++) {
 function get_person(member) {
   //is this a real member with a real div element in people?  Since
   //the user can enter nonexistent people in fields, we can't be sure.
-  if (member && member != self.master_shifts.dummy_string && 
+  if (member && member != this.master_shifts.dummy_string && 
       (listhouse[member] || listhouse[member] == 0)) {
     return list[listhouse[member]];
   }
@@ -171,7 +171,7 @@ function set_rating_person(member,workshift) {
   //the houselist in people is used for sorting by various criteria
   //including the ratings people have given to the currently-selected
   //shift.  That rating is stored in the 3rd coordinate.
-  self.people.houselist[listhouse[member]][3] = rating;
+  this.people.houselist[listhouse[member]][3] = rating;
   if (rating == 0) {
     is_unwanted_person(st,true);
   }
@@ -187,7 +187,7 @@ function set_rating_person(member,workshift) {
 //calculate rating by a member of a workshift.  Needs to look through
 //member preferences and see if any match this shift
 function get_rating(member,workshift) {
-  pref = self.master_shifts.find_match(self.master_shifts.wantedlist[member],workshift);
+  pref = this.master_shifts.find_match(this.master_shifts.wantedlist[member],workshift);
   if (pref) {
     return pref[1];
   }
@@ -200,7 +200,7 @@ function display_hours(member,hours,changehours) {
   if (get_person(member)) {
     get_person(member).innerHTML = member + " " + Number(hours);
     //people can sort on hours too, stored in 5th coordinate
-    self.people.houselist[listhouse[member]][5] = hours;
+    this.people.houselist[listhouse[member]][5] = hours;
   }
 <?php
     //hack here so that when CO is using this, we also update the
@@ -234,10 +234,10 @@ function reset_list() {
     elt.fontWeight = '';
     elt.textDecoration = '';
     elt.fontSize = '';
-    self.people.houselist[listhouse[mem]][3] = 0;
+    this.people.houselist[listhouse[mem]][3] = 0;
   }
   //sort list, and tell function that all that's changed is ratings
-  self.people.sort_list(1);
+  this.people.sort_list(1);
 }
 
 //when the user clicks into a specific workshift, show the member who
@@ -262,12 +262,14 @@ function offer_options(member,hours,workshift) {
     set_rating_person(mem,workshift);
     //if the member actually can't do this particular shift, be more
     //discouraging about it. Test as if it's a weeklong if no day
+    var old_day = workshift['day'];
     if (workshift['day'] < 0) {
-      workshift['day'] = 0;
+      old_day = workshift['day'];
     }
-    if (!self.master_shifts.can_do(mem,workshift,true)) {
+    if (!this.master_shifts.can_do(mem,workshift,true)) {
       cant_do_person(mem);
     }
+    workshift['day'] = old_day;
   }
   //sort list, and tell function that all that's changed is ratings
   people.sort_list(1);

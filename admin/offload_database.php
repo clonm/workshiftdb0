@@ -1,7 +1,7 @@
 <?php
-require 'DropboxUploader.php';
 $php_start_time = array_sum(explode(' ',microtime()));
 require_once('default.admin.inc.php');
+require 'UploadWorkshiftBackup.php';
 $temp_houses = getopt('h::');
 if (isset($temp_houses['h'])) {
   $houses = $temp_houses['h'];
@@ -30,10 +30,7 @@ else {
 set_error_handler('janak_errhandler');
 $done_houses = array();
 $max_time_allowed = 10;
-$passfile = fopen('dropbox_pass.txt','r');
-$username = rtrim(fgets($passfile));
-$password = rtrim(fgets($passfile));
-$uploader = new DropboxUploader($username, $password);
+$uploader = new UploadWorkshiftBackup();
 $db->SetFetchMode(ADODB_FETCH_NUM);
 foreach ($houses as $house_name) {
   //  fwrite(STDERR,"doing $house_name\n");
@@ -83,7 +80,7 @@ foreach ($houses as $house_name) {
       janak_error(implode("\n",$output));
     }
     try {
-      $uploader->upload($zipfile,"backups/$house_name");
+      $uploader->upload($zipfile,$house_name);
     }
     catch (Exception $e) {
       janak_error($e->getMessage());
