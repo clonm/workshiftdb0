@@ -1,3 +1,5 @@
+# as of 2013-06-07, Janak thinks that this is the place php variables are registered,
+# not php.ini. 
 <IfModule mod_php5.c>
 php_value error_reporting -1
 php_flag zlib.output_compression on
@@ -10,6 +12,7 @@ php_flag display_errors on
 #somewhere, it could be set by the user, and potentially lead to a security
 #hole.  No decent php setup should have this on, but one of ours used to.
 #php_flag register_globals off
+php_value max_input_vars 10000
 </IfModule>
 
 RewriteEngine on

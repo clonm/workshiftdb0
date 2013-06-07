@@ -885,6 +885,7 @@ function submit_data () {
   }
   data += "table_name=" + escape(table_name);
   //  statustext.innerHTML = data;
+  //alert("hi");
   req.send(data);
   return false;
 }
