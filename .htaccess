@@ -13,6 +13,8 @@ php_flag display_errors on
 #hole.  No decent php setup should have this on, but one of ours used to.
 #php_flag register_globals off
 php_value max_input_vars 10000
+# To prevent warning when sending mail that logfile isn't writable.
+php_value mail.log NULL
 </IfModule>
 
 RewriteEngine on
