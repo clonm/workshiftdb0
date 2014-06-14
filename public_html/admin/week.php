@@ -49,7 +49,7 @@ $make_weeks_form = "<form action='make_weeks.php' method='GET'  onsubmit='" .
     "<input type=hidden name='overwrite' value='1'>" .
     "<input type=hidden name='archive' value='" . escape_html($archive) .
     "'>";
-    if (!table_exists("week_$week_num")) {
+    if (!table_exists($table_name)) {
 ?>
 <html><head><title>Week <?=$week_num?> does not exist yet</title></head>
 <body>
@@ -61,6 +61,9 @@ $make_weeks_form = "<form action='make_weeks.php' method='GET'  onsubmit='" .
    }
  if (!table_exists('master_shifts')) {
    exit("The list of shifts does not exist yet!  Email " . admin_email() . "<p>");
+ }
+ if (strlen($archive) > 0) {
+   exit("You cannot create weeks in an archive!");
  }
 ?>
 <?=$make_weeks_form?>
