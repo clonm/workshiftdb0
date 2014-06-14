@@ -79,32 +79,6 @@ exit;
 $col_formats = array('date' => 'dateformat', 'day' => '', 'workshift' => '',
 		   'member_name' => '',
 		   'hours' => '','notes' => '');
-/*get_real_table_columns();
-if (isset($col_reals['shift_id'])) {
-  $table_edit_query = "select `$table_name`.`autoid`,`date`,`day`,`$table_name`.`workshift`," .
-    "`$table_name`.`member_name`,`$table_name`.`hours`, `notes`," .
-    "`start_time`,`end_time` from `$table_name` order by " . $order_exp;
-  if (!isset($col_reals['start_time'])) {
-    $db->Execute("alter table `$table_name` add column `start_time` time default null, " .
-                 "add column `end_time` time default null");
-  }
-  if (is_empty($db->GetRow("select * from `$table_name` where `start_time` and " .
-                           "`start_time` is not null limit 1"))) {
-    $res = $db->Execute("select `shift_id` from `$table_name`");
-    $db->SetFetchMode(ADODB_FETCH_NUM);
-    while ($row = $res->FetchRow()) {
-      if ($row['shift_id']) {
-        $times = $db->GetRow("select `start_time` as `0`, `end_time` as `1` from `master_shifts` where `autoid` = ?",
-                             array($row['shift_id']));
-        if (!is_empty($times)) {
-        $db->Execute("update `$table_name` set `start_time` = ?,`end_time` = ? where `shift_id` = ?",
-                     array_merge($times,array($row['shift_id'])));
-        }
-      }
-    }
-    $db->SetFetchMode(ADODB_FETCH_ASSOC);
-  }
-}*/
 //moved out of conditional above
   $col_formats['start_time'] = 'timeformat';
   $col_formats['end_time'] = 'timeformat';
