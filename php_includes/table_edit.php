@@ -116,6 +116,11 @@ if (!isset($restrict_cols)) {
   $restrict_cols = array();
 }
 
+// Any column values that should be set for added rows when updating the database.
+if (!isset($extra_fields)) {
+  $extra_fields = array();
+}
+
 //what should this page be called?  default is the name of the table
 if (!isset($title_page)) {
   $title_page = $table_name;
@@ -602,6 +607,10 @@ var dummy_string = <?=dbl_quote($dummy_string)?>;
 <?php js_assoc_array('days_arr',array_flip($days))?>
 days_arr["Weeklong"] = "7";
 var table_name = <?=dbl_quote($table_name_update)?>;
+var auxiliary_table_name = <?=isset($auxiliary_table_name) ?
+  dbl_quote($auxiliary_table_name)
+  : "''"?>;
+<?php js_assoc_array('extra_fields',$extra_fields); ?>
  var row_color = <?=dbl_quote(escape_html($orig_color))?>;
  var other_color = <?=dbl_quote(escape_html($orig_other_color))?>;
  var switch_color_frequency = <?=dbl_quote(escape_html($switch_color_frequency))?>;

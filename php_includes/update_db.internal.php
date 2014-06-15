@@ -184,10 +184,24 @@ if (array_key_exists('changed_rows',$_REQUEST)) {
   }
 }
 
+
+$extra_fields = array();
+if (array_key_exists('extra_field_names',$_REQUEST)) {
+  $extra_field_names = $_REQUEST['extra_field_names'];
+  $extra_field_values = $_REQUEST['extra_field_values'];
+  if (count($extra_field_names) != count($extra_field_values)) {
+    exit("Extra field names and values do not match: " .
+         $extra_field_names . ", " . $extra_field_values);
+  }
+  for ($ii = 0; $ii < count($extra_field_names); $ii++) {
+    $extra_fields[$extra_field_names[$ii]] = $extra_field_values[$ii];
+  }
+}
+
 $added = array();
 $num_added = $_REQUEST['num_added'];
 for ($ii = 0; $ii < $num_added; $ii++) {
-  $added[$ii] = $_REQUEST["added-{$ii}"];
+  $added[$ii] = array_merge($_REQUEST["added-{$ii}"], array_values($extra_fields));
 }
 
 //what rows are we deleting?
@@ -227,13 +241,14 @@ function bracketqind($ind) {
   return bracket($col_names[$ind]) . " = ?";
 }
 
+#do the virtual column thing
+get_real_table_columns();
+
 function real_col_filter($arr) {
   global $real_col_inds;
   return array_intersect_key($arr,$real_col_inds);;
 }
-#do the virtual column thing
-get_real_table_columns();
-
+ 
 //adodb Execute can take a 2-d array and execute the command on each element
 //in turn.  Very useful here.
 if ($num_added) {
@@ -245,6 +260,14 @@ if ($num_added) {
       $real_col_inds[$ii] = 1;
     }
   }
+  $extra_keys = array_keys($extra_fields);
+  for ($ii = 0; $ii < count($extra_fields); $ii++) {
+    if (!array_key_exists($extra_keys[$ii], $col_reals)) {
+      exit("Not all extra fields were real! " . $extra_keys[$ii]);
+    }
+    $real_col_inds[$num_cols + $ii] = 1;
+  }
+  $update_cols = array_merge($update_cols, array_keys($extra_fields));
   $added = array_map('real_col_filter',$added);
   $query_string = "INSERT INTO " . bracket($table_name) ." (" .
     implode(", ",array_map("bracket",$update_cols)) .
@@ -273,6 +296,12 @@ if (count($del_array)) {
   }
 }
 set_mod_date($table_name);
+if (array_key_exists('auxiliary_table_name', $_REQUEST)) {
+  $auxiliary_table_name = $_REQUEST['auxiliary_table_name'];
+  if (strlen($auxiliary_table_name) > 0) {
+    set_mod_date($_REQUEST['auxiliary_table_name']);
+  }
+}
 $db->Execute("unlock tables");
 $db->CompleteTrans();
 ?>

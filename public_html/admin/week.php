@@ -49,7 +49,7 @@ $make_weeks_form = "<form action='make_weeks.php' method='GET'  onsubmit='" .
     "<input type=hidden name='overwrite' value='1'>" .
     "<input type=hidden name='archive' value='" . escape_html($archive) .
     "'>";
-    if (!table_exists($table_name)) {
+    if (!table_exists("week_$week_num")) {
 ?>
 <html><head><title>Week <?=$week_num?> does not exist yet</title></head>
 <body>
@@ -120,6 +120,9 @@ $col_sizes = array_fill(0,count($col_formats),2);
 $col_sizes[5] = '*';
 //rows can be added/deleted
 $delete_flag = true;
+# // auxiliary table will become this week when we migrate to single-table weeks.
+# $auxiliary_table_name= "week_" . "_auxiliary";
+# $extra_fields = array('week_num' => 'junk');
 //changed by Janak 7 May 2011 because help text not showing on week pages
 if (!isset($body_insert)) {
   $body_insert = '';

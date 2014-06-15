@@ -865,17 +865,13 @@ function submit_data () {
       data += "deleted_rows[]=" + id + "&";
     }
   }
-  // we send the data more efficiently above
-//   //send through changed cells, no arrays
-//     for (ii = 0; ii < num_rows; ii++) {
-//     for (jj = 0; jj < num_cols; jj++) {
-//       data += "cell-" + ii + "-" + jj + "=" + 
-//         val_of(rows_array[ii].cells[jj].firstChild) + "&";
-//     }
-//     //autoids are passed separately for clarity, still not in an array
-//     data += "autoid-" + ii + "=" + 
-//       val_of(rows_array[ii].cells[num_cols].firstChild) + "&";
-//   }
+  for (var field in extra_fields) {
+    if (extra_fields.hasOwnProperty(field)) {
+      data += "extra_field_names[]=" + escape(field)
+              + "&extra_field_values[]=" + escape(extra_fields[field]) + "&";
+    }
+  }
+  data += "auxiliary_table_name=" + escape(auxiliary_table_name) + "&";
   //tell it number of rows, columns, names of columns, name of table
   data += "num_rows=" + num_rows + "&";
   data += "num_cols=" + num_cols + "&";
