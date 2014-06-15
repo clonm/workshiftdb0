@@ -243,8 +243,9 @@ if ($house_name !== 'admin') {
   
   //enable transactions -- MyISAM doesn't have transactions
   $db->Execute("set storage_engine = 'InnoDB'");
-  // Make sure invalid data causes errors, not warnings.
-  $db->Execute("set sql_mode = 'STRICT_ALL_TABLES'");
+# Can't be enabled yet -- dates need to be fixed.
+#  // Make sure invalid data causes errors, not warnings.
+#  $db->Execute("set sql_mode = 'STRICT_ALL_TABLES'");
   //theoretically, there should be some multi-version support in my
   //code, which is why we get the version here.  Really, though, it's
   //too hard to keep the different branches synchronized.
