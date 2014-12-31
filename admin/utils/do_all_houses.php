@@ -8,8 +8,29 @@ foreach ($houses as $house) {
   print "<h1>$house</h1>";
   $db->Connect($url_array['server'],$url_array['user'],$url_array['pwd'],
     "$db_basename$house");
-  $db->Execute("alter table `GLOBAL_archive_data` add column `semester_end` bit(1) default NULL");
-  /* $res = $db->Execute("select master_shifts.workshift, old_master_shifts.workshift from master_shifts left join old_master_shifts on master_shifts.autoid = old_master_shifts.autoid where master_shifts.workshift != old_master_shifts.workshift"); */
+/*  $db->Execute("alter table `GLOBAL_archive_data` add column `semester_end` bit(1) default NULL"); */
+  $archive = '';
+$fining_buffer = get_static('fining_buffer',0,$archive);
+$fining_floor = get_static('fining_floor',10,$archive);
+$fining_doublefloor = get_static('fining_doublefloor',null,$archive);
+
+$backup_fine_weeks = array();
+$res = $db->Execute("select * from `{$archive}fining_periods` order by `week`");
+while ($row = $res->FetchRow()) {
+  foreach (array('fining_doublefloor','fining_floor','fining_buffer') as $attrib) {
+    //if not set for this period, use the global setting
+    if (!strlen($row[$attrib])) {
+      $row[$attrib] = $GLOBALS[$attrib];
+    }
+  }
+  $backup_fine_weeks[$row['week']] = $row;
+}
+  foreach ($backup_fine_weeks as $fining_period) {
+    if ( $fining_period['zero_hours']) {
+      print_r($fining_period);
+      break;
+    }
+  }
   /* while ($row = $res->FetchRow()) { */
   /*   print_r($row); */
   /* } */

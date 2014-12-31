@@ -422,26 +422,26 @@ for ($ii = 0; $ii <= $week_num; $ii++) {
       else {
         $weekly_fines[$ii] = $fine;
       }
-      //if we're at the last displayed "real" week, we don't want to
-      //zero hours because that will make someone down 10 hours think
-      //they're down 0 hours, because the hours are zeroed.  This
-      //makes the "current week" numbers inaccurate, but who really
-      //cares.
-      if ($ii < $week_num-1) {
-        //were we eligible for fining?
-        if ($tot_hours < -$fin_floor) {
-          //does this house zero hours?
-          if (($flag_fining && $row['zero_hours']) || 
-              ($weekly_fining && $fining_zero_hours)) {
-            //we can go back up to the fining floor.  Potentially scaled.
-            if (strlen($zero_partial)) {
-              $tot_hours = -$fin_floor + ($tot_hours+$fin_floor)*$zero_partial/100;
-            }
-            else {
-              $tot_hours = -$fin_floor;
-            }
-            echo ", hours reset to $tot_hours";            
+    }
+    //if we're at the last displayed "real" week, we don't want to
+    //zero hours because that will make someone down 10 hours think
+    //they're down 0 hours, because the hours are zeroed.  This
+    //makes the "current week" numbers inaccurate, but who really
+    //cares.
+    if ($ii < $week_num-1) {
+      //were we eligible for fining?
+      if ($tot_hours < -$fin_floor) {
+        //does this house zero hours?
+        if (($flag_fining && $row['zero_hours']) || 
+            ($weekly_fining && $fining_zero_hours)) {
+          //we can go back up to the fining floor.  Potentially scaled.
+          if (strlen($zero_partial)) {
+            $tot_hours = -$fin_floor + ($tot_hours+$fin_floor)*$zero_partial/100;
           }
+          else {
+            $tot_hours = -$fin_floor;
+          }
+          echo ", hours reset to $tot_hours";            
         }
       }
     }
