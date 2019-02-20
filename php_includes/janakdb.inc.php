@@ -217,7 +217,7 @@ if (!isset($archive)) {
 set_error_handler('janak_mysqlerr');
 
 //this is THE connection to the database.  The 't' is for transactions.
-$db = ADONewConnection('mysqlt');
+$db = ADONewConnection('mysqli');
 //turn on debugging?
 #$db->debug = true;
 

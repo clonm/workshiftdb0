@@ -1,13 +1,13 @@
 <?php
 
 //Where errors are sent
-$admin_email = 'workshift.system@gmail.com';
+$admin_email = 'clonm+workshift@bsc.coop';
 
 //------- Settings for connecting to the MySQL database
 
 //What is the server to connect to?
 //if running mysql on a local pipe, this should just be '.'
-$db_server = 'db';
+$db_server = 'localhost';
 
 //What is the mysql user to connect to the databases
 $db_user = 'bsc1933';

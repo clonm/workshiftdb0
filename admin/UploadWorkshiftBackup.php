@@ -1,11 +1,11 @@
 <?php
 ini_set('display_errors',1);
-$php_includes = '/home/bsc1933/public_html/cvsworkshift/workshiftdb0/php_includes/';
+$php_includes = '/var/www/workshiftdb/php_includes/';
 require_once "$php_includes/includes/google-api-php-client/src/Google_Client.php";
 require_once "$php_includes/includes/google-api-php-client/src/contrib/Google_DriveService.php";
 
 class UploadWorkshiftBackup {
-  
+
   protected $client;
   protected $service;
   protected $house_id;

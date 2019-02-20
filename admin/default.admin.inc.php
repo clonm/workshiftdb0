@@ -6,13 +6,14 @@
 //php_includes, then you can set it manually here to the correct absolute path.
 //TODO 1: get list of houses automatically from dir listing of /workshift
 //Commented by Janak 31 Jan 2010
-$php_includes = '';
+$php_includes = "/var/www/workshiftdb/php_includes";
 //Example:
 #$php_includes = '/home/bsccoo5/public_html/workshift/php_includes';
 
 //If a new house is added, this array needs to be updated.  TODO 1
-$houses = array('ath','aca','caz','clo','con','dav','euc','fen','hip','hoy',
-		'kid','kng','lot','nsc','rid','roc','she','stb','wil','wol','co');
+// $houses = array('ath','aca','caz','clo','con','dav','euc','fen','hip','hoy',
+// 		'kid','kng','lot','nsc','rid','roc','she','stb','wil','wol','co');
+$houses = array('clo');
 
 //path for zip
 $zipexec = "/usr/local/bin/zip";
